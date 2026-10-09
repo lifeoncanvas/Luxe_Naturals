@@ -17,7 +17,8 @@ import {
   Camera,
   Sparkle,
   Award,
-  ArrowLeft
+  ArrowLeft,
+  User
 } from 'lucide-react';
 import './App.css';
 
@@ -263,6 +264,10 @@ function App() {
   // E-commerce state
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
+  const [authExpandedOption, setAuthExpandedOption] = useState(null); // 'email' | 'phone' | null
   const [wishlist, setWishlist] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -441,6 +446,13 @@ function App() {
 
           {/* Right Header Actions */}
           <div className="header-actions">
+            <button 
+              className="icon-btn" 
+              title="Sign In / Register" 
+              onClick={() => { setAuthMode('login'); setIsAuthOpen(true); }}
+            >
+              <User size={19} />
+            </button>
             <button 
               className="icon-btn" 
               title="Search" 
@@ -1986,7 +1998,7 @@ function App() {
                   <span>Subtotal</span>
                   <span style={{ fontWeight: 700, color: '#2D3A29' }}>£{cartSubtotal.toFixed(2)}</span>
                 </div>
-                <button className="btn-primary checkout-btn" onClick={() => showToast('Proceeding to secure checkout...')} style={{ width: '100%', justifyContent: 'center' }}>
+                <button className="btn-primary checkout-btn" onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }} style={{ width: '100%', justifyContent: 'center' }}>
                   Proceed to Checkout · £{cartSubtotal.toFixed(2)}
                 </button>
                 <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.8rem', color: '#5C635B' }}>
@@ -2042,6 +2054,274 @@ function App() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* SECURE CHECKOUT MODAL (STRIPE & PAYPAL) */}
+      {isCheckoutOpen && (
+        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setIsCheckoutOpen(false)}>
+          <div className="modal-card checkout-modal" style={{ maxWidth: '850px', width: '95%', maxHeight: '90vh', padding: '0', display: 'flex', flexDirection: 'row', overflow: 'hidden', borderRadius: '8px' }} onClick={(e) => e.stopPropagation()}>
+            
+            {/* Left Side: Order Summary */}
+            <div style={{ backgroundColor: '#FDFCF9', padding: '2rem', width: '45%', borderRight: '1px solid #E5DFC5', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
+                Order Summary
+              </div>
+              
+              <div style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '1.5rem', paddingRight: '0.5rem' }}>
+                {cart.map(item => (
+                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #E5DFC5' }}>
+                      <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <span style={{ position: 'absolute', top: '-5px', right: '-5px', backgroundColor: '#2D3A29', color: '#FFF', fontSize: '0.65rem', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
+                        {item.quantity}
+                      </span>
+                    </div>
+                    <div style={{ flexGrow: 1 }}>
+                      <div style={{ fontSize: '0.85rem', color: '#2D3A29', fontWeight: 600 }}>{item.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>{item.volume}</div>
+                    </div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>
+                      £{(item.price * item.quantity).toFixed(2)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
+                  <span>Subtotal</span>
+                  <span>£{cartSubtotal.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: '0.85rem', color: '#5C635B' }}>
+                  <span>Shipping</span>
+                  <span>{amountForFreeShipping > 0 ? 'Calculated at next step' : 'Complimentary'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', color: '#2D3A29', fontWeight: 700 }}>
+                  <span>Total</span>
+                  <span>£{cartSubtotal.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side: Payment Options (UK) */}
+            <div style={{ backgroundColor: '#FFFFFF', padding: '2rem', width: '55%', position: 'relative', overflowY: 'auto' }}>
+              <button className="close-modal-btn" onClick={() => setIsCheckoutOpen(false)} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem' }}>
+                <X size={20} />
+              </button>
+              
+              <div style={{ textAlign: 'center', marginBottom: '2rem', marginTop: '1rem' }}>
+                <LichtLogo size="header" color="#2D3A29" markOnly={true} style={{ margin: '0 auto', marginBottom: '0.75rem' }} />
+                <h2 className="font-serif" style={{ fontSize: '1.8rem', color: '#2D3A29', marginBottom: '0.25rem', fontWeight: 400 }}>Secure Checkout</h2>
+                <p style={{ color: '#5C635B', fontSize: '0.85rem' }}>Choose your preferred payment method.</p>
+              </div>
+
+              {/* Express Checkout Options (Apple/Google Pay mock) */}
+              <div style={{ marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                  <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                  <span style={{ fontSize: '0.75rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Express Checkout</span>
+                  <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <button style={{ flex: 1, backgroundColor: '#000', color: '#FFF', border: 'none', padding: '0.85rem', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 500 }}>
+                    <svg viewBox="0 0 384 512" width="16" height="16" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg> Pay
+                  </button>
+                  <button style={{ flex: 1, backgroundColor: '#FFF', color: '#3C4043', border: '1px solid #DADCE0', padding: '0.85rem', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 500, boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)' }}>
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M23.64 12.2045C23.64 11.3523 23.5636 10.5341 23.4218 9.75H12V14.3886H18.5236C18.24 15.8886 17.3891 17.1545 16.1236 17.9977V20.9705H20.0455C22.3364 18.8614 23.64 15.8182 23.64 12.2045Z"/><path fill="#34A853" d="M12 24C15.2727 24 18.0218 22.92 20.0455 20.9705L16.1236 17.9977C15.0327 18.7364 13.6364 19.1727 12 19.1727C8.83636 19.1727 6.15273 17.0364 5.18182 14.1705H1.13455V17.3073C3.14182 21.2891 7.23273 24 12 24Z"/><path fill="#FBBC05" d="M5.18182 14.1705C4.93091 13.425 4.78909 12.6341 4.78909 11.8227C4.78909 11.0114 4.93091 10.2205 5.18182 9.475V6.33818H1.13455C0.414545 7.76727 0 9.38182 0 11.8227C0 14.2636 0.414545 15.8782 1.13455 17.3073L5.18182 14.1705Z"/><path fill="#EA4335" d="M12 4.47273C13.7782 4.47273 15.3709 5.08364 16.6255 6.27818L20.1327 2.77091C18.0109 0.796364 15.2618 0 12 0C7.23273 0 3.14182 2.71091 1.13455 6.33818L5.18182 9.475C6.15273 6.60909 8.83636 4.47273 12 4.47273Z"/></svg> Pay
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+                <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                <span style={{ fontSize: '0.75rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Or pay with</span>
+                <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+              </div>
+
+              {/* Payment Methods (UK focused) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                
+                {/* STRIPE CARD OPTION */}
+                <div style={{ border: '1.5px solid #2D3A29', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#F9FBF8', cursor: 'pointer', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.4rem' }}>
+                    <div style={{ backgroundColor: '#1A1F71', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>VISA</div>
+                    <div style={{ backgroundColor: '#EB001B', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>MC</div>
+                    <div style={{ backgroundColor: '#006FCF', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>AMEX</div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '6px solid #2D3A29', display: 'inline-block' }}></div>
+                    <span style={{ fontWeight: 600, color: '#2D3A29', fontSize: '1.1rem' }}>Credit / Debit Card</span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <input type="text" placeholder="Card number" style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                      <input type="text" placeholder="MM / YY" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
+                      <input type="text" placeholder="CVC" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
+                    </div>
+                    <input type="text" placeholder="Name on card" style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
+                  </div>
+                  
+                  <button 
+                    style={{ width: '100%', padding: '1.15rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', marginTop: '1.5rem', fontSize: '1.05rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                    onClick={() => {
+                      showToast('Payment successful! Order placed securely via Stripe.');
+                      setIsCheckoutOpen(false);
+                      setCart([]);
+                    }}
+                  >
+                    Pay £{cartSubtotal.toFixed(2)} Securely <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  </button>
+                  <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by Stripe
+                  </div>
+                </div>
+
+                {/* PAYPAL OPTION */}
+                <div 
+                  style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                  onClick={() => {
+                    showToast('Redirecting to PayPal for secure checkout...');
+                    setTimeout(() => {
+                      setIsCheckoutOpen(false);
+                      setCart([]);
+                      showToast('Order completed via PayPal!');
+                    }, 2000);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid #D6DDD3', display: 'inline-block' }}></div>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '24px' }} />
+                  </div>
+                </div>
+                
+                {/* KLARNA OPTION (Popular in UK) */}
+                <div 
+                  style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid #D6DDD3', display: 'inline-block' }}></div>
+                    <span style={{ fontWeight: 600, color: '#FFB3C7', backgroundColor: '#0A0A0A', padding: '0.2rem 0.6rem', borderRadius: '15px', fontSize: '0.9rem' }}>Klarna.</span>
+                    <span style={{ fontSize: '0.9rem', color: '#5C635B' }}>Pay in 3 interest-free instalments</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AUTHENTICATION MODAL (LOGIN / REGISTER) - LUXURY VIBE */}
+      {isAuthOpen && (
+        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => { setIsAuthOpen(false); setAuthExpandedOption(null); }}>
+          <div className="modal-card" style={{ maxWidth: '450px', width: '95%', padding: '3rem 2.5rem', borderRadius: '4px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 40px rgba(45,58,41,0.08)' }} onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal-btn" onClick={() => { setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', color: '#5C635B' }}>
+              <X size={22} />
+            </button>
+            
+            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+              <LichtLogo size="header" color="#2D3A29" markOnly={true} style={{ margin: '0 auto', marginBottom: '1.5rem' }} />
+              <h2 className="font-serif" style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '0.5rem', fontWeight: 400 }}>
+                {authMode === 'login' ? 'Welcome Back' : 'Create an Account'}
+              </h2>
+              <p style={{ color: '#C5A059', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                {authMode === 'login' ? 'Access your member profile' : 'Join the Luxe Naturals community'}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              
+              {/* KINGSCHAT BUTTON */}
+              <button 
+                style={{ width: '100%', padding: '1rem', backgroundColor: '#DFCAA7', color: '#2D3A29', border: '1px solid #C5A059', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+                onClick={() => window.open('https://accounts.kingschat.online/log-in?clientId=5904093a-1631-43d7-b9e7-f1ab15d4b513&origin=%2F%3FauthRetry%3D1', '_blank')}
+                className="hover-bg-darken"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                {authMode === 'login' ? 'Sign in with KingsChat' : 'Sign up with KingsChat'}
+              </button>
+
+              {/* EMAIL BUTTON & ACCORDION */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                <button 
+                  style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'email' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'email' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+                  onClick={() => setAuthExpandedOption(authExpandedOption === 'email' ? null : 'email')}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <Mail size={16} color="#6E5535" strokeWidth={1.5} />
+                    {authMode === 'login' ? 'Continue with Email' : 'Sign up with Email'}
+                  </div>
+                  {authExpandedOption === 'email' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
+                </button>
+
+                {authExpandedOption === 'email' && (
+                  <form onSubmit={(e) => { e.preventDefault(); showToast('Success!'); setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {authMode === 'register' && (
+                      <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <input type="text" placeholder="First Name" required style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                        <input type="text" placeholder="Last Name" required style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                      </div>
+                    )}
+                    <input type="email" placeholder="Email Address" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                    <input type="password" placeholder="Password" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                    
+                    {authMode === 'login' && (
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.25rem' }}>
+                        <button type="button" style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', textDecoration: 'underline', cursor: 'pointer' }}>
+                          Forgot Password?
+                        </button>
+                      </div>
+                    )}
+
+                    <button type="submit" style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
+                      {authMode === 'login' ? 'Sign In' : 'Create Account'}
+                    </button>
+                  </form>
+                )}
+              </div>
+
+              {/* PHONE BUTTON & ACCORDION */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                <button 
+                  style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'phone' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'phone' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease', marginTop: authExpandedOption === 'email' ? '1rem' : '0' }}
+                  onClick={() => setAuthExpandedOption(authExpandedOption === 'phone' ? null : 'phone')}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <Phone size={16} color="#6E5535" strokeWidth={1.5} />
+                    {authMode === 'login' ? 'Continue with Phone' : 'Sign up with Phone'}
+                  </div>
+                  {authExpandedOption === 'phone' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
+                </button>
+
+                {authExpandedOption === 'phone' && (
+                  <form onSubmit={(e) => { e.preventDefault(); showToast('Success!'); setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <input type="tel" placeholder="Phone Number" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                    <input type="password" placeholder="Password" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                    <button type="submit" style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
+                      {authMode === 'login' ? 'Sign In' : 'Create Account'}
+                    </button>
+                  </form>
+                )}
+              </div>
+
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '2.5rem', borderTop: '1px solid #E5DFC5', paddingTop: '1.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
+              {authMode === 'login' ? "Don't have an account? " : "Already have an account? "}
+              <button 
+                type="button" 
+                onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthExpandedOption(null); }} 
+                style={{ background: 'none', border: 'none', color: '#6E5535', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+              >
+                {authMode === 'login' ? 'Sign up here' : 'Sign in here'}
+              </button>
+            </div>
+
           </div>
         </div>
       )}
