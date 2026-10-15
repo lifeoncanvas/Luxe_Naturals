@@ -254,7 +254,7 @@ const FAQS = [
 
 // ─── PayPal Sandbox Configuration ──────────────────────────────────
 const PAYPAL_CLIENT_ID = 'BAA7UoSsD_iuAa7LqzZDlY2uAPnO5xkWs2981r89PvhAMxEja5vhX-E1TpiSoVwIajfDyFtLVyNnefvtM';
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = process.env.REACT_APP_API_BASE || (window.location.hostname === 'localhost' ? 'http://localhost:8080/api' : '/api');
 
 const paypalInitialOptions = {
   'client-id': PAYPAL_CLIENT_ID,
@@ -414,7 +414,15 @@ function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          amount: cartSubtotal.toFixed(2),
+          items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+          }))
+        }),
       });
 
       if (!response.ok) {
@@ -429,7 +437,7 @@ function App() {
       setPaymentProcessing(false);
       throw error;
     }
-  }, []);
+  }, [cart, cartSubtotal]);
 
   // Capture PayPal order after buyer approval
   const capturePayPalOrder = useCallback(async (data) => {
@@ -455,7 +463,15 @@ function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          amount: cartSubtotal.toFixed(2),
+          items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+          }))
+        }),
       });
 
       if (!response.ok) {
@@ -478,7 +494,7 @@ function App() {
       setPaymentProcessing(false);
       showToast('Payment error: ' + error.message);
     }
-  }, [cartSubtotal]);
+  }, [cart, cartSubtotal]);
 
   return (
     <PayPalScriptProvider options={paypalInitialOptions}>
