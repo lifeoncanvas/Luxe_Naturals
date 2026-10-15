@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Italiana&amp;family=Plus+Jakarta+Sans:wght@700&amp;display=swap');
+      .brand-title {
+        font-family: 'Italiana', serif;
+        font-size: 42px;
+        letter-spacing: 0.24em;
+        fill: #FAF7F2;
+        text-anchor: middle;
+      }
+      .brand-sub {
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: 0.28em;
+        fill: #EAD8BA;
+        text-anchor: middle;
+      }
+    </style>
+  </defs>
+  <!-- Brand Monogram Mark -->
+  <image href="/logo-dark-mark.png" x="120" y="20" width="160" height="110" preserveAspectRatio="xMidYMid meet"/>
+  <!-- Crisp, High-Contrast Company Name -->
+  <text x="208" y="180" class="brand-title">LICHT</text>
+  <text x="208" y="222" class="brand-sub">LUXE NATURALS</text>
+</svg>

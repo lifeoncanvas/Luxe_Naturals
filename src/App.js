@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { 
   ShoppingBag, 
   Search, 
@@ -22,27 +23,38 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-// SVG Logo Component for LICHT LUXE NATURALS matching img2 reference
-// Dynamic Logo Component using user's high-res asset variants based on background theme & mark options
-const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', variant = 'light', markOnly = false }) => {
+// Dynamic Logo Component for LICHT LUXE NATURALS with high-contrast, crystal-clear typography
+const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', variant = 'light', markOnly = false, style = {} }) => {
   const isDark = variant === 'dark' || color === '#FAF7F2' || color === '#FFFFFF' || color === 'white' || size === 'footer';
-  
-  let logoSrc = '/logo-light-full.png';
-  if (isDark && markOnly) {
-    logoSrc = '/logo-dark-mark.png';
-  } else if (isDark) {
-    logoSrc = '/logo-dark-full.png';
-  } else if (markOnly) {
-    logoSrc = '/logo-light-mark.png';
+  const markSrc = isDark ? '/logo-dark-mark.png' : '/logo-light-mark.png';
+
+  if (markOnly) {
+    return (
+      <div className={`licht-logo-container ${className} ${size} mark-only`} style={style}>
+        <img 
+          src={markSrc} 
+          alt="LICHT LUXE NATURALS" 
+          className="licht-logo-mark-img" 
+        />
+      </div>
+    );
   }
 
   return (
-    <div className={`licht-logo-container ${className} ${size}`}>
+    <div 
+      className={`licht-logo-container ${className} ${size} ${isDark ? 'dark-variant' : 'light-variant'}`} 
+      style={style}
+    >
       <img 
-        src={logoSrc} 
-        alt="LICHT LUXE NATURALS" 
-        className="licht-logo-img" 
+        src={markSrc} 
+        alt="" 
+        aria-hidden="true"
+        className="licht-logo-mark-img" 
       />
+      <div className="licht-logo-text-block">
+        <span className="licht-logo-brand-title">LICHT</span>
+        <span className="licht-logo-brand-sub">LUXE NATURALS</span>
+      </div>
     </div>
   );
 };
@@ -240,6 +252,17 @@ const FAQS = [
   }
 ];
 
+// ─── PayPal Sandbox Configuration ──────────────────────────────────
+const PAYPAL_CLIENT_ID = 'BAA7UoSsD_iuAa7LqzZDlY2uAPnO5xkWs2981r89PvhAMxEja5vhX-E1TpiSoVwIajfDyFtLVyNnefvtM';
+const API_BASE = 'http://localhost:8080/api';
+
+const paypalInitialOptions = {
+  'client-id': PAYPAL_CLIENT_ID,
+  currency: 'GBP',
+  intent: 'capture',
+  'disable-funding': 'credit',
+};
+
 function App() {
   // Navigation active tab: 'home' | 'shop' | 'story' | 'gifting' | 'contact' | 'product'
   const [activeTab, setActiveTab] = useState('home');
@@ -273,6 +296,10 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
   const [expandedFaq, setExpandedFaq] = useState(null);
+
+  // PayPal payment state
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [orderConfirmation, setOrderConfirmation] = useState(null);
 
   // Contact Form State
   const [contactForm, setContactForm] = useState({
@@ -365,7 +392,96 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // ─── PayPal Handlers ─────────────────────────────────────────────
+  // Get JWT token from localStorage (set during auth login)
+  const getAuthToken = () => localStorage.getItem('lln_token');
+
+  // Create PayPal order via backend
+  const createPayPalOrder = useCallback(async () => {
+    try {
+      setPaymentProcessing(true);
+      const token = getAuthToken();
+      
+      // If no backend token, create order client-side for demo/testing
+      if (!token) {
+        // Client-side order creation for demo mode
+        return 'DEMO_ORDER';
+      }
+
+      const response = await fetch(`${API_BASE}/paypal/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create PayPal order');
+      }
+
+      const data = await response.json();
+      return data.id; // PayPal order ID
+    } catch (error) {
+      showToast('Error creating order: ' + error.message);
+      setPaymentProcessing(false);
+      throw error;
+    }
+  }, []);
+
+  // Capture PayPal order after buyer approval
+  const capturePayPalOrder = useCallback(async (data) => {
+    try {
+      const token = getAuthToken();
+      
+      // Demo mode — no backend
+      if (!token || data.orderID === 'DEMO_ORDER') {
+        setPaymentProcessing(false);
+        setIsCheckoutOpen(false);
+        setCart([]);
+        setOrderConfirmation({
+          orderNumber: 'LLN-DEMO-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+          total: cartSubtotal.toFixed(2),
+        });
+        showToast('✨ Order placed successfully via PayPal!');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE}/paypal/capture-order/${data.orderID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Payment capture failed');
+      }
+
+      const result = await response.json();
+      
+      setPaymentProcessing(false);
+      setIsCheckoutOpen(false);
+      setCart([]);
+      setOrderConfirmation({
+        orderNumber: result.orderNumber,
+        total: result.totalAmount,
+        paypalOrderId: result.paypalOrderId,
+      });
+      showToast('✨ Payment successful! Order ' + result.orderNumber + ' placed.');
+    } catch (error) {
+      setPaymentProcessing(false);
+      showToast('Payment error: ' + error.message);
+    }
+  }, [cartSubtotal]);
+
   return (
+    <PayPalScriptProvider options={paypalInitialOptions}>
     <div className="app-container">
       {/* Toast Notification */}
       {toastMessage && (
@@ -2181,21 +2297,46 @@ function App() {
                   </div>
                 </div>
 
-                {/* PAYPAL OPTION */}
-                <div 
-                  style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                  onClick={() => {
-                    showToast('Redirecting to PayPal for secure checkout...');
-                    setTimeout(() => {
-                      setIsCheckoutOpen(false);
-                      setCart([]);
-                      showToast('Order completed via PayPal!');
-                    }, 2000);
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid #D6DDD3', display: 'inline-block' }}></div>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '24px' }} />
+                {/* PAYPAL SMART BUTTONS — Sandbox Integration */}
+                <div style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '22px' }} />
+                    <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Fast, secure checkout</span>
+                  </div>
+                  
+                  {paymentProcessing && (
+                    <div style={{ textAlign: 'center', padding: '1rem', color: '#6E5535', fontSize: '0.9rem' }}>
+                      <div style={{ display: 'inline-block', width: '20px', height: '20px', border: '2px solid #E5DFC5', borderTopColor: '#C5A059', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginRight: '0.5rem', verticalAlign: 'middle' }}></div>
+                      Processing your payment securely...
+                    </div>
+                  )}
+                  
+                  <div style={{ opacity: paymentProcessing ? 0.5 : 1, pointerEvents: paymentProcessing ? 'none' : 'auto' }}>
+                    <PayPalButtons
+                      style={{
+                        layout: 'vertical',
+                        color: 'gold',
+                        shape: 'rect',
+                        label: 'pay',
+                        height: 45,
+                        tagline: false,
+                      }}
+                      createOrder={createPayPalOrder}
+                      onApprove={capturePayPalOrder}
+                      onError={(err) => {
+                        setPaymentProcessing(false);
+                        showToast('PayPal encountered an error. Please try again.');
+                        console.error('PayPal Error:', err);
+                      }}
+                      onCancel={() => {
+                        setPaymentProcessing(false);
+                        showToast('Payment cancelled.');
+                      }}
+                    />
+                  </div>
+                  
+                  <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by PayPal
                   </div>
                 </div>
                 
@@ -2325,7 +2466,48 @@ function App() {
           </div>
         </div>
       )}
+      {/* ORDER CONFIRMATION MODAL */}
+      {orderConfirmation && (
+        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setOrderConfirmation(null)}>
+          <div className="modal-card" style={{ maxWidth: '500px', width: '95%', padding: '3rem 2.5rem', borderRadius: '8px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 60px rgba(45,58,41,0.12)', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ width: '70px', height: '70px', borderRadius: '50%', backgroundColor: '#2D3A29', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+                <Check size={32} color="#DFCAA7" />
+              </div>
+              <h2 className="font-serif" style={{ fontSize: '1.8rem', color: '#2D3A29', marginBottom: '0.5rem', fontWeight: 400 }}>Thank You!</h2>
+              <p style={{ color: '#5C635B', fontSize: '0.95rem', lineHeight: 1.6 }}>Your payment has been processed successfully.<br/>Your order is now being prepared with love.</p>
+            </div>
+            
+            <div style={{ backgroundColor: '#F5F2EC', borderRadius: '8px', padding: '1.25rem', marginBottom: '1.5rem', textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Order Number</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2D3A29', letterSpacing: '0.05em' }}>{orderConfirmation.orderNumber}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Total Paid</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2D3A29' }}>£{orderConfirmation.total}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Payment Method</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#003087' }}>PayPal ✓</span>
+              </div>
+            </div>
+            
+            <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', fontSize: '0.8rem', color: '#5C635B', marginBottom: '1.5rem' }}>
+              A confirmation email will be sent to your registered email address.
+            </div>
+            
+            <button
+              onClick={() => { setOrderConfirmation(null); navigateToTab('shop'); }}
+              style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+    </PayPalScriptProvider>
   );
 }
 
