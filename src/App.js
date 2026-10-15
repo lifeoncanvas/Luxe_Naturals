@@ -1286,7 +1286,7 @@ function App() {
                       <div style={{ backgroundColor: '#EAF0E8', padding: '0.75rem', borderRadius: '50%', color: '#4A5D4E' }}><Mail size={20} /></div>
                       <div>
                         <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6E5535', fontWeight: 600 }}>EMAIL</div>
-                        <a href="mailto:info@lichtluxenaturals.com" style={{ fontSize: '1.05rem', fontWeight: 600, color: '#2D3A29', textDecoration: 'none' }}>info@lichtluxenaturals.com</a>
+                        <a href="mailto:info@lichtluxenaturals.org" style={{ fontSize: '1.05rem', fontWeight: 600, color: '#2D3A29', textDecoration: 'none' }}>info@lichtluxenaturals.org</a>
                       </div>
                     </div>
 
