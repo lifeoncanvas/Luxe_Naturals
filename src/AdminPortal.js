@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import './AdminPortal.css';
 
-const API_BASE = process.env.REACT_APP_API_BASE || (window.location.hostname === 'localhost' ? 'http://localhost:8080/api' : '/api');
+const API_BASE = process.env.REACT_APP_API_BASE || (window.location.hostname === 'localhost' ? 'http://localhost:9090/api' : '/api');
 
 // Initial Mock Inventory if not already passed
 export const DEFAULT_INVENTORY = [

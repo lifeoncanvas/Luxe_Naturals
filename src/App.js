@@ -388,7 +388,7 @@ const FAQS = [
 // ─── PayPal Sandbox Configuration ──────────────────────────────────
 // Uses REACT_APP_PAYPAL_CLIENT_ID environment variable or official sandbox test client-id
 const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || 'test';
-const API_BASE = process.env.REACT_APP_API_BASE || (window.location.hostname === 'localhost' ? 'http://localhost:8080/api' : '/api');
+const API_BASE = process.env.REACT_APP_API_BASE || (window.location.hostname === 'localhost' ? 'http://localhost:9090/api' : '/api');
 
 const paypalInitialOptions = {
   'client-id': PAYPAL_CLIENT_ID,
