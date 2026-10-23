@@ -288,6 +288,15 @@ function App() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState('address'); // 'address' | 'payment'
+  const [shippingAddress, setShippingAddress] = useState({
+    shippingName: '',
+    shippingPhone: '',
+    shippingAddress: '',
+    shippingCity: '',
+    shippingPostcode: '',
+    orderNotes: ''
+  });
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
   const [authExpandedOption, setAuthExpandedOption] = useState(null); // 'email' | 'phone' | null
@@ -413,6 +422,20 @@ function App() {
     ]);
     setActiveTab('product');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Open Checkout with auto pre-fill
+  const openCheckout = () => {
+    setIsCartOpen(false);
+    setCheckoutStep('address');
+    if (currentUser) {
+      setShippingAddress(prev => ({
+        ...prev,
+        shippingName: prev.shippingName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim(),
+        shippingPhone: prev.shippingPhone || currentUser.phone || ''
+      }));
+    }
+    setIsCheckoutOpen(true);
   };
 
   // ─── Authentication & Password Recovery Handlers ─────────────────
@@ -654,6 +677,7 @@ function App() {
         },
         body: JSON.stringify({
           amount: cartSubtotal.toFixed(2),
+          shippingInfo: shippingAddress,
           items: cart.map(item => ({
             id: item.id,
             name: item.name,
@@ -690,6 +714,7 @@ function App() {
         setOrderConfirmation({
           orderNumber: 'LLN-DEMO-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
           total: cartSubtotal.toFixed(2),
+          shipping: shippingAddress
         });
         showToast('✨ Order placed successfully via PayPal!');
         return;
@@ -703,6 +728,7 @@ function App() {
         },
         body: JSON.stringify({
           amount: cartSubtotal.toFixed(2),
+          shippingInfo: shippingAddress,
           items: cart.map(item => ({
             id: item.id,
             name: item.name,
@@ -726,13 +752,14 @@ function App() {
         orderNumber: result.orderNumber,
         total: result.totalAmount,
         paypalOrderId: result.paypalOrderId,
+        shipping: shippingAddress
       });
       showToast('✨ Payment successful! Order ' + result.orderNumber + ' placed.');
     } catch (error) {
       setPaymentProcessing(false);
       showToast('Payment error: ' + error.message);
     }
-  }, [cart, cartSubtotal]);
+  }, [cart, cartSubtotal, shippingAddress]);
 
   return (
     <PayPalScriptProvider options={paypalInitialOptions}>
@@ -2368,7 +2395,7 @@ function App() {
                   <span>Subtotal</span>
                   <span style={{ fontWeight: 700, color: '#2D3A29' }}>£{cartSubtotal.toFixed(2)}</span>
                 </div>
-                <button className="btn-primary checkout-btn" onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }} style={{ width: '100%', justifyContent: 'center' }}>
+                <button className="btn-primary checkout-btn" onClick={openCheckout} style={{ width: '100%', justifyContent: 'center' }}>
                   Proceed to Checkout · £{cartSubtotal.toFixed(2)}
                 </button>
                 <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.8rem', color: '#5C635B' }}>
@@ -2428,13 +2455,13 @@ function App() {
         </div>
       )}
 
-      {/* SECURE CHECKOUT MODAL (STRIPE & PAYPAL) */}
+      {/* SECURE CHECKOUT MODAL (2-STEP: DELIVERY ADDRESS & PAYMENT) */}
       {isCheckoutOpen && (
         <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setIsCheckoutOpen(false)}>
-          <div className="modal-card checkout-modal" style={{ maxWidth: '850px', width: '95%', maxHeight: '90vh', padding: '0', display: 'flex', flexDirection: 'row', overflow: 'hidden', borderRadius: '8px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-card checkout-modal" style={{ maxWidth: '880px', width: '95%', maxHeight: '92vh', padding: '0', display: 'flex', flexDirection: 'row', overflow: 'hidden', borderRadius: '8px', boxShadow: '0 25px 60px rgba(45,58,41,0.18)' }} onClick={(e) => e.stopPropagation()}>
             
             {/* Left Side: Order Summary */}
-            <div style={{ backgroundColor: '#FDFCF9', padding: '2rem', width: '45%', borderRight: '1px solid #E5DFC5', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ backgroundColor: '#FDFCF9', padding: '2rem', width: '42%', borderRight: '1px solid #E5DFC5', display: 'flex', flexDirection: 'column' }}>
               <div style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
                 Order Summary
               </div>
@@ -2442,7 +2469,7 @@ function App() {
               <div style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '1.5rem', paddingRight: '0.5rem' }}>
                 {cart.map(item => (
                   <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #E5DFC5' }}>
+                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #E5DFC5', flexShrink: 0 }}>
                       <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <span style={{ position: 'absolute', top: '-5px', right: '-5px', backgroundColor: '#2D3A29', color: '#FFF', fontSize: '0.65rem', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
                         {item.quantity}
@@ -2464,148 +2491,336 @@ function App() {
                   <span>Subtotal</span>
                   <span>£{cartSubtotal.toFixed(2)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: '0.85rem', color: '#5C635B' }}>
-                  <span>Shipping</span>
-                  <span>{amountForFreeShipping > 0 ? 'Calculated at next step' : 'Complimentary'}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
+                  <span>UK Delivery</span>
+                  <span style={{ color: '#2D3A29', fontWeight: 600 }}>Complimentary (Free)</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', color: '#2D3A29', fontWeight: 700 }}>
+                {shippingAddress.shippingCity && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#6E5535' }}>
+                    <span>Destination</span>
+                    <span>{shippingAddress.shippingCity}, UK</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', color: '#2D3A29', fontWeight: 700, borderTop: '1px solid #ECE7D8', paddingTop: '0.75rem' }}>
                   <span>Total</span>
                   <span>£{cartSubtotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Right Side: Payment Options (UK) */}
-            <div style={{ backgroundColor: '#FFFFFF', padding: '2rem', width: '55%', position: 'relative', overflowY: 'auto' }}>
+            {/* Right Side: Two-Step Checkout (Address & Payment) */}
+            <div style={{ backgroundColor: '#FFFFFF', padding: '2rem 2.25rem', width: '58%', position: 'relative', overflowY: 'auto' }}>
               <button className="close-modal-btn" onClick={() => setIsCheckoutOpen(false)} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem' }}>
                 <X size={20} />
               </button>
               
-              <div style={{ textAlign: 'center', marginBottom: '2rem', marginTop: '1rem' }}>
-                <LichtLogo size="header" color="#2D3A29" markOnly={true} style={{ margin: '0 auto', marginBottom: '0.75rem' }} />
-                <h2 className="font-serif" style={{ fontSize: '1.8rem', color: '#2D3A29', marginBottom: '0.25rem', fontWeight: 400 }}>Secure Checkout</h2>
-                <p style={{ color: '#5C635B', fontSize: '0.85rem' }}>Choose your preferred payment method.</p>
-              </div>
-
-              {/* Express Checkout Options (Apple/Google Pay mock) */}
-              <div style={{ marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                  <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
-                  <span style={{ fontSize: '0.75rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Express Checkout</span>
-                  <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
-                </div>
-                
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                  <button style={{ flex: 1, backgroundColor: '#000', color: '#FFF', border: 'none', padding: '0.85rem', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 500 }}>
-                    <svg viewBox="0 0 384 512" width="16" height="16" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg> Pay
-                  </button>
-                  <button style={{ flex: 1, backgroundColor: '#FFF', color: '#3C4043', border: '1px solid #DADCE0', padding: '0.85rem', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 500, boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)' }}>
-                    <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M23.64 12.2045C23.64 11.3523 23.5636 10.5341 23.4218 9.75H12V14.3886H18.5236C18.24 15.8886 17.3891 17.1545 16.1236 17.9977V20.9705H20.0455C22.3364 18.8614 23.64 15.8182 23.64 12.2045Z"/><path fill="#34A853" d="M12 24C15.2727 24 18.0218 22.92 20.0455 20.9705L16.1236 17.9977C15.0327 18.7364 13.6364 19.1727 12 19.1727C8.83636 19.1727 6.15273 17.0364 5.18182 14.1705H1.13455V17.3073C3.14182 21.2891 7.23273 24 12 24Z"/><path fill="#FBBC05" d="M5.18182 14.1705C4.93091 13.425 4.78909 12.6341 4.78909 11.8227C4.78909 11.0114 4.93091 10.2205 5.18182 9.475V6.33818H1.13455C0.414545 7.76727 0 9.38182 0 11.8227C0 14.2636 0.414545 15.8782 1.13455 17.3073L5.18182 14.1705Z"/><path fill="#EA4335" d="M12 4.47273C13.7782 4.47273 15.3709 5.08364 16.6255 6.27818L20.1327 2.77091C18.0109 0.796364 15.2618 0 12 0C7.23273 0 3.14182 2.71091 1.13455 6.33818L5.18182 9.475C6.15273 6.60909 8.83636 4.47273 12 4.47273Z"/></svg> Pay
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
-                <span style={{ fontSize: '0.75rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Or pay with</span>
-                <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
-              </div>
-
-              {/* Payment Methods (UK focused) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                
-                {/* STRIPE CARD OPTION */}
-                <div style={{ border: '1.5px solid #2D3A29', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#F9FBF8', cursor: 'pointer', position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.4rem' }}>
-                    <div style={{ backgroundColor: '#1A1F71', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>VISA</div>
-                    <div style={{ backgroundColor: '#EB001B', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>MC</div>
-                    <div style={{ backgroundColor: '#006FCF', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>AMEX</div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '6px solid #2D3A29', display: 'inline-block' }}></div>
-                    <span style={{ fontWeight: 600, color: '#2D3A29', fontSize: '1.1rem' }}>Credit / Debit Card</span>
-                  </div>
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <input type="text" placeholder="Card number" style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                      <input type="text" placeholder="MM / YY" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
-                      <input type="text" placeholder="CVC" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
-                    </div>
-                    <input type="text" placeholder="Name on card" style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
-                  </div>
-                  
-                  <button 
-                    style={{ width: '100%', padding: '1.15rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', marginTop: '1.5rem', fontSize: '1.05rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-                    onClick={() => {
-                      showToast('Payment successful! Order placed securely via Stripe.');
-                      setIsCheckoutOpen(false);
-                      setCart([]);
-                    }}
-                  >
-                    Pay £{cartSubtotal.toFixed(2)} Securely <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                  </button>
-                  <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by Stripe
-                  </div>
-                </div>
-
-                {/* PAYPAL SMART BUTTONS — Sandbox Integration */}
-                <div style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '22px' }} />
-                    <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Fast, secure checkout</span>
-                  </div>
-                  
-                  {paymentProcessing && (
-                    <div style={{ textAlign: 'center', padding: '1rem', color: '#6E5535', fontSize: '0.9rem' }}>
-                      <div style={{ display: 'inline-block', width: '20px', height: '20px', border: '2px solid #E5DFC5', borderTopColor: '#C5A059', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginRight: '0.5rem', verticalAlign: 'middle' }}></div>
-                      Processing your payment securely...
-                    </div>
-                  )}
-                  
-                  <div style={{ opacity: paymentProcessing ? 0.5 : 1, pointerEvents: paymentProcessing ? 'none' : 'auto' }}>
-                    <PayPalButtons
-                      style={{
-                        layout: 'vertical',
-                        color: 'gold',
-                        shape: 'rect',
-                        label: 'pay',
-                        height: 45,
-                        tagline: false,
-                      }}
-                      createOrder={createPayPalOrder}
-                      onApprove={capturePayPalOrder}
-                      onError={(err) => {
-                        setPaymentProcessing(false);
-                        showToast('PayPal encountered an error. Please try again.');
-                        console.error('PayPal Error:', err);
-                      }}
-                      onCancel={() => {
-                        setPaymentProcessing(false);
-                        showToast('Payment cancelled.');
-                      }}
-                    />
-                  </div>
-                  
-                  <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by PayPal
-                  </div>
-                </div>
-                
-                {/* KLARNA OPTION (Popular in UK) */}
-                <div 
-                  style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              {/* Checkout Progress Stepper */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.85rem', marginBottom: '1.75rem', marginTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setCheckoutStep('address')}
+                  style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: checkoutStep === 'address' ? '#2D3A29' : '#C5A059', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid #D6DDD3', display: 'inline-block' }}></div>
-                    <span style={{ fontWeight: 600, color: '#FFB3C7', backgroundColor: '#0A0A0A', padding: '0.2rem 0.6rem', borderRadius: '15px', fontSize: '0.9rem' }}>Klarna.</span>
-                    <span style={{ fontSize: '0.9rem', color: '#5C635B' }}>Pay in 3 interest-free instalments</span>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: checkoutStep === 'address' ? '#2D3A29' : '#C5A059', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>1</span>
+                  <span>Delivery Address</span>
+                </button>
+                <div style={{ width: '32px', height: '2px', backgroundColor: '#E5DFC5' }} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (shippingAddress.shippingName && shippingAddress.shippingAddress && shippingAddress.shippingCity && shippingAddress.shippingPostcode) {
+                      setCheckoutStep('payment');
+                    } else {
+                      showToast('Please enter your delivery address first');
+                    }
+                  }}
+                  style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: checkoutStep === 'payment' ? '#2D3A29' : '#9CA3AF', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}
+                >
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: checkoutStep === 'payment' ? '#2D3A29' : '#E5DFC5', color: checkoutStep === 'payment' ? '#FFF' : '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>2</span>
+                  <span>Payment</span>
+                </button>
+              </div>
+
+              {/* ─── STEP 1: DELIVERY ADDRESS ─── */}
+              {checkoutStep === 'address' && (
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                    <h2 className="font-serif" style={{ fontSize: '1.7rem', color: '#2D3A29', margin: '0 0 0.35rem 0', fontWeight: 400 }}>Where should we deliver?</h2>
+                    <p style={{ color: '#5C635B', fontSize: '0.85rem', margin: 0 }}>Provide your delivery details so we can dispatch your pure natural essentials.</p>
+                  </div>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!shippingAddress.shippingName.trim() || !shippingAddress.shippingAddress.trim() || !shippingAddress.shippingCity.trim() || !shippingAddress.shippingPostcode.trim()) {
+                      showToast('Please fill in all required delivery fields.');
+                      return;
+                    }
+                    setCheckoutStep('payment');
+                  }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                        Full Name *
+                      </label>
+                      <input 
+                        type="text" 
+                        required 
+                        placeholder="e.g. Eleanor Vance" 
+                        value={shippingAddress.shippingName}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingName: e.target.value }))}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                          Contact Phone *
+                        </label>
+                        <input 
+                          type="tel" 
+                          required 
+                          placeholder="e.g. 07831082965" 
+                          value={shippingAddress.shippingPhone}
+                          onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingPhone: e.target.value }))}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                          Postcode / ZIP *
+                        </label>
+                        <input 
+                          type="text" 
+                          required 
+                          placeholder="e.g. W8 4PT" 
+                          value={shippingAddress.shippingPostcode}
+                          onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingPostcode: e.target.value.toUpperCase() }))}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                        Street Address *
+                      </label>
+                      <input 
+                        type="text" 
+                        required 
+                        placeholder="House number, Street name, Flat or Suite" 
+                        value={shippingAddress.shippingAddress}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingAddress: e.target.value }))}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                        Town / City *
+                      </label>
+                      <input 
+                        type="text" 
+                        required 
+                        placeholder="e.g. London" 
+                        value={shippingAddress.shippingCity}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingCity: e.target.value }))}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                        Order / Delivery Notes (Optional)
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Leave in safe place or porch if not in" 
+                        value={shippingAddress.orderNotes}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, orderNotes: e.target.value }))}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                      />
+                    </div>
+
+                    <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '0.85rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                      <Sparkles size={18} color="#C5A059" style={{ flexShrink: 0 }} />
+                      <span style={{ fontSize: '0.8rem', color: '#2D3A29', lineHeight: 1.4 }}>
+                        <strong>Complimentary UK Standard Delivery</strong> — Carefully packaged with eco-friendly natural materials.
+                      </span>
+                    </div>
+
+                    <button 
+                      type="submit"
+                      style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', fontSize: '1rem', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'background-color 0.2s ease' }}
+                    >
+                      Continue to Payment →
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* ─── STEP 2: PAYMENT METHOD ─── */}
+              {checkoutStep === 'payment' && (
+                <div>
+                  {/* Address Summary Badge with Edit link */}
+                  <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '6px', padding: '0.85rem 1rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '0.825rem', color: '#2D3A29', maxWidth: '80%' }}>
+                      <div style={{ color: '#6E5535', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.15rem' }}>Deliver to:</div>
+                      <strong>{shippingAddress.shippingName}</strong> — {shippingAddress.shippingAddress}, {shippingAddress.shippingCity} ({shippingAddress.shippingPostcode})
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setCheckoutStep('address')}
+                      style={{ background: 'none', border: 'none', color: '#C5A059', fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                    >
+                      Edit
+                    </button>
+                  </div>
+
+                  <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                    <h2 className="font-serif" style={{ fontSize: '1.7rem', color: '#2D3A29', marginBottom: '0.25rem', fontWeight: 400 }}>Payment Method</h2>
+                    <p style={{ color: '#5C635B', fontSize: '0.85rem', margin: 0 }}>Select your preferred secure payment method.</p>
+                  </div>
+
+                  {/* Express Checkout Options (Apple/Google Pay mock) */}
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.85rem' }}>
+                      <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                      <span style={{ fontSize: '0.72rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Express Checkout</span>
+                      <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button 
+                        onClick={() => {
+                          setOrderConfirmation({
+                            orderNumber: 'LLN-APPLE-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                            total: cartSubtotal.toFixed(2),
+                            method: 'Apple Pay',
+                            shipping: shippingAddress
+                          });
+                          setIsCheckoutOpen(false);
+                          setCart([]);
+                          showToast('Payment successful! Order placed via Apple Pay.');
+                        }}
+                        style={{ flex: 1, backgroundColor: '#000', color: '#FFF', border: 'none', padding: '0.85rem', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1.05rem', fontWeight: 500 }}
+                      >
+                        <svg viewBox="0 0 384 512" width="16" height="16" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg> Pay
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setOrderConfirmation({
+                            orderNumber: 'LLN-GPAY-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                            total: cartSubtotal.toFixed(2),
+                            method: 'Google Pay',
+                            shipping: shippingAddress
+                          });
+                          setIsCheckoutOpen(false);
+                          setCart([]);
+                          showToast('Payment successful! Order placed via Google Pay.');
+                        }}
+                        style={{ flex: 1, backgroundColor: '#FFF', color: '#3C4043', border: '1px solid #DADCE0', padding: '0.85rem', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1.05rem', fontWeight: 500, boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3)' }}
+                      >
+                        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M23.64 12.2045C23.64 11.3523 23.5636 10.5341 23.4218 9.75H12V14.3886H18.5236C18.24 15.8886 17.3891 17.1545 16.1236 17.9977V20.9705H20.0455C22.3364 18.8614 23.64 15.8182 23.64 12.2045Z"/><path fill="#34A853" d="M12 24C15.2727 24 18.0218 22.92 20.0455 20.9705L16.1236 17.9977C15.0327 18.7364 13.6364 19.1727 12 19.1727C8.83636 19.1727 6.15273 17.0364 5.18182 14.1705H1.13455V17.3073C3.14182 21.2891 7.23273 24 12 24Z"/><path fill="#FBBC05" d="M5.18182 14.1705C4.93091 13.425 4.78909 12.6341 4.78909 11.8227C4.78909 11.0114 4.93091 10.2205 5.18182 9.475V6.33818H1.13455C0.414545 7.76727 0 9.38182 0 11.8227C0 14.2636 0.414545 15.8782 1.13455 17.3073L5.18182 14.1705Z"/><path fill="#EA4335" d="M12 4.47273C13.7782 4.47273 15.3709 5.08364 16.6255 6.27818L20.1327 2.77091C18.0109 0.796364 15.2618 0 12 0C7.23273 0 3.14182 2.71091 1.13455 6.33818L5.18182 9.475C6.15273 6.60909 8.83636 4.47273 12 4.47273Z"/></svg> Pay
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                    <span style={{ fontSize: '0.72rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Or pay with</span>
+                    <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                  </div>
+
+                  {/* Payment Methods */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    
+                    {/* STRIPE CARD OPTION */}
+                    <div style={{ border: '1.5px solid #2D3A29', borderRadius: '8px', padding: '1.25rem 1.5rem', backgroundColor: '#F9FBF8', position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.4rem' }}>
+                        <div style={{ backgroundColor: '#1A1F71', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>VISA</div>
+                        <div style={{ backgroundColor: '#EB001B', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>MC</div>
+                        <div style={{ backgroundColor: '#006FCF', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>AMEX</div>
+                      </div>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: '5px solid #2D3A29', display: 'inline-block' }}></div>
+                        <span style={{ fontWeight: 600, color: '#2D3A29', fontSize: '1.05rem' }}>Credit / Debit Card</span>
+                      </div>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                        <input type="text" placeholder="Card number" style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                          <input type="text" placeholder="MM / YY" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
+                          <input type="text" placeholder="CVC" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
+                        </div>
+                        <input type="text" placeholder="Name on card" defaultValue={shippingAddress.shippingName} style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
+                      </div>
+                      
+                      <button 
+                        style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', marginTop: '1.25rem', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                        onClick={() => {
+                          setOrderConfirmation({
+                            orderNumber: 'LLN-CARD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                            total: cartSubtotal.toFixed(2),
+                            method: 'Credit / Debit Card',
+                            shipping: shippingAddress
+                          });
+                          setIsCheckoutOpen(false);
+                          setCart([]);
+                          showToast('✨ Payment successful! Order confirmation dispatched.');
+                        }}
+                      >
+                        Pay £{cartSubtotal.toFixed(2)} Securely <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                      </button>
+                      <div style={{ textAlign: 'center', marginTop: '0.65rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by Stripe
+                      </div>
+                    </div>
+
+                    {/* PAYPAL SMART BUTTONS */}
+                    <div style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.25rem 1.5rem', backgroundColor: '#FFFFFF' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '20px' }} />
+                        <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Fast, secure PayPal checkout</span>
+                      </div>
+                      
+                      {paymentProcessing && (
+                        <div style={{ textAlign: 'center', padding: '1rem', color: '#6E5535', fontSize: '0.9rem' }}>
+                          <div style={{ display: 'inline-block', width: '20px', height: '20px', border: '2px solid #E5DFC5', borderTopColor: '#C5A059', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginRight: '0.5rem', verticalAlign: 'middle' }}></div>
+                          Processing your payment securely...
+                        </div>
+                      )}
+                      
+                      <div style={{ opacity: paymentProcessing ? 0.5 : 1, pointerEvents: paymentProcessing ? 'none' : 'auto' }}>
+                        <PayPalButtons
+                          style={{
+                            layout: 'vertical',
+                            color: 'gold',
+                            shape: 'rect',
+                            label: 'pay',
+                            height: 45,
+                            tagline: false,
+                          }}
+                          createOrder={createPayPalOrder}
+                          onApprove={capturePayPalOrder}
+                          onError={(err) => {
+                            setPaymentProcessing(false);
+                            showToast('PayPal encountered an error. Please try again.');
+                            console.error('PayPal Error:', err);
+                          }}
+                          onCancel={() => {
+                            setPaymentProcessing(false);
+                            showToast('Payment cancelled.');
+                          }}
+                        />
+                      </div>
+                    </div>
+
                   </div>
                 </div>
+              )}
 
-              </div>
             </div>
           </div>
         </div>
