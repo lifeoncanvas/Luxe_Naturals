@@ -699,7 +699,7 @@ function App() {
       setPaymentProcessing(false);
       throw error;
     }
-  }, [cart, cartSubtotal]);
+  }, [cart, cartSubtotal, shippingAddress]);
 
   // Capture PayPal order after buyer approval
   const capturePayPalOrder = useCallback(async (data) => {
