@@ -128,162 +128,12 @@ export const DEFAULT_INVENTORY = [
   }
 ];
 
-// Initial Mock Orders
-export const DEFAULT_ORDERS = [
-  {
-    id: 'LN-1082',
-    date: '15 Oct 2026, 12:20 PM',
-    customer: {
-      name: 'Sophia Montgomery',
-      email: 'sophia.m@example.co.uk',
-      phone: '+44 7911 123456',
-      address: '24 Kensington Church Street, London W8 4EP, UK'
-    },
-    items: [
-      { name: 'African Black Liquid Soap (500 ml)', qty: 2, price: 24.00 }
-    ],
-    total: 48.00,
-    paymentMethod: 'Stripe (Card)',
-    paymentStatus: 'Paid',
-    deliveryStatus: 'Dispatched',
-    courier: 'Royal Mail Tracked 24',
-    trackingNumber: 'RM983421102GB',
-    source: 'Online Storefront',
-    notes: 'Please leave in porch if recipient is not available.'
-  },
-  {
-    id: 'LN-1081',
-    date: '15 Oct 2026, 11:05 AM',
-    customer: {
-      name: 'David Adeleke',
-      email: 'david.ade@loveworldmail.org',
-      phone: '+44 7831 098765',
-      address: '14 Deansgate Towers, Manchester M3 4EN, UK'
-    },
-    items: [
-      { name: 'African Black Soap 300g Jar', qty: 1, price: 22.00 },
-      { name: 'Pure Shea Butter (250 ml)', qty: 1, price: 24.00 }
-    ],
-    total: 46.00,
-    paymentMethod: 'Debit Card',
-    paymentStatus: 'Paid',
-    deliveryStatus: 'Processing',
-    courier: 'DPD Next Day',
-    trackingNumber: 'DPD-7782103',
-    source: 'Online Storefront',
-    notes: 'Gift order - please include luxury handwritten card.'
-  },
-  {
-    id: 'LN-1080',
-    date: '14 Oct 2026, 04:45 PM',
-    customer: {
-      name: 'Amara Okoye',
-      email: 'amara.okoye@gmail.com',
-      phone: '+44 7700 900342',
-      address: '88 Colmore Row, Birmingham B3 2BB, UK'
-    },
-    items: [
-      { name: 'The Luxe Trio Gift Set', qty: 1, price: 68.00 }
-    ],
-    total: 68.00,
-    paymentMethod: 'PayPal',
-    paymentStatus: 'Paid',
-    deliveryStatus: 'Delivered',
-    courier: 'Royal Mail Tracked 48',
-    trackingNumber: 'RM912048590GB',
-    source: 'Online Storefront',
-    notes: 'Delivered to recipient safe space.'
-  },
-  {
-    id: 'LN-1079',
-    date: '14 Oct 2026, 01:15 PM',
-    customer: {
-      name: 'Marcus Sterling',
-      email: 'm.sterling@capital.com',
-      phone: '+44 7831 082965',
-      address: '12 George Street, Edinburgh EH2 2PF, UK'
-    },
-    items: [
-      { name: 'Pure Coconut Oil (200 ml)', qty: 2, price: 22.00 },
-      { name: 'Luxe Body Butter (250g)', qty: 1, price: 28.00 }
-    ],
-    total: 72.00,
-    paymentMethod: 'Phone Order / BACS',
-    paymentStatus: 'Paid',
-    deliveryStatus: 'Delivered',
-    courier: 'DHL Express',
-    trackingNumber: 'DHL-49201948',
-    source: 'Phone Order (07831082965)',
-    notes: 'Phone inquiry converted to direct customer.'
-  },
-  {
-    id: 'LN-1078',
-    date: '14 Oct 2026, 10:30 AM',
-    customer: {
-      name: 'Chloe Bennett',
-      email: 'chloe.b@outlook.com',
-      phone: '+44 7954 883921',
-      address: '5 The Headrow, Leeds LS1 6PU, UK'
-    },
-    items: [
-      { name: 'African Black Liquid Soap (500 ml)', qty: 1, price: 24.00 }
-    ],
-    total: 24.00,
-    paymentMethod: 'Credit Card',
-    paymentStatus: 'Paid',
-    deliveryStatus: 'Pending',
-    courier: 'Royal Mail Tracked 24',
-    trackingNumber: 'Pending Generation',
-    source: 'Online Storefront',
-    notes: 'Customer requested evening delivery.'
-  },
-  {
-    id: 'LN-1077',
-    date: '13 Oct 2026, 06:12 PM',
-    customer: {
-      name: 'Beatrice Vance',
-      email: 'bvance@fashionhub.co.uk',
-      phone: '+44 7712 349012',
-      address: '77 Sloane Avenue, Chelsea, London SW3 3DH, UK'
-    },
-    items: [
-      { name: 'Pure Shea Butter (250 ml)', qty: 3, price: 24.00 }
-    ],
-    total: 72.00,
-    paymentMethod: 'Apple Pay',
-    paymentStatus: 'Paid',
-    deliveryStatus: 'Delivered',
-    courier: 'Royal Mail Tracked 24',
-    trackingNumber: 'RM839201944GB',
-    source: 'Online Storefront',
-    notes: 'Repeat client.'
-  },
-  {
-    id: 'LN-1076',
-    date: '13 Oct 2026, 02:40 PM',
-    customer: {
-      name: 'Tariq Al-Mansoor',
-      email: 'tariq.mansoor@almansoor.ae',
-      phone: '+971 50 123 4567',
-      address: 'Villa 14, Palm Jumeirah, Dubai, UAE'
-    },
-    items: [
-      { name: 'The Luxe Trio Gift Set', qty: 2, price: 68.00 }
-    ],
-    total: 136.00,
-    paymentMethod: 'International Card',
-    paymentStatus: 'Paid',
-    deliveryStatus: 'Dispatched',
-    courier: 'DHL Worldwide Express',
-    trackingNumber: 'DHL-90218491',
-    source: 'International Online Store',
-    notes: 'Air freight customs documents attached.'
-  }
-];
+// Initial Orders (Clean real data - empty until customer places an order)
+export const DEFAULT_ORDERS = [];
 
 export default function AdminPortal({ 
   currentUser,
-  orders = DEFAULT_ORDERS, 
+  orders = [], 
   setOrders, 
   inventory = DEFAULT_INVENTORY, 
   setInventory, 
@@ -414,6 +264,8 @@ export default function AdminPortal({
             };
           });
           setOrders(deduplicateOrders(mappedOrders));
+        } else {
+          setOrders([]);
         }
       }
 
@@ -974,7 +826,7 @@ export default function AdminPortal({
                   </div>
                   <div className="admin-metric-value">{totalOrdersCount}</div>
                   <div className="admin-metric-trend">
-                    <CheckCircle2 size={13} /> {deliveredOrdersCount} completed ({Math.round((deliveredOrdersCount/totalOrdersCount)*100)}%)
+                    <CheckCircle2 size={13} /> {deliveredOrdersCount} completed ({totalOrdersCount > 0 ? Math.round((deliveredOrdersCount/totalOrdersCount)*100) : 0}%)
                   </div>
                 </div>
 
@@ -1038,29 +890,39 @@ export default function AdminPortal({
                         </tr>
                       </thead>
                       <tbody>
-                        {orders.slice(0, 5).map(ord => (
-                          <tr key={ord.id}>
-                            <td style={{ fontWeight: 700, color: '#C5A059' }}>{ord.id}</td>
-                            <td>
-                              <div style={{ fontWeight: 600, color: '#FAF7F2' }}>{ord.customer.name}</div>
-                              <div style={{ fontSize: '0.72rem', color: '#A0A89F' }}>{ord.customer.phone}</div>
-                            </td>
-                            <td style={{ fontWeight: 700, color: '#FAF7F2' }}>£{ord.total.toFixed(2)}</td>
-                            <td>
-                              <span className={`status-badge ${ord.deliveryStatus.toLowerCase()}`}>
-                                {ord.deliveryStatus}
-                              </span>
-                            </td>
-                            <td>
-                              <button 
-                                className="admin-btn admin-btn-secondary admin-btn-sm"
-                                onClick={() => setSelectedOrder(ord)}
-                              >
-                                <Eye size={12} /> View
-                              </button>
+                        {orders.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#A0A89F' }}>
+                              <Package size={26} style={{ opacity: 0.4, margin: '0 auto 0.5rem auto', display: 'block' }} />
+                              <div style={{ color: '#FAF7F2', fontWeight: 600, fontSize: '0.85rem' }}>No Orders Placed Yet</div>
+                              <div style={{ fontSize: '0.72rem', color: '#8A9488', marginTop: '0.2rem' }}>Real storefront customer orders will appear here automatically.</div>
                             </td>
                           </tr>
-                        ))}
+                        ) : (
+                          orders.slice(0, 5).map(ord => (
+                            <tr key={ord.id}>
+                              <td style={{ fontWeight: 700, color: '#C5A059' }}>{ord.id}</td>
+                              <td>
+                                <div style={{ fontWeight: 600, color: '#FAF7F2' }}>{ord.customer.name}</div>
+                                <div style={{ fontSize: '0.72rem', color: '#A0A89F' }}>{ord.customer.phone}</div>
+                              </td>
+                              <td style={{ fontWeight: 700, color: '#FAF7F2' }}>£{ord.total.toFixed(2)}</td>
+                              <td>
+                                <span className={`status-badge ${ord.deliveryStatus.toLowerCase()}`}>
+                                  {ord.deliveryStatus}
+                                </span>
+                              </td>
+                              <td>
+                                <button 
+                                  className="admin-btn admin-btn-secondary admin-btn-sm"
+                                  onClick={() => setSelectedOrder(ord)}
+                                >
+                                  <Eye size={12} /> View
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -1189,8 +1051,16 @@ export default function AdminPortal({
                     <tbody>
                       {filteredOrders.length === 0 ? (
                         <tr>
-                          <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: '#A0A89F' }}>
-                            No orders found matching criteria.
+                          <td colSpan={8} style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#A0A89F' }}>
+                            <Package size={34} style={{ opacity: 0.4, margin: '0 auto 0.75rem auto', display: 'block' }} />
+                            <div style={{ color: '#FAF7F2', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                              {orders.length === 0 ? 'No Customer Orders Placed Yet' : 'No Orders Matching Filter'}
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: '#8A9488', maxWidth: '380px', margin: '0 auto', lineHeight: 1.5 }}>
+                              {orders.length === 0 
+                                ? 'Real customer orders placed on the storefront or via phone order will appear here live.'
+                                : 'Try clearing your search query or switching the status filter.'}
+                            </div>
                           </td>
                         </tr>
                       ) : (
@@ -1457,8 +1327,21 @@ export default function AdminPortal({
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map(ord => (
-                        <tr key={ord.id}>
+                      {orders.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#A0A89F' }}>
+                            <Truck size={34} style={{ opacity: 0.4, margin: '0 auto 0.75rem auto', display: 'block' }} />
+                            <div style={{ color: '#FAF7F2', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                              No Delivery Dispatches Scheduled
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: '#8A9488', maxWidth: '380px', margin: '0 auto', lineHeight: 1.5 }}>
+                              Orders requiring shipping labels and carrier tracking will appear here automatically when orders are placed.
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        orders.map(ord => (
+                          <tr key={ord.id}>
                           <td style={{ fontWeight: 700, color: '#C5A059' }}>{ord.id}</td>
                           <td>
                             <div style={{ fontWeight: 600, color: '#FAF7F2' }}>{ord.customer.name}</div>
@@ -1499,7 +1382,8 @@ export default function AdminPortal({
                             </div>
                           </td>
                         </tr>
-                      ))}
+                      )))
+                    }
                     </tbody>
                   </table>
                 </div>

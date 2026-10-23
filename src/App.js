@@ -25,7 +25,7 @@ import {
   Lock
 } from 'lucide-react';
 import './App.css';
-import AdminPortal, { DEFAULT_ORDERS, DEFAULT_INVENTORY } from './AdminPortal';
+import AdminPortal, { DEFAULT_INVENTORY } from './AdminPortal';
 import './AdminPortal.css';
 
 // Horizontal Side-by-Side Logo Component (Icon on Left, Bold Company Typography on Right)
@@ -473,7 +473,7 @@ function App() {
   const [expandedFaq, setExpandedFaq] = useState(null);
 
   // Admin & Operations Portal State
-  const [adminOrders, setAdminOrders] = useState(DEFAULT_ORDERS);
+  const [adminOrders, setAdminOrders] = useState([]);
   const [adminInventory, setAdminInventory] = useState(DEFAULT_INVENTORY);
   // PayPal payment state
   const [paymentProcessing, setPaymentProcessing] = useState(false);
