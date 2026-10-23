@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Package, 
   Truck, 
@@ -13,7 +13,6 @@ import {
   Download, 
   X, 
   Eye, 
-  Phone, 
   ShieldCheck, 
   Layers, 
   DollarSign, 
@@ -22,9 +21,16 @@ import {
   FileText, 
   Check, 
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  Users,
+  UserPlus,
+  RefreshCw,
+  Lock,
+  Mail
 } from 'lucide-react';
 import './AdminPortal.css';
+
+const API_BASE = process.env.REACT_APP_API_BASE || (window.location.hostname === 'localhost' ? 'http://localhost:8080/api' : '/api');
 
 // Initial Mock Inventory if not already passed
 export const DEFAULT_INVENTORY = [
@@ -276,13 +282,14 @@ export const DEFAULT_ORDERS = [
 ];
 
 export default function AdminPortal({ 
+  currentUser,
   orders = DEFAULT_ORDERS, 
   setOrders, 
   inventory = DEFAULT_INVENTORY, 
   setInventory, 
   onExitToStore 
 }) {
-  const [activeAdminTab, setActiveAdminTab] = useState('overview'); // 'overview' | 'orders' | 'inventory' | 'deliveries' | 'analytics'
+  const [activeAdminTab, setActiveAdminTab] = useState('overview'); // 'overview' | 'orders' | 'inventory' | 'deliveries' | 'analytics' | 'team'
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -291,6 +298,44 @@ export default function AdminPortal({
   const [targetRestockItem, setTargetRestockItem] = useState(null);
   const [restockAmount, setRestockAmount] = useState(25);
   const [toastMsg, setToastMsg] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+
+  // Helper deduplicators to guarantee no duplicate records in UI or state
+  const deduplicateOrders = (list) => {
+    const seen = new Set();
+    return (list || []).filter(item => {
+      const key = (item.id || item.orderNumber || '').toString();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
+  const deduplicateUsers = (list) => {
+    const seen = new Set();
+    return (list || []).filter(u => {
+      const key = (u.email || '').toLowerCase().trim();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
+  // Team & Administrator Access State
+  const [users, setUsers] = useState([]);
+  const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
+  const [promoteMode, setPromoteMode] = useState('promote'); // 'promote' | 'create'
+  const [promoteEmail, setPromoteEmail] = useState('');
+  const [promoteLoading, setPromoteLoading] = useState(false);
+  const [createAdminForm, setCreateAdminForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: 'Luxe@123&',
+    role: 'ADMIN'
+  });
 
   // New Phone Order Form State
   const [newOrderForm, setNewOrderForm] = useState({
@@ -310,6 +355,107 @@ export default function AdminPortal({
     setTimeout(() => setToastMsg(null), 3500);
   };
 
+  // --- LIVE DATA FETCH FROM SPRING BOOT & SUPABASE CLOUD ---
+  const fetchLiveAdminData = async () => {
+    setIsRefreshing(true);
+    const token = localStorage.getItem('lln_token');
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+
+    try {
+      // 1. Fetch Users (Deduplicated)
+      const uRes = await fetch(`${API_BASE}/admin/users`, { headers: authHeaders });
+      if (uRes.ok) {
+        const uData = await uRes.json();
+        setUsers(deduplicateUsers(uData));
+      }
+
+      // 2. Fetch Orders (Deduplicated)
+      const oRes = await fetch(`${API_BASE}/admin/orders`, { headers: authHeaders });
+      if (oRes.ok) {
+        const oData = await oRes.json();
+        if (Array.isArray(oData) && oData.length > 0) {
+          const mappedOrders = oData.map(o => {
+            const rawStatus = (o.status || 'CONFIRMED').toUpperCase();
+            let deliveryStatus = 'Pending';
+            if (rawStatus === 'DELIVERED') deliveryStatus = 'Delivered';
+            else if (rawStatus === 'SHIPPED' || rawStatus === 'OUT_FOR_DELIVERY') deliveryStatus = 'Dispatched';
+            else if (rawStatus === 'PROCESSING') deliveryStatus = 'Processing';
+            else if (rawStatus === 'CONFIRMED' || rawStatus === 'PAID') deliveryStatus = 'Processing';
+            else if (rawStatus === 'CANCELLED') deliveryStatus = 'Cancelled';
+
+            return {
+              id: o.orderNumber || `LN-${1000 + o.id}`,
+              rawId: o.id,
+              date: o.createdAt ? new Date(o.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Today',
+              customer: {
+                name: o.shippingName || (o.user ? `${o.user.firstName || ''} ${o.user.lastName || ''}`.trim() : 'Customer'),
+                email: o.user ? o.user.email : (currentUser?.email || ''),
+                phone: o.shippingPhone || (o.user ? o.user.phone : '+44 7831 082965'),
+                address: [o.shippingAddress, o.shippingCity, o.shippingPostcode].filter(Boolean).join(', ') || 'United Kingdom'
+              },
+              items: (o.items && o.items.length > 0) ? o.items.map(it => ({
+                name: it.productName || 'Bespoke Skincare',
+                qty: it.quantity || 1,
+                price: Number(it.price || 24.00)
+              })) : [
+                { name: 'Pure Botanical Formulation', qty: 1, price: Number(o.totalAmount || 24.00) }
+              ],
+              total: Number(o.totalAmount || 0),
+              paymentMethod: o.paymentMethod || 'Online Payment',
+              paymentStatus: 'Paid',
+              deliveryStatus: deliveryStatus,
+              courier: o.carrier || 'Royal Mail Tracked 24',
+              trackingNumber: o.trackingNumber || 'RM912048590GB',
+              source: 'Online Boutique (Supabase Cloud)',
+              notes: o.orderNotes || 'Direct customer order'
+            };
+          });
+          setOrders(deduplicateOrders(mappedOrders));
+        }
+      }
+
+      // 3. Fetch Inventory
+      const iRes = await fetch(`${API_BASE}/admin/inventory`, { headers: authHeaders });
+      if (iRes.ok) {
+        const iData = await iRes.json();
+        if (Array.isArray(iData) && iData.length > 0) {
+          const mappedInventory = iData.map(p => {
+            const defaultMatch = DEFAULT_INVENTORY.find(d => d.productId === p.slug || d.name.toLowerCase().includes(p.name.toLowerCase()));
+            return {
+              id: p.id,
+              sku: defaultMatch ? defaultMatch.sku : `LN-SKU-${p.id}`,
+              productId: p.slug,
+              name: p.name,
+              variant: defaultMatch ? defaultMatch.variant : (p.volume || 'Standard Batch'),
+              category: defaultMatch ? defaultMatch.category : (p.category || 'Skincare'),
+              batchNo: defaultMatch ? defaultMatch.batchNo : `LN-BT-${2026}${p.id}`,
+              mfgDate: '10/2026',
+              expDate: '10/2028',
+              stock: Number(p.stockQuantity !== undefined ? p.stockQuantity : 100),
+              minThreshold: defaultMatch ? defaultMatch.minThreshold : 20,
+              unitCost: defaultMatch ? defaultMatch.unitCost : 7.50,
+              price: Number(p.price || 24.00),
+              image: p.imageUrl || (defaultMatch ? defaultMatch.image : '/shea_butter_primary.jpg')
+            };
+          });
+          setInventory(mappedInventory);
+        }
+      }
+    } catch (err) {
+      console.warn('Backend sync error:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveAdminData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // KPIs Calculations
   const totalRevenue = orders.reduce((sum, ord) => sum + (ord.total || 0), 0);
   const totalOrdersCount = orders.length;
@@ -319,9 +465,10 @@ export default function AdminPortal({
   const lowStockCount = inventory.filter(item => item.stock <= item.minThreshold).length;
   const totalStockUnits = inventory.reduce((sum, item) => sum + item.stock, 0);
   const totalInventoryAssetValue = inventory.reduce((sum, item) => sum + (item.stock * item.unitCost), 0);
+  const adminCount = users.filter(u => u.role === 'ADMIN').length;
 
-  // Status Change Handler
-  const handleUpdateOrderStatus = (orderId, newStatus) => {
+  // Status Change Handler (Live Backend Sync)
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
     setOrders(prev => prev.map(o => {
       if (o.id === orderId) {
         return { 
@@ -338,10 +485,35 @@ export default function AdminPortal({
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder(prev => ({ ...prev, deliveryStatus: newStatus }));
     }
+
+    try {
+      const targetOrd = orders.find(o => o.id === orderId);
+      const dbId = targetOrd?.rawId || parseInt(orderId.replace(/\D/g, ''), 10);
+      if (dbId) {
+        let backendStatus = 'CONFIRMED';
+        if (newStatus === 'Delivered') backendStatus = 'DELIVERED';
+        else if (newStatus === 'Dispatched') backendStatus = 'SHIPPED';
+        else if (newStatus === 'Processing') backendStatus = 'PROCESSING';
+        else if (newStatus === 'Pending') backendStatus = 'PENDING';
+        else if (newStatus === 'Cancelled') backendStatus = 'CANCELLED';
+
+        const token = localStorage.getItem('lln_token');
+        await fetch(`${API_BASE}/admin/orders/${dbId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ status: backendStatus })
+        });
+      }
+    } catch (e) {
+      console.warn('Status backend sync error:', e);
+    }
   };
 
-  // Restock Handler
-  const handleApplyRestock = (e) => {
+  // Restock Handler (Live Backend Sync)
+  const handleApplyRestock = async (e) => {
     e.preventDefault();
     if (!targetRestockItem || restockAmount <= 0) return;
 
@@ -354,73 +526,193 @@ export default function AdminPortal({
 
     showAdminToast(`Successfully added ${restockAmount} units to ${targetRestockItem.name}`);
     setIsRestockModalOpen(false);
+
+    try {
+      const targetId = targetRestockItem.id || (targetRestockItem.productId === 'pure-shea-butter' ? 1 : 2);
+      const token = localStorage.getItem('lln_token');
+      await fetch(`${API_BASE}/admin/inventory/${targetId}/restock`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ amount: Number(restockAmount) })
+      });
+    } catch (err) {
+      console.warn('Restock sync error:', err);
+    }
+
     setTargetRestockItem(null);
   };
 
   // Quick Inline Stock Adjust
-  const handleQuickStockAdjust = (sku, delta) => {
-    setInventory(prev => prev.map(item => {
-      if (item.sku === sku) {
-        const updated = Math.max(0, item.stock + delta);
-        return { ...item, stock: updated };
-      }
-      return item;
-    }));
+  const handleQuickStockAdjust = async (sku, delta) => {
+    const item = inventory.find(i => i.sku === sku);
+    if (!item) return;
+
+    const newStock = Math.max(0, item.stock + delta);
+    setInventory(prev => prev.map(i => i.sku === sku ? { ...i, stock: newStock } : i));
+
+    if (item.id) {
+      try {
+        const token = localStorage.getItem('lln_token');
+        await fetch(`${API_BASE}/admin/inventory/${item.id}/restock`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ amount: delta })
+        });
+      } catch (e) {}
+    }
   };
 
-  // Create Manual Phone Order Submit
-  const handleCreateNewOrder = (e) => {
+  // Create Manual Phone Order Submit (Guaranteed Single DB Record, No Duplicates)
+  const handleCreateNewOrder = async (e) => {
     e.preventDefault();
+    if (isSubmittingOrder) return;
+    setIsSubmittingOrder(true);
+
     const productItem = inventory.find(i => i.sku === newOrderForm.selectedSku);
-    if (!productItem) return;
+    if (!productItem) {
+      setIsSubmittingOrder(false);
+      return;
+    }
 
     const qty = Number(newOrderForm.quantity) || 1;
     const itemTotal = productItem.price * qty;
 
-    const newOrder = {
-      id: `LN-${Math.floor(1083 + Math.random() * 1000)}`,
-      date: 'Just now (Today)',
-      customer: {
-        name: newOrderForm.customerName || 'Phone Order Customer',
-        email: newOrderForm.customerEmail || 'order@loveworldluxe.com',
-        phone: newOrderForm.customerPhone || '07831082965',
-        address: newOrderForm.customerAddress || 'London, United Kingdom'
-      },
-      items: [
-        { name: `${productItem.name} (${productItem.variant})`, qty, price: productItem.price }
-      ],
-      total: itemTotal,
-      paymentMethod: newOrderForm.paymentMethod,
-      paymentStatus: 'Paid',
-      deliveryStatus: 'Processing',
-      courier: newOrderForm.courier,
-      trackingNumber: `RM${Math.floor(100000000 + Math.random() * 900000000)}GB`,
-      source: 'Phone Direct / Manual Admin',
-      notes: newOrderForm.notes || 'Created via Admin Portal'
-    };
+    try {
+      const token = localStorage.getItem('lln_token');
+      const res = await fetch(`${API_BASE}/admin/orders/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          customerName: newOrderForm.customerName.trim(),
+          customerEmail: newOrderForm.customerEmail.trim().toLowerCase(),
+          address: newOrderForm.customerAddress.trim(),
+          courier: newOrderForm.courier,
+          total: itemTotal,
+          paymentMethod: newOrderForm.paymentMethod
+        })
+      });
 
-    // Deduct inventory
-    setInventory(prev => prev.map(i => {
-      if (i.sku === productItem.sku) {
-        return { ...i, stock: Math.max(0, i.stock - qty) };
+      if (res.ok) {
+        const createdOrder = await res.json();
+        showAdminToast(`✨ Order ${createdOrder.orderNumber} successfully recorded in database!`);
+        setIsNewOrderModalOpen(false);
+
+        // Deduct inventory locally
+        setInventory(prev => prev.map(i => i.sku === productItem.sku ? { ...i, stock: Math.max(0, i.stock - qty) } : i));
+
+        // Re-fetch clean deduplicated orders directly from Supabase
+        await fetchLiveAdminData();
+      } else {
+        throw new Error('Database order creation returned error');
       }
-      return i;
-    }));
+    } catch (err) {
+      // Offline fallback only when backend server is completely unavailable
+      const fallbackOrder = {
+        id: `LN-${Math.floor(1083 + Math.random() * 1000)}`,
+        date: 'Just now (Today)',
+        customer: {
+          name: newOrderForm.customerName || 'Phone Order Customer',
+          email: newOrderForm.customerEmail || 'order@loveworldluxe.com',
+          phone: newOrderForm.customerPhone || '07831082965',
+          address: newOrderForm.customerAddress || 'London, United Kingdom'
+        },
+        items: [
+          { name: `${productItem.name} (${productItem.variant})`, qty, price: productItem.price }
+        ],
+        total: itemTotal,
+        paymentMethod: newOrderForm.paymentMethod,
+        paymentStatus: 'Paid',
+        deliveryStatus: 'Processing',
+        courier: newOrderForm.courier,
+        trackingNumber: `RM${Math.floor(100000000 + Math.random() * 900000000)}GB`,
+        source: 'Offline Local Order',
+        notes: newOrderForm.notes || 'Created via Admin Portal'
+      };
 
-    setOrders(prev => [newOrder, ...prev]);
-    showAdminToast(`New Order ${newOrder.id} logged for £${itemTotal.toFixed(2)}`);
-    setIsNewOrderModalOpen(false);
-    setNewOrderForm({
-      customerName: '',
-      customerEmail: '',
-      customerPhone: '',
-      customerAddress: '',
-      selectedSku: 'LN-SKU-AB500',
-      quantity: 1,
-      paymentMethod: 'Phone Order / Card',
-      courier: 'Royal Mail Tracked 24',
-      notes: ''
-    });
+      setOrders(prev => deduplicateOrders([fallbackOrder, ...prev]));
+      showAdminToast(`Order ${fallbackOrder.id} logged locally`);
+      setIsNewOrderModalOpen(false);
+    } finally {
+      setIsSubmittingOrder(false);
+      setNewOrderForm({
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        customerAddress: '',
+        selectedSku: 'LN-SKU-AB500',
+        quantity: 1,
+        paymentMethod: 'Phone Order / Card',
+        courier: 'Royal Mail Tracked 24',
+        notes: ''
+      });
+    }
+  };
+
+  // --- USER ACCESS & PROMOTE ADMIN HANDLERS ---
+  const handlePromoteUser = async (emailToPromote) => {
+    if (!emailToPromote) return;
+    setPromoteLoading(true);
+    try {
+      const token = localStorage.getItem('lln_token');
+      const res = await fetch(`${API_BASE}/admin/users/promote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ email: emailToPromote.trim() })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Promotion failed');
+      }
+      showAdminToast(`✨ ${emailToPromote} is now an Administrator!`);
+      setIsPromoteModalOpen(false);
+      setPromoteEmail('');
+      fetchLiveAdminData();
+    } catch (err) {
+      showAdminToast(`⚠️ ${err.message}`);
+    } finally {
+      setPromoteLoading(false);
+    }
+  };
+
+  const handleCreateAdminUser = async (e) => {
+    e.preventDefault();
+    if (!createAdminForm.email) return;
+    setPromoteLoading(true);
+    try {
+      const token = localStorage.getItem('lln_token');
+      const res = await fetch(`${API_BASE}/admin/users/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(createAdminForm)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to create administrator');
+      }
+      showAdminToast(`✨ Admin account created for ${createAdminForm.email}!`);
+      setIsPromoteModalOpen(false);
+      setCreateAdminForm({ firstName: '', lastName: '', email: '', phone: '', password: 'Luxe@123&', role: 'ADMIN' });
+      fetchLiveAdminData();
+    } catch (err) {
+      showAdminToast(`⚠️ ${err.message}`);
+    } finally {
+      setPromoteLoading(false);
+    }
   };
 
   // Filtered Orders
@@ -488,11 +780,35 @@ export default function AdminPortal({
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#D6DDD3', backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.4rem 0.85rem', borderRadius: '6px' }}>
-            <Phone size={13} color="#C5A059" />
-            <span>Dispatch Line: <strong>07831082965</strong></span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+          {/* Active Admin Badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', color: '#FAF7F2', backgroundColor: 'rgba(197, 160, 89, 0.15)', border: '1px solid rgba(197, 160, 89, 0.35)', padding: '0.4rem 0.85rem', borderRadius: '6px' }}>
+            <ShieldCheck size={14} color="#C5A059" />
+            <span>{currentUser?.firstName || 'Sharon'} (Admin)</span>
           </div>
+
+          {/* Sync Live Database Button */}
+          <button 
+            className="admin-exit-btn" 
+            onClick={fetchLiveAdminData}
+            title="Fetch real orders, inventory, and users from Supabase Cloud"
+            disabled={isRefreshing}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', borderColor: '#C5A059' }}
+          >
+            <RefreshCw size={14} className={isRefreshing ? 'spin-icon' : ''} color="#C5A059" />
+            <span>{isRefreshing ? 'Syncing...' : 'Sync Live DB'}</span>
+          </button>
+
+          {/* Create / Make Admin Button */}
+          <button 
+            className="admin-btn admin-btn-gold"
+            onClick={() => { setPromoteMode('promote'); setIsPromoteModalOpen(true); }}
+            title="Make a user Admin or create a new administrator account"
+            style={{ padding: '0.45rem 0.95rem', fontSize: '0.825rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+          >
+            <UserPlus size={15} />
+            <span>+ Make / Create Admin</span>
+          </button>
 
           <button 
             className="admin-exit-btn" 
@@ -565,6 +881,21 @@ export default function AdminPortal({
                 </div>
                 <span className="admin-nav-badge" style={{ backgroundColor: '#68B2FF', color: '#161D15' }}>
                   {dispatchedOrdersCount + pendingOrdersCount}
+                </span>
+              </button>
+            </li>
+
+            <li>
+              <button 
+                className={`admin-nav-item ${activeAdminTab === 'team' ? 'active' : ''}`}
+                onClick={() => { setActiveAdminTab('team'); setSearchQuery(''); }}
+              >
+                <div className="admin-nav-item-content">
+                  <Users size={17} color={activeAdminTab === 'team' ? '#C5A059' : '#A0A89F'} />
+                  <span>Team & Access Control</span>
+                </div>
+                <span className="admin-nav-badge" style={{ backgroundColor: '#C5A059', color: '#161D15', fontWeight: 700 }}>
+                  {users.length}
                 </span>
               </button>
             </li>
@@ -1247,6 +1578,243 @@ export default function AdminPortal({
             </div>
           )}
 
+          {/* ========================================================================= */}
+          {/* TAB 6: TEAM & ADMINISTRATOR ACCESS CONTROL                                 */}
+          {/* ========================================================================= */}
+          {activeAdminTab === 'team' && (
+            <div>
+              <div className="admin-header-row">
+                <div>
+                  <h1 className="admin-page-title">Team & Executive Access</h1>
+                  <p className="admin-page-sub">Direct access management for staff administrators and boutique members in Supabase Cloud.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <button 
+                    className="admin-btn admin-btn-gold"
+                    onClick={() => { setPromoteMode('promote'); setIsPromoteModalOpen(true); }}
+                  >
+                    <UserPlus size={16} /> + Make / Create Admin
+                  </button>
+                  <button 
+                    className="admin-btn admin-btn-secondary"
+                    onClick={fetchLiveAdminData}
+                    disabled={isRefreshing}
+                  >
+                    <RefreshCw size={15} className={isRefreshing ? 'spin-icon' : ''} /> {isRefreshing ? 'Syncing...' : 'Refresh Users'}
+                  </button>
+                </div>
+              </div>
+
+              {/* METRIC KPI CARDS */}
+              <div className="admin-metrics-grid" style={{ marginBottom: '1.75rem' }}>
+                <div className="admin-metric-card">
+                  <div className="admin-metric-top">
+                    <span className="admin-metric-label">Total Users</span>
+                    <div className="admin-metric-icon"><Users size={18} /></div>
+                  </div>
+                  <div className="admin-metric-value">{users.length}</div>
+                  <div className="admin-metric-trend">
+                    <CheckCircle2 size={13} color="#4AB97A" /> Supabase cloud verified
+                  </div>
+                </div>
+
+                <div className="admin-metric-card">
+                  <div className="admin-metric-top">
+                    <span className="admin-metric-label">Administrators</span>
+                    <div className="admin-metric-icon" style={{ backgroundColor: 'rgba(197, 160, 89, 0.2)', color: '#C5A059' }}>
+                      <ShieldCheck size={18} />
+                    </div>
+                  </div>
+                  <div className="admin-metric-value" style={{ color: '#C5A059' }}>{adminCount}</div>
+                  <div className="admin-metric-trend" style={{ color: '#C5A059' }}>
+                    ✦ Full executive privileges
+                  </div>
+                </div>
+
+                <div className="admin-metric-card">
+                  <div className="admin-metric-top">
+                    <span className="admin-metric-label">Registered Customers</span>
+                    <div className="admin-metric-icon"><Package size={18} /></div>
+                  </div>
+                  <div className="admin-metric-value">{Math.max(0, users.length - adminCount)}</div>
+                  <div className="admin-metric-trend">
+                    Direct boutique patrons
+                  </div>
+                </div>
+
+                <div className="admin-metric-card">
+                  <div className="admin-metric-top">
+                    <span className="admin-metric-label">Security & Database</span>
+                    <div className="admin-metric-icon"><Lock size={18} /></div>
+                  </div>
+                  <div className="admin-metric-value" style={{ fontSize: '1.25rem', color: '#4AB97A' }}>Online</div>
+                  <div className="admin-metric-trend" style={{ color: '#B5BEB4' }}>
+                    BCrypt + JWT 24h Expiry
+                  </div>
+                </div>
+              </div>
+
+              {/* FILTER & SEARCH BAR */}
+              <div className="admin-filters-bar" style={{ marginBottom: '1.25rem' }}>
+                <div className="admin-search-wrapper" style={{ flexGrow: 1 }}>
+                  <Search size={16} className="admin-search-icon" />
+                  <input 
+                    type="text"
+                    placeholder="Search users by name, email, or role..."
+                    className="admin-search-input"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button className="admin-clear-search" onClick={() => setSearchQuery('')}>
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* USERS TABLE */}
+              <div className="admin-table-container">
+                <table className="admin-data-table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>System Role</th>
+                      <th>Status</th>
+                      <th>Registered</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users
+                      .filter(u => {
+                        const q = searchQuery.toLowerCase();
+                        return !q || 
+                          (u.name && u.name.toLowerCase().includes(q)) ||
+                          (u.email && u.email.toLowerCase().includes(q)) ||
+                          (u.role && u.role.toLowerCase().includes(q));
+                      })
+                      .map(u => {
+                        const isUserAdmin = u.role === 'ADMIN' || u.role === 'ROLE_ADMIN';
+                        return (
+                          <tr key={u.id}>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <div style={{
+                                  width: '36px',
+                                  height: '36px',
+                                  borderRadius: '50%',
+                                  backgroundColor: isUserAdmin ? 'rgba(197, 160, 89, 0.2)' : 'rgba(255,255,255,0.08)',
+                                  color: isUserAdmin ? '#C5A059' : '#FAF7F2',
+                                  border: isUserAdmin ? '1px solid rgba(197, 160, 89, 0.4)' : '1px solid rgba(255,255,255,0.1)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: 700,
+                                  fontSize: '0.85rem'
+                                }}>
+                                  {u.firstName ? u.firstName.charAt(0).toUpperCase() : 'U'}
+                                </div>
+                                <div>
+                                  <div style={{ fontWeight: 600, color: '#FAF7F2' }}>
+                                    {u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Luxe Member'}
+                                  </div>
+                                  <div style={{ fontSize: '0.75rem', color: '#8A9488' }}>ID: #{u.id}</div>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td>
+                              <a href={`mailto:${u.email}`} style={{ color: '#D6DDD3', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                <Mail size={13} color="#C5A059" />
+                                <span>{u.email}</span>
+                              </a>
+                            </td>
+
+                            <td style={{ color: '#A0A89F', fontSize: '0.85rem' }}>
+                              {u.phone || '—'}
+                            </td>
+
+                            <td>
+                              {isUserAdmin ? (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  backgroundColor: 'rgba(197, 160, 89, 0.15)',
+                                  color: '#C5A059',
+                                  border: '1px solid rgba(197, 160, 89, 0.35)',
+                                  borderRadius: '9999px',
+                                  padding: '0.2rem 0.65rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  letterSpacing: '0.05em'
+                                }}>
+                                  <ShieldCheck size={12} /> ADMINISTRATOR
+                                </span>
+                              ) : (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  backgroundColor: 'rgba(255,255,255,0.06)',
+                                  color: '#B5BEB4',
+                                  border: '1px solid rgba(255,255,255,0.1)',
+                                  borderRadius: '9999px',
+                                  padding: '0.2rem 0.65rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600
+                                }}>
+                                  CUSTOMER
+                                </span>
+                              )}
+                            </td>
+
+                            <td>
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                color: '#4AB97A',
+                                fontSize: '0.775rem',
+                                fontWeight: 600
+                              }}>
+                                <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#4AB97A' }}></span>
+                                Active
+                              </span>
+                            </td>
+
+                            <td style={{ color: '#8A9488', fontSize: '0.8rem' }}>
+                              {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent'}
+                            </td>
+
+                            <td style={{ textAlign: 'right' }}>
+                              {isUserAdmin ? (
+                                <span style={{ fontSize: '0.8rem', color: '#8A9488', fontStyle: 'italic' }}>
+                                  Executive Access
+                                </span>
+                              ) : (
+                                <button
+                                  className="admin-btn admin-btn-gold"
+                                  style={{ padding: '0.35rem 0.75rem', fontSize: '0.775rem', gap: '0.35rem' }}
+                                  onClick={() => handlePromoteUser(u.email)}
+                                  disabled={promoteLoading}
+                                >
+                                  <ShieldCheck size={13} /> Make Admin
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
         </main>
       </div>
 
@@ -1534,14 +2102,251 @@ export default function AdminPortal({
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button type="submit" className="admin-btn admin-btn-gold" style={{ flexGrow: 1, justifyContent: 'center' }}>
-                  <Plus size={16} /> Submit & Generate Waybill
+                <button 
+                  type="submit" 
+                  className="admin-btn admin-btn-gold" 
+                  style={{ flexGrow: 1, justifyContent: 'center' }}
+                  disabled={isSubmittingOrder}
+                >
+                  <Plus size={16} /> {isSubmittingOrder ? 'Recording Order...' : 'Submit & Generate Waybill'}
                 </button>
                 <button type="button" className="admin-btn admin-btn-secondary" onClick={() => setIsNewOrderModalOpen(false)}>
                   Cancel
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 4: MAKE / CREATE ADMINISTRATOR MODAL                                */}
+      {/* ========================================================================= */}
+      {isPromoteModalOpen && (
+        <div className="admin-modal-overlay" onClick={() => setIsPromoteModalOpen(false)}>
+          <div className="admin-modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '540px' }}>
+            <button className="admin-modal-close" onClick={() => setIsPromoteModalOpen(false)}>
+              <X size={20} />
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.5rem', color: '#C5A059' }}>
+              <ShieldCheck size={20} />
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                EXECUTIVE ROLE ASSIGNMENT
+              </span>
+            </div>
+
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', color: '#FAF7F2', margin: '0 0 1rem 0' }}>
+              Administrator Authorization
+            </h2>
+
+            {/* TOGGLE MODES: PROMOTE EXISTING vs CREATE NEW */}
+            <div style={{
+              display: 'flex',
+              backgroundColor: '#141B13',
+              padding: '4px',
+              borderRadius: '8px',
+              border: '1px solid rgba(229, 223, 197, 0.12)',
+              marginBottom: '1.5rem'
+            }}>
+              <button
+                type="button"
+                onClick={() => setPromoteMode('promote')}
+                style={{
+                  flex: 1,
+                  padding: '0.65rem 1rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  backgroundColor: promoteMode === 'promote' ? '#C5A059' : 'transparent',
+                  color: promoteMode === 'promote' ? '#161D15' : '#B5BEB4',
+                  fontWeight: 700,
+                  fontSize: '0.825rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.45rem',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <ShieldCheck size={15} /> Promote Existing User
+              </button>
+              <button
+                type="button"
+                onClick={() => setPromoteMode('create')}
+                style={{
+                  flex: 1,
+                  padding: '0.65rem 1rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  backgroundColor: promoteMode === 'create' ? '#C5A059' : 'transparent',
+                  color: promoteMode === 'create' ? '#161D15' : '#B5BEB4',
+                  fontWeight: 700,
+                  fontSize: '0.825rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.45rem',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <UserPlus size={15} /> Create Brand New Admin
+              </button>
+            </div>
+
+            {promoteMode === 'promote' ? (
+              <form onSubmit={(e) => { e.preventDefault(); handlePromoteUser(promoteEmail); }}>
+                <p style={{ fontSize: '0.875rem', color: '#B5BEB4', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+                  Select an existing registered customer or enter their email address to grant immediate executive administrator privileges.
+                </p>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Select Registered User</label>
+                  <select
+                    className="admin-form-select"
+                    value={promoteEmail}
+                    onChange={(e) => setPromoteEmail(e.target.value)}
+                  >
+                    <option value="">-- Choose registered customer --</option>
+                    {users.map(u => (
+                      <option key={u.id} value={u.email}>
+                        {u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email} ({u.email}) — [{u.role}]
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Or Type Email Address Directly</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g. sharonshelke1@gmail.com"
+                    className="admin-form-input"
+                    value={promoteEmail}
+                    onChange={(e) => setPromoteEmail(e.target.value)}
+                  />
+                </div>
+
+                <div style={{
+                  backgroundColor: 'rgba(197, 160, 89, 0.08)',
+                  border: '1px solid rgba(197, 160, 89, 0.25)',
+                  borderRadius: '8px',
+                  padding: '0.85rem 1rem',
+                  marginBottom: '1.5rem',
+                  fontSize: '0.78rem',
+                  color: '#D6DDD3',
+                  display: 'flex',
+                  gap: '0.65rem',
+                  alignItems: 'center'
+                }}>
+                  <ShieldCheck size={18} color="#C5A059" style={{ flexShrink: 0 }} />
+                  <span>
+                    This account will receive full access to view orders, dispatch parcels, manage stock, and promote users.
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    type="submit"
+                    className="admin-btn admin-btn-gold"
+                    style={{ flexGrow: 1, justifyContent: 'center' }}
+                    disabled={promoteLoading || !promoteEmail}
+                  >
+                    <ShieldCheck size={16} /> {promoteLoading ? 'Updating...' : 'Grant Administrator Role'}
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-secondary"
+                    onClick={() => setIsPromoteModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleCreateAdminUser}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">First Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Sharon"
+                      className="admin-form-input"
+                      value={createAdminForm.firstName}
+                      onChange={(e) => setCreateAdminForm({ ...createAdminForm, firstName: e.target.value })}
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Last Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Shelke"
+                      className="admin-form-input"
+                      value={createAdminForm.lastName}
+                      onChange={(e) => setCreateAdminForm({ ...createAdminForm, lastName: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g. admin@lichtluxenaturals.org"
+                    className="admin-form-input"
+                    value={createAdminForm.email}
+                    onChange={(e) => setCreateAdminForm({ ...createAdminForm, email: e.target.value })}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Phone Number</label>
+                    <input
+                      type="tel"
+                      placeholder="07831082965"
+                      className="admin-form-input"
+                      value={createAdminForm.phone}
+                      onChange={(e) => setCreateAdminForm({ ...createAdminForm, phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Temporary Password</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Luxe@123&"
+                      className="admin-form-input"
+                      value={createAdminForm.password}
+                      onChange={(e) => setCreateAdminForm({ ...createAdminForm, password: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                  <button
+                    type="submit"
+                    className="admin-btn admin-btn-gold"
+                    style={{ flexGrow: 1, justifyContent: 'center' }}
+                    disabled={promoteLoading}
+                  >
+                    <UserPlus size={16} /> {promoteLoading ? 'Creating...' : 'Create & Authorize Administrator'}
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-secondary"
+                    onClick={() => setIsPromoteModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

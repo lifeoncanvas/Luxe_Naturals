@@ -249,7 +249,6 @@ h1, h2, h3, h4, .font-serif {
   opacity: 0.88;
 }
 
-/* LOGO STYLES — Side-by-Side Horizontal Layout (Icon Left, Bold Typography Right) */
 /* LOGO & COMPANY NAME STYLES */
 .licht-logo-container {
   display: inline-flex;
@@ -259,6 +258,8 @@ h1, h2, h3, h4, .font-serif {
   text-align: center;
   line-height: 1;
   text-decoration: none;
+  user-select: none;
+  transition: var(--transition-smooth);
 }
 
 .licht-logo-container.horizontal-brand {
@@ -272,11 +273,6 @@ h1, h2, h3, h4, .font-serif {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-
-/* Bold enhanced icon styling */
-  user-select: none;
-  transition: var(--transition-smooth);
 }
 
 .licht-logo-mark-img {
@@ -386,6 +382,8 @@ h1, h2, h3, h4, .font-serif {
 .licht-logo-container.medium .licht-brand-subtitle {
   font-size: 0.8rem;
   letter-spacing: 0.34em;
+}
+
 .licht-logo-text-block {
   display: flex;
   flex-direction: column;
