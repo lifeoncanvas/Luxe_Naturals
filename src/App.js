@@ -291,6 +291,29 @@ function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
   const [authExpandedOption, setAuthExpandedOption] = useState(null); // 'email' | 'phone' | null
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lln_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authForm, setAuthForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: ''
+  });
+  const [forgotStep, setForgotStep] = useState(1);
+  const [forgotForm, setForgotForm] = useState({
+    email: '',
+    otp: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
   const [wishlist, setWishlist] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -390,6 +413,167 @@ function App() {
     ]);
     setActiveTab('product');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ─── Authentication & Password Recovery Handlers ─────────────────
+  const handleAuthInputChange = (e) => {
+    const { name, value } = e.target;
+    setAuthForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleForgotInputChange = (e) => {
+    const { name, value } = e.target;
+    setForgotForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: authForm.email, password: authForm.password })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed. Please verify credentials.');
+      }
+      localStorage.setItem('lln_token', data.token);
+      localStorage.setItem('lln_user', JSON.stringify(data));
+      setCurrentUser(data);
+      showToast(`✨ Welcome back, ${data.firstName || 'there'}!`);
+      setIsAuthOpen(false);
+      setAuthExpandedOption(null);
+    } catch (err) {
+      showToast(err.message || 'Login failed.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: authForm.firstName,
+          lastName: authForm.lastName,
+          email: authForm.email,
+          phone: authForm.phone,
+          password: authForm.password
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed.');
+      }
+      showToast('✨ Account created! Welcome email dispatched to ' + authForm.email);
+      
+      // Auto sign in
+      try {
+        const loginRes = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: authForm.email, password: authForm.password })
+        });
+        if (loginRes.ok) {
+          const loginData = await loginRes.json();
+          localStorage.setItem('lln_token', loginData.token);
+          localStorage.setItem('lln_user', JSON.stringify(loginData));
+          setCurrentUser(loginData);
+        }
+      } catch (ignored) {}
+
+      setIsAuthOpen(false);
+      setAuthExpandedOption(null);
+    } catch (err) {
+      showToast(err.message || 'Registration error');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleForgotPasswordRequest = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotForm.email })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to request OTP');
+      showToast('✉️ 6-digit verification code sent to ' + forgotForm.email);
+      setForgotStep(2);
+    } catch (err) {
+      showToast(err.message || 'Error sending reset code');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotForm.email, otp: forgotForm.otp })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Verification failed');
+      showToast('✓ Code verified! Please enter your new password.');
+      setForgotStep(3);
+    } catch (err) {
+      showToast(err.message || 'Invalid or expired verification code');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (forgotForm.newPassword !== forgotForm.confirmPassword) {
+      showToast('Passwords do not match');
+      return;
+    }
+    setAuthLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: forgotForm.email,
+          otp: forgotForm.otp,
+          newPassword: forgotForm.newPassword
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Reset failed');
+      showToast('✨ Password reset successfully! Confirmation email sent.');
+      setAuthMode('login');
+      setForgotStep(1);
+      setForgotForm({ email: '', otp: '', newPassword: '', confirmPassword: '' });
+      setAuthExpandedOption('email');
+    } catch (err) {
+      showToast(err.message || 'Password reset error');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('lln_token');
+    localStorage.removeItem('lln_user');
+    setCurrentUser(null);
+    setIsAuthOpen(false);
+    showToast('Signed out successfully.');
   };
 
   // ─── PayPal Handlers ─────────────────────────────────────────────
@@ -2373,115 +2557,350 @@ function App() {
         </div>
       )}
 
-      {/* AUTHENTICATION MODAL (LOGIN / REGISTER) - LUXURY VIBE */}
+      {/* AUTHENTICATION & PASSWORD RECOVERY MODAL - LUXURY VIBE */}
       {isAuthOpen && (
         <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => { setIsAuthOpen(false); setAuthExpandedOption(null); }}>
-          <div className="modal-card" style={{ maxWidth: '450px', width: '95%', padding: '3rem 2.5rem', borderRadius: '4px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 40px rgba(45,58,41,0.08)' }} onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={() => { setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', color: '#5C635B' }}>
+          <div className="modal-card" style={{ maxWidth: '480px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem 2.25rem', borderRadius: '6px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 40px rgba(45,58,41,0.08)' }} onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal-btn" onClick={() => { setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', color: '#5C635B' }}>
               <X size={22} />
             </button>
             
-            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-              <LichtLogo size="header" color="#2D3A29" markOnly={true} style={{ margin: '0 auto', marginBottom: '1.5rem' }} />
-              <h2 className="font-serif" style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '0.5rem', fontWeight: 400 }}>
-                {authMode === 'login' ? 'Welcome Back' : 'Create an Account'}
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <LichtLogo size="header" color="#2D3A29" markOnly={true} style={{ margin: '0 auto', marginBottom: '1rem' }} />
+              <h2 className="font-serif" style={{ fontSize: '1.9rem', color: '#2D3A29', marginBottom: '0.35rem', fontWeight: 400 }}>
+                {authMode === 'profile' ? 'Member Profile' :
+                 authMode === 'forgot' ? 'Reset Password' :
+                 authMode === 'login' ? 'Welcome Back' : 'Create an Account'}
               </h2>
               <p style={{ color: '#C5A059', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-                {authMode === 'login' ? 'Access your member profile' : 'Join the Luxe Naturals community'}
+                {authMode === 'profile' ? 'LICHT Luxe Naturals Member' :
+                 authMode === 'forgot' ? (forgotStep === 1 ? 'Step 1 of 3: Request Verification Code' : (forgotStep === 2 ? 'Step 2 of 3: Verify Passcode' : 'Step 3 of 3: New Password')) :
+                 authMode === 'login' ? 'Access your member profile' : 'Join the Luxe Naturals community'}
               </p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              
-              {/* KINGSCHAT BUTTON */}
-              <button 
-                style={{ width: '100%', padding: '1rem', backgroundColor: '#DFCAA7', color: '#2D3A29', border: '1px solid #C5A059', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
-                onClick={() => window.open('https://accounts.kingschat.online/log-in?clientId=5904093a-1631-43d7-b9e7-f1ab15d4b513&origin=%2F%3FauthRetry%3D1', '_blank')}
-                className="hover-bg-darken"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                {authMode === 'login' ? 'Sign in with KingsChat' : 'Sign up with KingsChat'}
-              </button>
-
-              {/* EMAIL BUTTON & ACCORDION */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                <button 
-                  style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'email' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'email' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
-                  onClick={() => setAuthExpandedOption(authExpandedOption === 'email' ? null : 'email')}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Mail size={16} color="#6E5535" strokeWidth={1.5} />
-                    {authMode === 'login' ? 'Continue with Email' : 'Sign up with Email'}
+            {/* ─── PROFILE VIEW (WHEN LOGGED IN) ─── */}
+            {authMode === 'profile' && currentUser && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '1.5rem', textAlign: 'center' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#2D3A29', color: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', fontSize: '1.4rem', fontWeight: 600, letterSpacing: '0.05em' }}>
+                    {currentUser.firstName ? currentUser.firstName.charAt(0).toUpperCase() : 'L'}
                   </div>
-                  {authExpandedOption === 'email' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
-                </button>
+                  <h3 style={{ margin: '0 0 0.25rem 0', color: '#2D3A29', fontSize: '1.2rem' }}>
+                    {currentUser.firstName} {currentUser.lastName}
+                  </h3>
+                  <p style={{ margin: 0, color: '#5C635B', fontSize: '0.85rem' }}>{currentUser.email}</p>
+                  <div style={{ marginTop: '0.75rem', display: 'inline-block', backgroundColor: '#DFCAA7', color: '#2D3A29', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em' }}>
+                    {currentUser.role || 'MEMBER'}
+                  </div>
+                </div>
 
-                {authExpandedOption === 'email' && (
-                  <form onSubmit={(e) => { e.preventDefault(); showToast('Success!'); setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {authMode === 'register' && (
-                      <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <input type="text" placeholder="First Name" required style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                        <input type="text" placeholder="Last Name" required style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                      </div>
-                    )}
-                    <input type="email" placeholder="Email Address" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                    <input type="password" placeholder="Password" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                    
-                    {authMode === 'login' && (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.25rem' }}>
-                        <button type="button" style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', textDecoration: 'underline', cursor: 'pointer' }}>
-                          Forgot Password?
-                        </button>
-                      </div>
-                    )}
+                <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <button 
+                    onClick={() => { setIsAuthOpen(false); navigateToTab('account'); }}
+                    style={{ width: '100%', padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FAF7F2', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', letterSpacing: '0.05em' }}
+                  >
+                    View My Account & Orders
+                  </button>
+                  <button 
+                    onClick={handleLogout}
+                    style={{ width: '100%', padding: '0.85rem', backgroundColor: 'transparent', color: '#8B0000', border: '1px solid #D6DDD3', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
 
-                    <button type="submit" style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
-                      {authMode === 'login' ? 'Sign In' : 'Create Account'}
+            {/* ─── FORGOT PASSWORD (OTP WORKFLOW) ─── */}
+            {authMode === 'forgot' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {forgotStep === 1 && (
+                  <form onSubmit={handleForgotPasswordRequest} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <p style={{ fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5, margin: 0 }}>
+                      Enter your registered email address below. We will send a secure 6-digit one-time passcode (OTP) to your inbox via <strong>info@lichtluxenaturals.org</strong>.
+                    </p>
+                    <input 
+                      type="email" 
+                      name="email"
+                      value={forgotForm.email}
+                      onChange={handleForgotInputChange}
+                      placeholder="Your registered email address" 
+                      required 
+                      style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                    />
+                    <button 
+                      type="submit" 
+                      disabled={authLoading}
+                      style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                    >
+                      {authLoading ? 'Sending Code...' : 'Send Verification Code'}
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setAuthMode('login')} 
+                      style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
+                    >
+                      ← Back to Sign In
+                    </button>
+                  </form>
+                )}
+
+                {forgotStep === 2 && (
+                  <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '1rem', textAlign: 'center' }}>
+                      <p style={{ fontSize: '0.85rem', color: '#2D3A29', margin: 0 }}>
+                        A 6-digit verification code was dispatched to:
+                      </p>
+                      <p style={{ fontWeight: 700, color: '#C5A059', margin: '4px 0 0 0', fontSize: '0.9rem' }}>
+                        {forgotForm.email}
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: '#7A8279', margin: '6px 0 0 0' }}>
+                        Valid for 10 minutes • Up to 5 attempts allowed
+                      </p>
+                    </div>
+
+                    <input 
+                      type="text" 
+                      name="otp"
+                      maxLength={6}
+                      value={forgotForm.otp}
+                      onChange={handleForgotInputChange}
+                      placeholder="Enter 6-Digit OTP" 
+                      required 
+                      style={{ width: '100%', padding: '0.95rem', borderRadius: '2px', border: '2px solid #C5A059', fontSize: '1.3rem', textAlign: 'center', letterSpacing: '0.3em', fontFamily: 'monospace', fontWeight: 700, backgroundColor: '#FFF' }} 
+                    />
+
+                    <button 
+                      type="submit" 
+                      disabled={authLoading}
+                      style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                    >
+                      {authLoading ? 'Verifying Code...' : 'Verify & Continue'}
+                    </button>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button 
+                        type="button" 
+                        onClick={() => setForgotStep(1)} 
+                        style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        ← Change email
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={handleForgotPasswordRequest} 
+                        style={{ background: 'none', border: 'none', color: '#C5A059', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+                      >
+                        Resend code
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {forgotStep === 3 && (
+                  <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <p style={{ fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5, margin: 0 }}>
+                      Code verified! Please enter your new password below.
+                    </p>
+                    <input 
+                      type="password" 
+                      name="newPassword"
+                      value={forgotForm.newPassword}
+                      onChange={handleForgotInputChange}
+                      placeholder="New Password (min 6 characters)" 
+                      required 
+                      minLength={6}
+                      style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                    />
+                    <input 
+                      type="password" 
+                      name="confirmPassword"
+                      value={forgotForm.confirmPassword}
+                      onChange={handleForgotInputChange}
+                      placeholder="Confirm New Password" 
+                      required 
+                      minLength={6}
+                      style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                    />
+                    <button 
+                      type="submit" 
+                      disabled={authLoading}
+                      style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                    >
+                      {authLoading ? 'Updating Password...' : 'Save New Password'}
                     </button>
                   </form>
                 )}
               </div>
+            )}
 
-              {/* PHONE BUTTON & ACCORDION */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+            {/* ─── LOGIN & REGISTRATION WORKFLOW ─── */}
+            {(authMode === 'login' || authMode === 'register') && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                
+                {/* KINGSCHAT BUTTON */}
                 <button 
-                  style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'phone' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'phone' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease', marginTop: authExpandedOption === 'email' ? '1rem' : '0' }}
-                  onClick={() => setAuthExpandedOption(authExpandedOption === 'phone' ? null : 'phone')}
+                  style={{ width: '100%', padding: '1rem', backgroundColor: '#DFCAA7', color: '#2D3A29', border: '1px solid #C5A059', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+                  onClick={() => window.open('https://accounts.kingschat.online/log-in?clientId=5904093a-1631-43d7-b9e7-f1ab15d4b513&origin=%2F%3FauthRetry%3D1', '_blank')}
+                  className="hover-bg-darken"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Phone size={16} color="#6E5535" strokeWidth={1.5} />
-                    {authMode === 'login' ? 'Continue with Phone' : 'Sign up with Phone'}
-                  </div>
-                  {authExpandedOption === 'phone' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                  {authMode === 'login' ? 'Sign in with KingsChat' : 'Sign up with KingsChat'}
                 </button>
 
-                {authExpandedOption === 'phone' && (
-                  <form onSubmit={(e) => { e.preventDefault(); showToast('Success!'); setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <input type="tel" placeholder="Phone Number" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                    <input type="password" placeholder="Password" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                    <button type="submit" style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
-                      {authMode === 'login' ? 'Sign In' : 'Create Account'}
+                {/* EMAIL BUTTON & ACCORDION */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  <button 
+                    style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'email' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'email' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+                    onClick={() => setAuthExpandedOption(authExpandedOption === 'email' ? null : 'email')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <Mail size={16} color="#6E5535" strokeWidth={1.5} />
+                      {authMode === 'login' ? 'Continue with Email' : 'Sign up with Email'}
+                    </div>
+                    {authExpandedOption === 'email' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
+                  </button>
+
+                  {authExpandedOption === 'email' && (
+                    <form onSubmit={authMode === 'login' ? handleLoginSubmit : handleRegisterSubmit} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {authMode === 'register' && (
+                        <>
+                          <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <input 
+                              type="text" 
+                              name="firstName" 
+                              value={authForm.firstName} 
+                              onChange={handleAuthInputChange} 
+                              placeholder="First Name" 
+                              required 
+                              style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                            />
+                            <input 
+                              type="text" 
+                              name="lastName" 
+                              value={authForm.lastName} 
+                              onChange={handleAuthInputChange} 
+                              placeholder="Last Name" 
+                              required 
+                              style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                            />
+                          </div>
+                          <input 
+                            type="tel" 
+                            name="phone" 
+                            value={authForm.phone} 
+                            onChange={handleAuthInputChange} 
+                            placeholder="Phone Number (e.g. 07831082965)" 
+                            style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                          />
+                        </>
+                      )}
+                      
+                      <input 
+                        type="email" 
+                        name="email" 
+                        value={authForm.email} 
+                        onChange={handleAuthInputChange} 
+                        placeholder="Email Address" 
+                        required 
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                      />
+                      <input 
+                        type="password" 
+                        name="password" 
+                        value={authForm.password} 
+                        onChange={handleAuthInputChange} 
+                        placeholder="Password" 
+                        required 
+                        minLength={6}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                      />
+                      
+                      {authMode === 'login' && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.25rem' }}>
+                          <button 
+                            type="button" 
+                            onClick={() => {
+                              setAuthMode('forgot');
+                              setForgotStep(1);
+                              setForgotForm(prev => ({ ...prev, email: authForm.email }));
+                            }}
+                            style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', textDecoration: 'underline', cursor: 'pointer' }}
+                          >
+                            Forgot Password?
+                          </button>
+                        </div>
+                      )}
+
+                      <button 
+                        type="submit" 
+                        disabled={authLoading}
+                        style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                      >
+                        {authLoading ? 'Processing...' : (authMode === 'login' ? 'Sign In' : 'Create Account & Receive Welcome')}
+                      </button>
+                    </form>
+                  )}
+                </div>
+
+                {/* PHONE BUTTON & ACCORDION */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  <button 
+                    style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'phone' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'phone' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease', marginTop: authExpandedOption === 'email' ? '1rem' : '0' }}
+                    onClick={() => setAuthExpandedOption(authExpandedOption === 'phone' ? null : 'phone')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <Phone size={16} color="#6E5535" strokeWidth={1.5} />
+                      {authMode === 'login' ? 'Continue with Phone' : 'Sign up with Phone'}
+                    </div>
+                    {authExpandedOption === 'phone' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
+                  </button>
+
+                  {authExpandedOption === 'phone' && (
+                    <form onSubmit={(e) => { e.preventDefault(); showToast('Please use Email to receive your instant verification & order tracking updates.'); setAuthExpandedOption('email'); }} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <input type="tel" placeholder="Phone Number" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                      <input type="password" placeholder="Password" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                      <button type="submit" style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
+                        Switch to Email Verification
+                      </button>
+                    </form>
+                  )}
+                </div>
+
+              </div>
+            )}
+
+            {/* FOOTER SWITCHER */}
+            {authMode !== 'profile' && (
+              <div style={{ textAlign: 'center', marginTop: '2rem', borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', fontSize: '0.85rem', color: '#5C635B' }}>
+                {authMode === 'forgot' ? (
+                  <button 
+                    type="button" 
+                    onClick={() => { setAuthMode('login'); setForgotStep(1); }} 
+                    style={{ background: 'none', border: 'none', color: '#6E5535', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                  >
+                    Return to Sign In
+                  </button>
+                ) : (
+                  <>
+                    {authMode === 'login' ? "Don't have an account? " : "Already have an account? "}
+                    <button 
+                      type="button" 
+                      onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthExpandedOption(null); }} 
+                      style={{ background: 'none', border: 'none', color: '#6E5535', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                    >
+                      {authMode === 'login' ? 'Sign up here' : 'Sign in here'}
                     </button>
-                  </form>
+                  </>
                 )}
               </div>
-
-            </div>
-
-            <div style={{ textAlign: 'center', marginTop: '2.5rem', borderTop: '1px solid #E5DFC5', paddingTop: '1.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
-              {authMode === 'login' ? "Don't have an account? " : "Already have an account? "}
-              <button 
-                type="button" 
-                onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthExpandedOption(null); }} 
-                style={{ background: 'none', border: 'none', color: '#6E5535', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
-              >
-                {authMode === 'login' ? 'Sign up here' : 'Sign in here'}
-              </button>
-            </div>
+            )}
 
           </div>
         </div>
       )}
+      
       {/* ORDER CONFIRMATION MODAL */}
       {orderConfirmation && (
         <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setOrderConfirmation(null)}>
