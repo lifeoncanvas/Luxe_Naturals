@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Luxe Naturals",
+  "name": "LICHT LUXE NATURALS",
+  "start_url": "https://lichtluxenaturals.org/",
   "icons": [
     {
       "src": "favicon.ico",

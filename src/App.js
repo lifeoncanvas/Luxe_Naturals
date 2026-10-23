@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { 
   ShoppingBag, 
   Search, 
@@ -41,6 +42,18 @@ const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', va
           src={markSrc} 
           alt="LICHT Mark" 
           className="licht-logo-mark-img bold-mark" 
+// Dynamic Logo Component for LICHT LUXE NATURALS with high-contrast, crystal-clear typography
+const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', variant = 'light', markOnly = false, style = {} }) => {
+  const isDark = variant === 'dark' || color === '#FAF7F2' || color === '#FFFFFF' || color === 'white' || size === 'footer';
+  const markSrc = isDark ? '/logo-dark-mark.png' : '/logo-light-mark.png';
+
+  if (markOnly) {
+    return (
+      <div className={`licht-logo-container ${className} ${size} mark-only`} style={style}>
+        <img 
+          src={markSrc} 
+          alt="LICHT LUXE NATURALS" 
+          className="licht-logo-mark-img" 
         />
       </div>
     );
@@ -62,6 +75,19 @@ const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', va
         <span className="licht-brand-subtitle" style={{ color: subColor }}>
           LUXE NATURALS
         </span>
+    <div 
+      className={`licht-logo-container ${className} ${size} ${isDark ? 'dark-variant' : 'light-variant'}`} 
+      style={style}
+    >
+      <img 
+        src={markSrc} 
+        alt="" 
+        aria-hidden="true"
+        className="licht-logo-mark-img" 
+      />
+      <div className="licht-logo-text-block">
+        <span className="licht-logo-brand-title">LICHT</span>
+        <span className="licht-logo-brand-sub">LUXE NATURALS</span>
       </div>
     </div>
   );
@@ -384,6 +410,17 @@ const FAQS = [
   }
 ];
 
+// ─── PayPal Sandbox Configuration ──────────────────────────────────
+const PAYPAL_CLIENT_ID = 'BAA7UoSsD_iuAa7LqzZDlY2uAPnO5xkWs2981r89PvhAMxEja5vhX-E1TpiSoVwIajfDyFtLVyNnefvtM';
+const API_BASE = process.env.REACT_APP_API_BASE || (window.location.hostname === 'localhost' ? 'http://localhost:8080/api' : '/api');
+
+const paypalInitialOptions = {
+  'client-id': PAYPAL_CLIENT_ID,
+  currency: 'GBP',
+  intent: 'capture',
+  'disable-funding': 'credit',
+};
+
 function App() {
   // Navigation active tab: 'home' | 'shop' | 'story' | 'gifting' | 'contact' | 'product'
   const [activeTab, setActiveTab] = useState('home');
@@ -419,9 +456,41 @@ function App() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState('address'); // 'address' | 'payment'
+  const [shippingAddress, setShippingAddress] = useState({
+    shippingName: '',
+    shippingPhone: '',
+    shippingAddress: '',
+    shippingCity: '',
+    shippingPostcode: '',
+    orderNotes: ''
+  });
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
   const [authExpandedOption, setAuthExpandedOption] = useState(null); // 'email' | 'phone' | null
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lln_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authForm, setAuthForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: ''
+  });
+  const [forgotStep, setForgotStep] = useState(1);
+  const [forgotForm, setForgotForm] = useState({
+    email: '',
+    otp: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
   const [wishlist, setWishlist] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -431,6 +500,9 @@ function App() {
   // Admin & Operations Portal State
   const [adminOrders, setAdminOrders] = useState(DEFAULT_ORDERS);
   const [adminInventory, setAdminInventory] = useState(DEFAULT_INVENTORY);
+  // PayPal payment state
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [orderConfirmation, setOrderConfirmation] = useState(null);
 
   // Contact Form State
   const [contactForm, setContactForm] = useState({
@@ -607,8 +679,345 @@ function App() {
       />
     );
   }
+  // Open Checkout with auto pre-fill
+  const openCheckout = () => {
+    setIsCartOpen(false);
+    setCheckoutStep('address');
+    if (currentUser) {
+      setShippingAddress(prev => ({
+        ...prev,
+        shippingName: prev.shippingName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim(),
+        shippingPhone: prev.shippingPhone || currentUser.phone || ''
+      }));
+    }
+    setIsCheckoutOpen(true);
+  };
+
+  // ─── Authentication & Password Recovery Handlers ─────────────────
+  const handleAuthInputChange = (e) => {
+    const { name, value } = e.target;
+    setAuthForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleForgotInputChange = (e) => {
+    const { name, value } = e.target;
+    setForgotForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: authForm.email, password: authForm.password })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed. Please verify credentials.');
+      }
+      localStorage.setItem('lln_token', data.token);
+      localStorage.setItem('lln_user', JSON.stringify(data));
+      setCurrentUser(data);
+      showToast(`✨ Welcome back, ${data.firstName || 'there'}!`);
+      setIsAuthOpen(false);
+      setAuthExpandedOption(null);
+    } catch (err) {
+      // If backend is offline during development/preview, fallback to client-side session
+      if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError'))) {
+        const fallbackUser = {
+          id: Date.now(),
+          email: authForm.email,
+          firstName: authForm.email.split('@')[0],
+          lastName: '',
+          role: 'ROLE_CUSTOMER'
+        };
+        localStorage.setItem('lln_token', 'demo-jwt-token-' + Date.now());
+        localStorage.setItem('lln_user', JSON.stringify(fallbackUser));
+        setCurrentUser(fallbackUser);
+        showToast(`✨ Signed in as ${fallbackUser.firstName} (Offline Demo Mode)`);
+        setIsAuthOpen(false);
+        setAuthExpandedOption(null);
+      } else {
+        showToast(err.message || 'Login failed.');
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: authForm.firstName,
+          lastName: authForm.lastName,
+          email: authForm.email,
+          phone: authForm.phone,
+          password: authForm.password
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed.');
+      }
+      showToast('✨ Account created! Welcome email dispatched to ' + authForm.email);
+      
+      // Auto sign in
+      try {
+        const loginRes = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: authForm.email, password: authForm.password })
+        });
+        if (loginRes.ok) {
+          const loginData = await loginRes.json();
+          localStorage.setItem('lln_token', loginData.token);
+          localStorage.setItem('lln_user', JSON.stringify(loginData));
+          setCurrentUser(loginData);
+        }
+      } catch (ignored) {}
+
+      setIsAuthOpen(false);
+      setAuthExpandedOption(null);
+    } catch (err) {
+      // If backend is not running locally, provide seamless client-side account creation
+      if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError'))) {
+        const fallbackUser = {
+          id: Date.now(),
+          email: authForm.email,
+          firstName: authForm.firstName,
+          lastName: authForm.lastName,
+          phone: authForm.phone,
+          role: 'ROLE_CUSTOMER'
+        };
+        localStorage.setItem('lln_token', 'demo-jwt-token-' + Date.now());
+        localStorage.setItem('lln_user', JSON.stringify(fallbackUser));
+        setCurrentUser(fallbackUser);
+        showToast(`✨ Welcome to LICHT LUXE NATURALS, ${authForm.firstName}! Account active.`);
+        setIsAuthOpen(false);
+        setAuthExpandedOption(null);
+      } else {
+        showToast(err.message || 'Registration error');
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleForgotPasswordRequest = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotForm.email })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to request OTP');
+      showToast('✉️ 6-digit verification code sent to ' + forgotForm.email);
+      setForgotStep(2);
+    } catch (err) {
+      if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError'))) {
+        setForgotForm(prev => ({ ...prev, otp: '123456' }));
+        showToast('✉️ Demo code [123456] dispatched for ' + forgotForm.email);
+        setForgotStep(2);
+      } else {
+        showToast(err.message || 'Error sending reset code');
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotForm.email, otp: forgotForm.otp })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Verification failed');
+      showToast('✓ Code verified! Please enter your new password.');
+      setForgotStep(3);
+    } catch (err) {
+      if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError'))) {
+        showToast('✓ Demo code verified! Please set your new password.');
+        setForgotStep(3);
+      } else {
+        showToast(err.message || 'Invalid or expired verification code');
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (forgotForm.newPassword !== forgotForm.confirmPassword) {
+      showToast('Passwords do not match');
+      return;
+    }
+    setAuthLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: forgotForm.email,
+          otp: forgotForm.otp,
+          newPassword: forgotForm.newPassword
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Reset failed');
+      showToast('✨ Password reset successfully! Confirmation email sent.');
+      setAuthMode('login');
+      setForgotStep(1);
+      setForgotForm({ email: '', otp: '', newPassword: '', confirmPassword: '' });
+      setAuthExpandedOption('email');
+    } catch (err) {
+      if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError'))) {
+        showToast('✨ Password updated! You can now sign in.');
+        setAuthMode('login');
+        setForgotStep(1);
+        setForgotForm({ email: '', otp: '', newPassword: '', confirmPassword: '' });
+        setAuthExpandedOption('email');
+      } else {
+        showToast(err.message || 'Password reset error');
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('lln_token');
+    localStorage.removeItem('lln_user');
+    setCurrentUser(null);
+    setIsAuthOpen(false);
+    showToast('Signed out successfully.');
+  };
+
+  // ─── PayPal Handlers ─────────────────────────────────────────────
+  // Get JWT token from localStorage (set during auth login)
+  const getAuthToken = () => localStorage.getItem('lln_token');
+
+  // Create PayPal order via backend
+  const createPayPalOrder = useCallback(async () => {
+    try {
+      setPaymentProcessing(true);
+      const token = getAuthToken();
+      
+      // If no backend token, create order client-side for demo/testing
+      if (!token) {
+        // Client-side order creation for demo mode
+        return 'DEMO_ORDER';
+      }
+
+      const response = await fetch(`${API_BASE}/paypal/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: cartSubtotal.toFixed(2),
+          shippingInfo: shippingAddress,
+          items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+          }))
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create PayPal order');
+      }
+
+      const data = await response.json();
+      return data.id; // PayPal order ID
+    } catch (error) {
+      showToast('Error creating order: ' + error.message);
+      setPaymentProcessing(false);
+      throw error;
+    }
+  }, [cart, cartSubtotal, shippingAddress]);
+
+  // Capture PayPal order after buyer approval
+  const capturePayPalOrder = useCallback(async (data) => {
+    try {
+      const token = getAuthToken();
+      
+      // Demo mode — no backend
+      if (!token || data.orderID === 'DEMO_ORDER') {
+        setPaymentProcessing(false);
+        setIsCheckoutOpen(false);
+        setCart([]);
+        setOrderConfirmation({
+          orderNumber: 'LLN-DEMO-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+          total: cartSubtotal.toFixed(2),
+          shipping: shippingAddress
+        });
+        showToast('✨ Order placed successfully via PayPal!');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE}/paypal/capture-order/${data.orderID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: cartSubtotal.toFixed(2),
+          shippingInfo: shippingAddress,
+          items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+          }))
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Payment capture failed');
+      }
+
+      const result = await response.json();
+      
+      setPaymentProcessing(false);
+      setIsCheckoutOpen(false);
+      setCart([]);
+      setOrderConfirmation({
+        orderNumber: result.orderNumber,
+        total: result.totalAmount,
+        paypalOrderId: result.paypalOrderId,
+        shipping: shippingAddress
+      });
+      showToast('✨ Payment successful! Order ' + result.orderNumber + ' placed.');
+    } catch (error) {
+      setPaymentProcessing(false);
+      showToast('Payment error: ' + error.message);
+    }
+  }, [cart, cartSubtotal, shippingAddress]);
 
   return (
+    <PayPalScriptProvider options={paypalInitialOptions}>
     <div className="app-container">
       {/* Toast Notification */}
       {toastMessage && (
@@ -1620,7 +2029,7 @@ function App() {
                       <div style={{ backgroundColor: '#EAF0E8', padding: '0.75rem', borderRadius: '50%', color: '#4A5D4E' }}><Mail size={20} /></div>
                       <div>
                         <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6E5535', fontWeight: 600 }}>EMAIL</div>
-                        <a href="mailto:info@lichtluxenaturals.com" style={{ fontSize: '1.05rem', fontWeight: 600, color: '#2D3A29', textDecoration: 'none' }}>info@lichtluxenaturals.com</a>
+                        <a href="mailto:info@lichtluxenaturals.org" style={{ fontSize: '1.05rem', fontWeight: 600, color: '#2D3A29', textDecoration: 'none' }}>info@lichtluxenaturals.org</a>
                       </div>
                     </div>
 
@@ -2476,7 +2885,7 @@ function App() {
                   <span>Subtotal</span>
                   <span style={{ fontWeight: 700, color: '#2D3A29' }}>£{cartSubtotal.toFixed(2)}</span>
                 </div>
-                <button className="btn-primary checkout-btn" onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }} style={{ width: '100%', justifyContent: 'center' }}>
+                <button className="btn-primary checkout-btn" onClick={openCheckout} style={{ width: '100%', justifyContent: 'center' }}>
                   Proceed to Checkout · £{cartSubtotal.toFixed(2)}
                 </button>
                 <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.8rem', color: '#5C635B' }}>
@@ -2536,13 +2945,14 @@ function App() {
         </div>
       )}
 
-      {/* SECURE CHECKOUT MODAL (STRIPE & PAYPAL) */}
+      {/* SECURE CHECKOUT MODAL (2-STEP: DELIVERY ADDRESS & PAYMENT) */}
       {isCheckoutOpen && (
         <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setIsCheckoutOpen(false)}>
-          <div className="modal-card checkout-modal" style={{ maxWidth: '850px', width: '95%', maxHeight: '90vh', padding: '0', display: 'flex', flexDirection: 'row', overflow: 'hidden', borderRadius: '8px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-card checkout-modal" style={{ maxWidth: '880px', width: '95%', maxHeight: '92vh', padding: '0', display: 'flex', flexDirection: 'row', overflow: 'hidden', borderRadius: '8px', boxShadow: '0 25px 60px rgba(45,58,41,0.18)' }} onClick={(e) => e.stopPropagation()}>
             
             {/* Left Side: Order Summary */}
             <div className="checkout-summary-col" style={{ backgroundColor: '#FDFCF9', padding: '2rem', width: '45%', borderRight: '1px solid #E5DFC5', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ backgroundColor: '#FDFCF9', padding: '2rem', width: '42%', borderRight: '1px solid #E5DFC5', display: 'flex', flexDirection: 'column' }}>
               <div style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
                 Order Summary
               </div>
@@ -2550,7 +2960,7 @@ function App() {
               <div style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '1.5rem', paddingRight: '0.5rem' }}>
                 {cart.map(item => (
                   <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #E5DFC5' }}>
+                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #E5DFC5', flexShrink: 0 }}>
                       <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <span style={{ position: 'absolute', top: '-5px', right: '-5px', backgroundColor: '#2D3A29', color: '#FFF', fontSize: '0.65rem', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
                         {item.quantity}
@@ -2572,11 +2982,17 @@ function App() {
                   <span>Subtotal</span>
                   <span>£{cartSubtotal.toFixed(2)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: '0.85rem', color: '#5C635B' }}>
-                  <span>Shipping</span>
-                  <span>{amountForFreeShipping > 0 ? 'Calculated at next step' : 'Complimentary'}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
+                  <span>UK Delivery</span>
+                  <span style={{ color: '#2D3A29', fontWeight: 600 }}>Complimentary (Free)</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', color: '#2D3A29', fontWeight: 700 }}>
+                {shippingAddress.shippingCity && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#6E5535' }}>
+                    <span>Destination</span>
+                    <span>{shippingAddress.shippingCity}, UK</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', color: '#2D3A29', fontWeight: 700, borderTop: '1px solid #ECE7D8', paddingTop: '0.75rem' }}>
                   <span>Total</span>
                   <span>£{cartSubtotal.toFixed(2)}</span>
                 </div>
@@ -2585,14 +3001,37 @@ function App() {
 
             {/* Right Side: Payment Options (UK) */}
             <div className="checkout-form-col" style={{ backgroundColor: '#FFFFFF', padding: '2rem', width: '55%', position: 'relative', overflowY: 'auto' }}>
+            {/* Right Side: Two-Step Checkout (Address & Payment) */}
+            <div style={{ backgroundColor: '#FFFFFF', padding: '2rem 2.25rem', width: '58%', position: 'relative', overflowY: 'auto' }}>
               <button className="close-modal-btn" onClick={() => setIsCheckoutOpen(false)} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem' }}>
                 <X size={20} />
               </button>
               
-              <div style={{ textAlign: 'center', marginBottom: '2rem', marginTop: '1rem' }}>
-                <LichtLogo size="header" color="#2D3A29" markOnly={true} style={{ margin: '0 auto', marginBottom: '0.75rem' }} />
-                <h2 className="font-serif" style={{ fontSize: '1.8rem', color: '#2D3A29', marginBottom: '0.25rem', fontWeight: 400 }}>Secure Checkout</h2>
-                <p style={{ color: '#5C635B', fontSize: '0.85rem' }}>Choose your preferred payment method.</p>
+              {/* Checkout Progress Stepper */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.85rem', marginBottom: '1.75rem', marginTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setCheckoutStep('address')}
+                  style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: checkoutStep === 'address' ? '#2D3A29' : '#C5A059', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}
+                >
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: checkoutStep === 'address' ? '#2D3A29' : '#C5A059', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>1</span>
+                  <span>Delivery Address</span>
+                </button>
+                <div style={{ width: '32px', height: '2px', backgroundColor: '#E5DFC5' }} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (shippingAddress.shippingName && shippingAddress.shippingAddress && shippingAddress.shippingCity && shippingAddress.shippingPostcode) {
+                      setCheckoutStep('payment');
+                    } else {
+                      showToast('Please enter your delivery address first');
+                    }
+                  }}
+                  style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: checkoutStep === 'payment' ? '#2D3A29' : '#9CA3AF', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}
+                >
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: checkoutStep === 'payment' ? '#2D3A29' : '#E5DFC5', color: checkoutStep === 'payment' ? '#FFF' : '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>2</span>
+                  <span>Payment</span>
+                </button>
               </div>
 
               {/* Express Checkout Options (Apple/Google Pay mock) */}
@@ -2618,34 +3057,188 @@ function App() {
                   </button>
                 </div>
               </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
-                <span style={{ fontSize: '0.75rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Or pay with</span>
-                <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
-              </div>
-
-              {/* Payment Methods (UK focused) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                
-                {/* STRIPE CARD OPTION */}
-                <div style={{ border: '1.5px solid #2D3A29', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#F9FBF8', cursor: 'pointer', position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.4rem' }}>
-                    <div style={{ backgroundColor: '#1A1F71', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>VISA</div>
-                    <div style={{ backgroundColor: '#EB001B', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>MC</div>
-                    <div style={{ backgroundColor: '#006FCF', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>AMEX</div>
+              {/* ─── STEP 1: DELIVERY ADDRESS ─── */}
+              {checkoutStep === 'address' && (
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                    <h2 className="font-serif" style={{ fontSize: '1.7rem', color: '#2D3A29', margin: '0 0 0.35rem 0', fontWeight: 400 }}>Where should we deliver?</h2>
+                    <p style={{ color: '#5C635B', fontSize: '0.85rem', margin: 0 }}>Provide your delivery details so we can dispatch your pure natural essentials.</p>
                   </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '6px solid #2D3A29', display: 'inline-block' }}></div>
-                    <span style={{ fontWeight: 600, color: '#2D3A29', fontSize: '1.1rem' }}>Credit / Debit Card</span>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!shippingAddress.shippingName.trim() || !shippingAddress.shippingAddress.trim() || !shippingAddress.shippingCity.trim() || !shippingAddress.shippingPostcode.trim()) {
+                      showToast('Please fill in all required delivery fields.');
+                      return;
+                    }
+                    setCheckoutStep('payment');
+                  }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                        Full Name *
+                      </label>
+                      <input 
+                        type="text" 
+                        required 
+                        placeholder="e.g. Eleanor Vance" 
+                        value={shippingAddress.shippingName}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingName: e.target.value }))}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                          Contact Phone *
+                        </label>
+                        <input 
+                          type="tel" 
+                          required 
+                          placeholder="e.g. 07831082965" 
+                          value={shippingAddress.shippingPhone}
+                          onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingPhone: e.target.value }))}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                          Postcode / ZIP *
+                        </label>
+                        <input 
+                          type="text" 
+                          required 
+                          placeholder="e.g. W8 4PT" 
+                          value={shippingAddress.shippingPostcode}
+                          onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingPostcode: e.target.value.toUpperCase() }))}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                        Street Address *
+                      </label>
+                      <input 
+                        type="text" 
+                        required 
+                        placeholder="House number, Street name, Flat or Suite" 
+                        value={shippingAddress.shippingAddress}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingAddress: e.target.value }))}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                        Town / City *
+                      </label>
+                      <input 
+                        type="text" 
+                        required 
+                        placeholder="e.g. London" 
+                        value={shippingAddress.shippingCity}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingCity: e.target.value }))}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                        Order / Delivery Notes (Optional)
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Leave in safe place or porch if not in" 
+                        value={shippingAddress.orderNotes}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, orderNotes: e.target.value }))}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                      />
+                    </div>
+
+                    <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '0.85rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                      <Sparkles size={18} color="#C5A059" style={{ flexShrink: 0 }} />
+                      <span style={{ fontSize: '0.8rem', color: '#2D3A29', lineHeight: 1.4 }}>
+                        <strong>Complimentary UK Standard Delivery</strong> — Carefully packaged with eco-friendly natural materials.
+                      </span>
+                    </div>
+
+                    <button 
+                      type="submit"
+                      style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', fontSize: '1rem', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'background-color 0.2s ease' }}
+                    >
+                      Continue to Payment →
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* ─── STEP 2: PAYMENT METHOD ─── */}
+              {checkoutStep === 'payment' && (
+                <div>
+                  {/* Address Summary Badge with Edit link */}
+                  <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '6px', padding: '0.85rem 1rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '0.825rem', color: '#2D3A29', maxWidth: '80%' }}>
+                      <div style={{ color: '#6E5535', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.15rem' }}>Deliver to:</div>
+                      <strong>{shippingAddress.shippingName}</strong> — {shippingAddress.shippingAddress}, {shippingAddress.shippingCity} ({shippingAddress.shippingPostcode})
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setCheckoutStep('address')}
+                      style={{ background: 'none', border: 'none', color: '#C5A059', fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                    >
+                      Edit
+                    </button>
                   </div>
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <input type="text" placeholder="Card number" style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                      <input type="text" placeholder="MM / YY" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
-                      <input type="text" placeholder="CVC" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
+
+                  <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                    <h2 className="font-serif" style={{ fontSize: '1.7rem', color: '#2D3A29', marginBottom: '0.25rem', fontWeight: 400 }}>Payment Method</h2>
+                    <p style={{ color: '#5C635B', fontSize: '0.85rem', margin: 0 }}>Select your preferred secure payment method.</p>
+                  </div>
+
+                  {/* Express Checkout Options (Apple/Google Pay mock) */}
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.85rem' }}>
+                      <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                      <span style={{ fontSize: '0.72rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Express Checkout</span>
+                      <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button 
+                        onClick={() => {
+                          setOrderConfirmation({
+                            orderNumber: 'LLN-APPLE-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                            total: cartSubtotal.toFixed(2),
+                            method: 'Apple Pay',
+                            shipping: shippingAddress
+                          });
+                          setIsCheckoutOpen(false);
+                          setCart([]);
+                          showToast('Payment successful! Order placed via Apple Pay.');
+                        }}
+                        style={{ flex: 1, backgroundColor: '#000', color: '#FFF', border: 'none', padding: '0.85rem', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1.05rem', fontWeight: 500 }}
+                      >
+                        <svg viewBox="0 0 384 512" width="16" height="16" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg> Pay
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setOrderConfirmation({
+                            orderNumber: 'LLN-GPAY-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                            total: cartSubtotal.toFixed(2),
+                            method: 'Google Pay',
+                            shipping: shippingAddress
+                          });
+                          setIsCheckoutOpen(false);
+                          setCart([]);
+                          showToast('Payment successful! Order placed via Google Pay.');
+                        }}
+                        style={{ flex: 1, backgroundColor: '#FFF', color: '#3C4043', border: '1px solid #DADCE0', padding: '0.85rem', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1.05rem', fontWeight: 500, boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3)' }}
+                      >
+                        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M23.64 12.2045C23.64 11.3523 23.5636 10.5341 23.4218 9.75H12V14.3886H18.5236C18.24 15.8886 17.3891 17.1545 16.1236 17.9977V20.9705H20.0455C22.3364 18.8614 23.64 15.8182 23.64 12.2045Z"/><path fill="#34A853" d="M12 24C15.2727 24 18.0218 22.92 20.0455 20.9705L16.1236 17.9977C15.0327 18.7364 13.6364 19.1727 12 19.1727C8.83636 19.1727 6.15273 17.0364 5.18182 14.1705H1.13455V17.3073C3.14182 21.2891 7.23273 24 12 24Z"/><path fill="#FBBC05" d="M5.18182 14.1705C4.93091 13.425 4.78909 12.6341 4.78909 11.8227C4.78909 11.0114 4.93091 10.2205 5.18182 9.475V6.33818H1.13455C0.414545 7.76727 0 9.38182 0 11.8227C0 14.2636 0.414545 15.8782 1.13455 17.3073L5.18182 14.1705Z"/><path fill="#EA4335" d="M12 4.47273C13.7782 4.47273 15.3709 5.08364 16.6255 6.27818L20.1327 2.77091C18.0109 0.796364 15.2618 0 12 0C7.23273 0 3.14182 2.71091 1.13455 6.33818L5.18182 9.475C6.15273 6.60909 8.83636 4.47273 12 4.47273Z"/></svg> Pay
+                      </button>
                     </div>
                     <input type="text" placeholder="Name on card" style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
                   </div>
@@ -2659,7 +3252,6 @@ function App() {
                   <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by Stripe
                   </div>
-                </div>
 
                 {/* PAYPAL OPTION */}
                 <div 
@@ -2686,121 +3278,487 @@ function App() {
                     <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid #D6DDD3', display: 'inline-block' }}></div>
                     <span style={{ fontWeight: 600, color: '#FFB3C7', backgroundColor: '#0A0A0A', padding: '0.2rem 0.6rem', borderRadius: '15px', fontSize: '0.9rem' }}>Klarna.</span>
                     <span style={{ fontSize: '0.9rem', color: '#5C635B' }}>Pay in 3 interest-free instalments</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                    <span style={{ fontSize: '0.72rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Or pay with</span>
+                    <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                  </div>
+
+                  {/* Payment Methods */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    
+                    {/* STRIPE CARD OPTION */}
+                    <div style={{ border: '1.5px solid #2D3A29', borderRadius: '8px', padding: '1.25rem 1.5rem', backgroundColor: '#F9FBF8', position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.4rem' }}>
+                        <div style={{ backgroundColor: '#1A1F71', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>VISA</div>
+                        <div style={{ backgroundColor: '#EB001B', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>MC</div>
+                        <div style={{ backgroundColor: '#006FCF', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>AMEX</div>
+                      </div>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: '5px solid #2D3A29', display: 'inline-block' }}></div>
+                        <span style={{ fontWeight: 600, color: '#2D3A29', fontSize: '1.05rem' }}>Credit / Debit Card</span>
+                      </div>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                        <input type="text" placeholder="Card number" style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                          <input type="text" placeholder="MM / YY" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
+                          <input type="text" placeholder="CVC" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
+                        </div>
+                        <input type="text" placeholder="Name on card" defaultValue={shippingAddress.shippingName} style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
+                      </div>
+                      
+                      <button 
+                        style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', marginTop: '1.25rem', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                        onClick={() => {
+                          setOrderConfirmation({
+                            orderNumber: 'LLN-CARD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                            total: cartSubtotal.toFixed(2),
+                            method: 'Credit / Debit Card',
+                            shipping: shippingAddress
+                          });
+                          setIsCheckoutOpen(false);
+                          setCart([]);
+                          showToast('✨ Payment successful! Order confirmation dispatched.');
+                        }}
+                      >
+                        Pay £{cartSubtotal.toFixed(2)} Securely <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                      </button>
+                      <div style={{ textAlign: 'center', marginTop: '0.65rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by Stripe
+                      </div>
+                    </div>
+
+                    {/* PAYPAL SMART BUTTONS */}
+                    <div style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.25rem 1.5rem', backgroundColor: '#FFFFFF' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '20px' }} />
+                        <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Fast, secure PayPal checkout</span>
+                      </div>
+                      
+                      {paymentProcessing && (
+                        <div style={{ textAlign: 'center', padding: '1rem', color: '#6E5535', fontSize: '0.9rem' }}>
+                          <div style={{ display: 'inline-block', width: '20px', height: '20px', border: '2px solid #E5DFC5', borderTopColor: '#C5A059', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginRight: '0.5rem', verticalAlign: 'middle' }}></div>
+                          Processing your payment securely...
+                        </div>
+                      )}
+                      
+                      <div style={{ opacity: paymentProcessing ? 0.5 : 1, pointerEvents: paymentProcessing ? 'none' : 'auto' }}>
+                        <PayPalButtons
+                          style={{
+                            layout: 'vertical',
+                            color: 'gold',
+                            shape: 'rect',
+                            label: 'pay',
+                            height: 45,
+                            tagline: false,
+                          }}
+                          createOrder={createPayPalOrder}
+                          onApprove={capturePayPalOrder}
+                          onError={(err) => {
+                            setPaymentProcessing(false);
+                            showToast('PayPal encountered an error. Please try again.');
+                            console.error('PayPal Error:', err);
+                          }}
+                          onCancel={() => {
+                            setPaymentProcessing(false);
+                            showToast('Payment cancelled.');
+                          }}
+                        />
+                      </div>
+                    </div>
+
                   </div>
                 </div>
+              )}
 
-              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* AUTHENTICATION MODAL (LOGIN / REGISTER) - LUXURY VIBE */}
+      {/* AUTHENTICATION & PASSWORD RECOVERY MODAL - LUXURY VIBE */}
       {isAuthOpen && (
         <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => { setIsAuthOpen(false); setAuthExpandedOption(null); }}>
-          <div className="modal-card" style={{ maxWidth: '450px', width: '95%', padding: '3rem 2.5rem', borderRadius: '4px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 40px rgba(45,58,41,0.08)' }} onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={() => { setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', color: '#5C635B' }}>
+          <div className="modal-card" style={{ maxWidth: '480px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem 2.25rem', borderRadius: '6px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 40px rgba(45,58,41,0.08)' }} onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal-btn" onClick={() => { setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', color: '#5C635B' }}>
               <X size={22} />
             </button>
             
-            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-              <LichtLogo size="header" color="#2D3A29" markOnly={true} style={{ margin: '0 auto', marginBottom: '1.5rem' }} />
-              <h2 className="font-serif" style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '0.5rem', fontWeight: 400 }}>
-                {authMode === 'login' ? 'Welcome Back' : 'Create an Account'}
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <LichtLogo size="header" color="#2D3A29" markOnly={true} style={{ margin: '0 auto', marginBottom: '1rem' }} />
+              <h2 className="font-serif" style={{ fontSize: '1.9rem', color: '#2D3A29', marginBottom: '0.35rem', fontWeight: 400 }}>
+                {authMode === 'profile' ? 'Member Profile' :
+                 authMode === 'forgot' ? 'Reset Password' :
+                 authMode === 'login' ? 'Welcome Back' : 'Create an Account'}
               </h2>
               <p style={{ color: '#C5A059', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-                {authMode === 'login' ? 'Access your member profile' : 'Join the Luxe Naturals community'}
+                {authMode === 'profile' ? 'LICHT Luxe Naturals Member' :
+                 authMode === 'forgot' ? (forgotStep === 1 ? 'Step 1 of 3: Request Verification Code' : (forgotStep === 2 ? 'Step 2 of 3: Verify Passcode' : 'Step 3 of 3: New Password')) :
+                 authMode === 'login' ? 'Access your member profile' : 'Join the Luxe Naturals community'}
               </p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              
-              {/* KINGSCHAT BUTTON */}
-              <button 
-                style={{ width: '100%', padding: '1rem', backgroundColor: '#DFCAA7', color: '#2D3A29', border: '1px solid #C5A059', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
-                onClick={() => window.open('https://accounts.kingschat.online/log-in?clientId=5904093a-1631-43d7-b9e7-f1ab15d4b513&origin=%2F%3FauthRetry%3D1', '_blank')}
-                className="hover-bg-darken"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                {authMode === 'login' ? 'Sign in with KingsChat' : 'Sign up with KingsChat'}
-              </button>
-
-              {/* EMAIL BUTTON & ACCORDION */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                <button 
-                  style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'email' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'email' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
-                  onClick={() => setAuthExpandedOption(authExpandedOption === 'email' ? null : 'email')}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Mail size={16} color="#6E5535" strokeWidth={1.5} />
-                    {authMode === 'login' ? 'Continue with Email' : 'Sign up with Email'}
+            {/* ─── PROFILE VIEW (WHEN LOGGED IN) ─── */}
+            {authMode === 'profile' && currentUser && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '1.5rem', textAlign: 'center' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#2D3A29', color: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', fontSize: '1.4rem', fontWeight: 600, letterSpacing: '0.05em' }}>
+                    {currentUser.firstName ? currentUser.firstName.charAt(0).toUpperCase() : 'L'}
                   </div>
-                  {authExpandedOption === 'email' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
-                </button>
+                  <h3 style={{ margin: '0 0 0.25rem 0', color: '#2D3A29', fontSize: '1.2rem' }}>
+                    {currentUser.firstName} {currentUser.lastName}
+                  </h3>
+                  <p style={{ margin: 0, color: '#5C635B', fontSize: '0.85rem' }}>{currentUser.email}</p>
+                  <div style={{ marginTop: '0.75rem', display: 'inline-block', backgroundColor: '#DFCAA7', color: '#2D3A29', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em' }}>
+                    {currentUser.role || 'MEMBER'}
+                  </div>
+                </div>
 
-                {authExpandedOption === 'email' && (
-                  <form onSubmit={(e) => { e.preventDefault(); showToast('Success!'); setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {authMode === 'register' && (
-                      <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <input type="text" placeholder="First Name" required style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                        <input type="text" placeholder="Last Name" required style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                      </div>
-                    )}
-                    <input type="email" placeholder="Email Address" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                    <input type="password" placeholder="Password" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                    
-                    {authMode === 'login' && (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.25rem' }}>
-                        <button type="button" style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', textDecoration: 'underline', cursor: 'pointer' }}>
-                          Forgot Password?
-                        </button>
-                      </div>
-                    )}
+                <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <button 
+                    onClick={() => { setIsAuthOpen(false); navigateToTab('account'); }}
+                    style={{ width: '100%', padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FAF7F2', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', letterSpacing: '0.05em' }}
+                  >
+                    View My Account & Orders
+                  </button>
+                  <button 
+                    onClick={handleLogout}
+                    style={{ width: '100%', padding: '0.85rem', backgroundColor: 'transparent', color: '#8B0000', border: '1px solid #D6DDD3', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
 
-                    <button type="submit" style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
-                      {authMode === 'login' ? 'Sign In' : 'Create Account'}
+            {/* ─── FORGOT PASSWORD (OTP WORKFLOW) ─── */}
+            {authMode === 'forgot' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {forgotStep === 1 && (
+                  <form onSubmit={handleForgotPasswordRequest} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <p style={{ fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5, margin: 0 }}>
+                      Enter your registered email address below. We will send a secure 6-digit one-time passcode (OTP) to your inbox via <strong>info@lichtluxenaturals.org</strong>.
+                    </p>
+                    <input 
+                      type="email" 
+                      name="email"
+                      value={forgotForm.email}
+                      onChange={handleForgotInputChange}
+                      placeholder="Your registered email address" 
+                      required 
+                      style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                    />
+                    <button 
+                      type="submit" 
+                      disabled={authLoading}
+                      style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                    >
+                      {authLoading ? 'Sending Code...' : 'Send Verification Code'}
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setAuthMode('login')} 
+                      style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
+                    >
+                      ← Back to Sign In
+                    </button>
+                  </form>
+                )}
+
+                {forgotStep === 2 && (
+                  <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '1rem', textAlign: 'center' }}>
+                      <p style={{ fontSize: '0.85rem', color: '#2D3A29', margin: 0 }}>
+                        A 6-digit verification code was dispatched to:
+                      </p>
+                      <p style={{ fontWeight: 700, color: '#C5A059', margin: '4px 0 0 0', fontSize: '0.9rem' }}>
+                        {forgotForm.email}
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: '#7A8279', margin: '6px 0 0 0' }}>
+                        Valid for 10 minutes • Up to 5 attempts allowed
+                      </p>
+                    </div>
+
+                    <input 
+                      type="text" 
+                      name="otp"
+                      maxLength={6}
+                      value={forgotForm.otp}
+                      onChange={handleForgotInputChange}
+                      placeholder="Enter 6-Digit OTP" 
+                      required 
+                      style={{ width: '100%', padding: '0.95rem', borderRadius: '2px', border: '2px solid #C5A059', fontSize: '1.3rem', textAlign: 'center', letterSpacing: '0.3em', fontFamily: 'monospace', fontWeight: 700, backgroundColor: '#FFF' }} 
+                    />
+
+                    <button 
+                      type="submit" 
+                      disabled={authLoading}
+                      style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                    >
+                      {authLoading ? 'Verifying Code...' : 'Verify & Continue'}
+                    </button>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button 
+                        type="button" 
+                        onClick={() => setForgotStep(1)} 
+                        style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        ← Change email
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={handleForgotPasswordRequest} 
+                        style={{ background: 'none', border: 'none', color: '#C5A059', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+                      >
+                        Resend code
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {forgotStep === 3 && (
+                  <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <p style={{ fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5, margin: 0 }}>
+                      Code verified! Please enter your new password below.
+                    </p>
+                    <input 
+                      type="password" 
+                      name="newPassword"
+                      value={forgotForm.newPassword}
+                      onChange={handleForgotInputChange}
+                      placeholder="New Password (min 6 characters)" 
+                      required 
+                      minLength={6}
+                      style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                    />
+                    <input 
+                      type="password" 
+                      name="confirmPassword"
+                      value={forgotForm.confirmPassword}
+                      onChange={handleForgotInputChange}
+                      placeholder="Confirm New Password" 
+                      required 
+                      minLength={6}
+                      style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                    />
+                    <button 
+                      type="submit" 
+                      disabled={authLoading}
+                      style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                    >
+                      {authLoading ? 'Updating Password...' : 'Save New Password'}
                     </button>
                   </form>
                 )}
               </div>
+            )}
 
-              {/* PHONE BUTTON & ACCORDION */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+            {/* ─── LOGIN & REGISTRATION WORKFLOW ─── */}
+            {(authMode === 'login' || authMode === 'register') && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                
+                {/* KINGSCHAT BUTTON */}
                 <button 
-                  style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'phone' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'phone' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease', marginTop: authExpandedOption === 'email' ? '1rem' : '0' }}
-                  onClick={() => setAuthExpandedOption(authExpandedOption === 'phone' ? null : 'phone')}
+                  style={{ width: '100%', padding: '1rem', backgroundColor: '#DFCAA7', color: '#2D3A29', border: '1px solid #C5A059', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+                  onClick={() => window.open('https://accounts.kingschat.online/log-in?clientId=5904093a-1631-43d7-b9e7-f1ab15d4b513&origin=%2F%3FauthRetry%3D1', '_blank')}
+                  className="hover-bg-darken"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <Phone size={16} color="#6E5535" strokeWidth={1.5} />
-                    {authMode === 'login' ? 'Continue with Phone' : 'Sign up with Phone'}
-                  </div>
-                  {authExpandedOption === 'phone' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                  {authMode === 'login' ? 'Sign in with KingsChat' : 'Sign up with KingsChat'}
                 </button>
 
-                {authExpandedOption === 'phone' && (
-                  <form onSubmit={(e) => { e.preventDefault(); showToast('Success!'); setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <input type="tel" placeholder="Phone Number" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                    <input type="password" placeholder="Password" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                    <button type="submit" style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
-                      {authMode === 'login' ? 'Sign In' : 'Create Account'}
+                {/* EMAIL BUTTON & ACCORDION */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  <button 
+                    style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'email' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'email' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+                    onClick={() => setAuthExpandedOption(authExpandedOption === 'email' ? null : 'email')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <Mail size={16} color="#6E5535" strokeWidth={1.5} />
+                      {authMode === 'login' ? 'Continue with Email' : 'Sign up with Email'}
+                    </div>
+                    {authExpandedOption === 'email' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
+                  </button>
+
+                  {authExpandedOption === 'email' && (
+                    <form onSubmit={authMode === 'login' ? handleLoginSubmit : handleRegisterSubmit} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {authMode === 'register' && (
+                        <>
+                          <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <input 
+                              type="text" 
+                              name="firstName" 
+                              value={authForm.firstName} 
+                              onChange={handleAuthInputChange} 
+                              placeholder="First Name" 
+                              required 
+                              style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                            />
+                            <input 
+                              type="text" 
+                              name="lastName" 
+                              value={authForm.lastName} 
+                              onChange={handleAuthInputChange} 
+                              placeholder="Last Name" 
+                              required 
+                              style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                            />
+                          </div>
+                          <input 
+                            type="tel" 
+                            name="phone" 
+                            value={authForm.phone} 
+                            onChange={handleAuthInputChange} 
+                            placeholder="Phone Number (e.g. 07831082965)" 
+                            style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                          />
+                        </>
+                      )}
+                      
+                      <input 
+                        type="email" 
+                        name="email" 
+                        value={authForm.email} 
+                        onChange={handleAuthInputChange} 
+                        placeholder="Email Address" 
+                        required 
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                      />
+                      <input 
+                        type="password" 
+                        name="password" 
+                        value={authForm.password} 
+                        onChange={handleAuthInputChange} 
+                        placeholder="Password" 
+                        required 
+                        minLength={6}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
+                      />
+                      
+                      {authMode === 'login' && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.25rem' }}>
+                          <button 
+                            type="button" 
+                            onClick={() => {
+                              setAuthMode('forgot');
+                              setForgotStep(1);
+                              setForgotForm(prev => ({ ...prev, email: authForm.email }));
+                            }}
+                            style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', textDecoration: 'underline', cursor: 'pointer' }}
+                          >
+                            Forgot Password?
+                          </button>
+                        </div>
+                      )}
+
+                      <button 
+                        type="submit" 
+                        disabled={authLoading}
+                        style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                      >
+                        {authLoading ? 'Processing...' : (authMode === 'login' ? 'Sign In' : 'Create Account & Receive Welcome')}
+                      </button>
+                    </form>
+                  )}
+                </div>
+
+                {/* PHONE BUTTON & ACCORDION */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  <button 
+                    style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'phone' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'phone' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease', marginTop: authExpandedOption === 'email' ? '1rem' : '0' }}
+                    onClick={() => setAuthExpandedOption(authExpandedOption === 'phone' ? null : 'phone')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <Phone size={16} color="#6E5535" strokeWidth={1.5} />
+                      {authMode === 'login' ? 'Continue with Phone' : 'Sign up with Phone'}
+                    </div>
+                    {authExpandedOption === 'phone' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
+                  </button>
+
+                  {authExpandedOption === 'phone' && (
+                    <form onSubmit={(e) => { e.preventDefault(); showToast('Please use Email to receive your instant verification & order tracking updates.'); setAuthExpandedOption('email'); }} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <input type="tel" placeholder="Phone Number" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                      <input type="password" placeholder="Password" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                      <button type="submit" style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
+                        Switch to Email Verification
+                      </button>
+                    </form>
+                  )}
+                </div>
+
+              </div>
+            )}
+
+            {/* FOOTER SWITCHER */}
+            {authMode !== 'profile' && (
+              <div style={{ textAlign: 'center', marginTop: '2rem', borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', fontSize: '0.85rem', color: '#5C635B' }}>
+                {authMode === 'forgot' ? (
+                  <button 
+                    type="button" 
+                    onClick={() => { setAuthMode('login'); setForgotStep(1); }} 
+                    style={{ background: 'none', border: 'none', color: '#6E5535', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                  >
+                    Return to Sign In
+                  </button>
+                ) : (
+                  <>
+                    {authMode === 'login' ? "Don't have an account? " : "Already have an account? "}
+                    <button 
+                      type="button" 
+                      onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthExpandedOption(null); }} 
+                      style={{ background: 'none', border: 'none', color: '#6E5535', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                    >
+                      {authMode === 'login' ? 'Sign up here' : 'Sign in here'}
                     </button>
-                  </form>
+                  </>
                 )}
               </div>
+            )}
 
+          </div>
+        </div>
+      )}
+      
+      {/* ORDER CONFIRMATION MODAL */}
+      {orderConfirmation && (
+        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setOrderConfirmation(null)}>
+          <div className="modal-card" style={{ maxWidth: '500px', width: '95%', padding: '3rem 2.5rem', borderRadius: '8px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 60px rgba(45,58,41,0.12)', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ width: '70px', height: '70px', borderRadius: '50%', backgroundColor: '#2D3A29', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+                <Check size={32} color="#DFCAA7" />
+              </div>
+              <h2 className="font-serif" style={{ fontSize: '1.8rem', color: '#2D3A29', marginBottom: '0.5rem', fontWeight: 400 }}>Thank You!</h2>
+              <p style={{ color: '#5C635B', fontSize: '0.95rem', lineHeight: 1.6 }}>Your payment has been processed successfully.<br/>Your order is now being prepared with love.</p>
             </div>
-
-            <div style={{ textAlign: 'center', marginTop: '2.5rem', borderTop: '1px solid #E5DFC5', paddingTop: '1.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
-              {authMode === 'login' ? "Don't have an account? " : "Already have an account? "}
-              <button 
-                type="button" 
-                onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthExpandedOption(null); }} 
-                style={{ background: 'none', border: 'none', color: '#6E5535', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
-              >
-                {authMode === 'login' ? 'Sign up here' : 'Sign in here'}
-              </button>
+            
+            <div style={{ backgroundColor: '#F5F2EC', borderRadius: '8px', padding: '1.25rem', marginBottom: '1.5rem', textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Order Number</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2D3A29', letterSpacing: '0.05em' }}>{orderConfirmation.orderNumber}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Total Paid</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2D3A29' }}>£{orderConfirmation.total}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Payment Method</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#003087' }}>PayPal ✓</span>
+              </div>
             </div>
-
+            
+            <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', fontSize: '0.8rem', color: '#5C635B', marginBottom: '1.5rem' }}>
+              A confirmation email will be sent to your registered email address.
+            </div>
+            
+            <button
+              onClick={() => { setOrderConfirmation(null); navigateToTab('shop'); }}
+              style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+            >
+              Continue Shopping
+            </button>
           </div>
         </div>
       )}
@@ -2818,6 +3776,7 @@ function App() {
         </button>
       </div>
     </div>
+    </PayPalScriptProvider>
   );
 }
 

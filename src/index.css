@@ -242,13 +242,21 @@ h1, h2, h3, h4, .font-serif {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.brand-logo:hover {
+  opacity: 0.88;
 }
 
 /* LOGO STYLES — Side-by-Side Horizontal Layout (Icon Left, Bold Typography Right) */
+/* LOGO & COMPANY NAME STYLES */
 .licht-logo-container {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
   line-height: 1;
   text-decoration: none;
 }
@@ -267,11 +275,16 @@ h1, h2, h3, h4, .font-serif {
 }
 
 /* Bold enhanced icon styling */
+  user-select: none;
+  transition: var(--transition-smooth);
+}
+
 .licht-logo-mark-img {
   width: auto;
   height: auto;
   display: block;
   object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
 .licht-logo-mark-img.bold-mark {
@@ -373,6 +386,139 @@ h1, h2, h3, h4, .font-serif {
 .licht-logo-container.medium .licht-brand-subtitle {
   font-size: 0.8rem;
   letter-spacing: 0.34em;
+.licht-logo-text-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+
+.licht-logo-brand-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--color-olive-dark);
+  line-height: 1;
+  letter-spacing: 0.22em;
+  margin-right: -0.22em;
+  transition: color 0.3s ease;
+}
+
+.licht-logo-brand-sub {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #3D312A; /* Deep espresso charcoal - high contrast, clear readability */
+  line-height: 1;
+  letter-spacing: 0.26em;
+  margin-right: -0.26em;
+  transition: color 0.3s ease;
+}
+
+/* Dark variant (Footer or dark backgrounds) */
+.licht-logo-container.dark-variant .licht-logo-brand-title {
+  color: #FAF7F2;
+}
+
+.licht-logo-container.dark-variant .licht-logo-brand-sub {
+  color: #EAD8BA; /* Warm golden sand - radiant and legible on dark forest green */
+  opacity: 0.95;
+}
+
+/* Backward-compatibility utilities */
+.licht-logo-svg, .licht-logo-img {
+  width: auto;
+  height: 100%;
+  max-height: inherit;
+  display: block;
+  object-fit: contain;
+}
+
+/* Header size */
+.licht-logo-container.header {
+  height: auto;
+  max-height: 64px;
+}
+
+.licht-logo-container.header .licht-logo-mark-img {
+  height: 29px;
+  max-height: 29px;
+  margin-bottom: 2px;
+}
+
+.licht-logo-container.header .licht-logo-brand-title {
+  font-size: 1.15rem;
+  letter-spacing: 0.22em;
+  margin-right: -0.22em;
+}
+
+.licht-logo-container.header .licht-logo-brand-sub {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  margin-right: -0.26em;
+  margin-top: 2px;
+}
+
+/* Header mark-only (e.g. modals) */
+.licht-logo-container.header.mark-only .licht-logo-mark-img {
+  height: 48px;
+  max-height: 48px;
+  margin-bottom: 0;
+}
+
+/* Footer size */
+.licht-logo-container.footer {
+  height: auto;
+}
+
+.licht-logo-container.footer .licht-logo-mark-img {
+  height: 38px;
+  max-height: 38px;
+  margin-bottom: 4px;
+}
+
+.licht-logo-container.footer .licht-logo-brand-title {
+  font-size: 1.35rem;
+  letter-spacing: 0.24em;
+  margin-right: -0.24em;
+  color: #FAF7F2;
+}
+
+.licht-logo-container.footer .licht-logo-brand-sub {
+  font-size: 0.725rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  margin-right: -0.28em;
+  color: #EAD8BA;
+  margin-top: 3px;
+}
+
+/* Medium size */
+.licht-logo-container.medium {
+  height: auto;
+}
+
+.licht-logo-container.medium .licht-logo-mark-img {
+  height: 44px;
+  max-height: 44px;
+  margin-bottom: 4px;
+}
+
+.licht-logo-container.medium .licht-logo-brand-title {
+  font-size: 1.5rem;
+  letter-spacing: 0.24em;
+  margin-right: -0.24em;
+}
+
+.licht-logo-container.medium .licht-logo-brand-sub {
+  font-size: 0.775rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  margin-right: -0.28em;
+  margin-top: 4px;
 }
 
 .header-actions {
