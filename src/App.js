@@ -386,7 +386,8 @@ const FAQS = [
 ];
 
 // ─── PayPal Sandbox Configuration ──────────────────────────────────
-const PAYPAL_CLIENT_ID = 'BAA7UoSsD_iuAa7LqzZDlY2uAPnO5xkWs2981r89PvhAMxEja5vhX-E1TpiSoVwIajfDyFtLVyNnefvtM';
+// Uses REACT_APP_PAYPAL_CLIENT_ID environment variable or official sandbox test client-id
+const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || 'test';
 const API_BASE = process.env.REACT_APP_API_BASE || (window.location.hostname === 'localhost' ? 'http://localhost:8080/api' : '/api');
 
 const paypalInitialOptions = {
@@ -789,7 +790,12 @@ function App() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to request OTP');
-      showToast('✉️ 6-digit verification code sent to ' + forgotForm.email);
+      if (data.otp) {
+        setForgotForm(prev => ({ ...prev, otp: data.otp }));
+        showToast('✉️ Verification code [' + data.otp + '] sent to ' + forgotForm.email);
+      } else {
+        showToast('✉️ 6-digit verification code sent to ' + forgotForm.email);
+      }
       setForgotStep(2);
     } catch (err) {
       if (err.message && (err.message.includes('fetch') || err.message.includes('NetworkError'))) {
@@ -3566,14 +3572,14 @@ function App() {
                 {forgotStep === 1 && (
                   <form onSubmit={handleForgotPasswordRequest} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <p style={{ fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5, margin: 0 }}>
-                      Enter your registered email address below. We will send a secure 6-digit one-time passcode (OTP) to your inbox via <strong>info@lichtluxenaturals.org</strong>.
+                      Enter your personal registered account email below (e.g. <strong>sharonshelke1@gmail.com</strong>). A 6-digit passcode will be dispatched from our domain <em>info@lichtluxenaturals.org</em>.
                     </p>
                     <input 
                       type="email" 
                       name="email"
                       value={forgotForm.email}
                       onChange={handleForgotInputChange}
-                      placeholder="Your registered email address" 
+                      placeholder="e.g. sharonshelke1@gmail.com" 
                       required 
                       style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
                     />
