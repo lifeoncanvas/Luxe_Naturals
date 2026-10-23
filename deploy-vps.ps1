@@ -2,9 +2,9 @@
 # Server: 148.66.154.222 | Domain: lichtluxenaturals.org
 
 param(
-    [string]$serverUser = "deploy",
+    [string]$serverUser = "healing",
     [string]$serverIp = "148.66.154.222",
-    [string]$keyPath = ""  # e.g. "C:\Users\Sharon\Downloads\your-key.pem" if using SSH key
+    [string]$keyPath = ""
 )
 
 $serverHost = "${serverUser}@${serverIp}"
@@ -16,46 +16,48 @@ Write-Host " Server: $serverHost" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
 # 1. Build React frontend for production
-Write-Host "`n1. Building React frontend..." -ForegroundColor Green
+Write-Host "`n1. Building React frontend for production..." -ForegroundColor Green
 npm run build
 if ($LASTEXITCODE -ne 0) {
     Write-Error "React build failed! Check errors above."
     exit 1
 }
 
-# 2. Archive build folder
-Write-Host "`n2. Archiving production build..." -ForegroundColor Green
-tar -czf build.tar.gz -C build .
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to create build archive!"
+# 2. Archive build folder as deploy.zip
+Write-Host "`n2. Creating deployment archive deploy.zip..." -ForegroundColor Green
+Remove-Item -Force deploy.zip -ErrorAction SilentlyContinue
+Compress-Archive -Path build\* -DestinationPath deploy.zip -Force
+if (-not (Test-Path "deploy.zip")) {
+    Write-Error "Failed to create deploy.zip archive!"
     exit 1
 }
 
-# 3. Upload archive to VPS
-Write-Host "`n3. Uploading build archive to server..." -ForegroundColor Green
+# 3. Upload deploy.zip and nginx config to VPS
+Write-Host "`n3. Uploading build archive & Nginx config to server..." -ForegroundColor Green
 $scpArgs = @("-o", "StrictHostKeyChecking=no")
 if ($keyPath -and (Test-Path $keyPath)) {
     $scpArgs += @("-i", $keyPath)
 }
-$scpArgs += @("build.tar.gz", "${serverHost}:~/build.tar.gz")
+$scpFiles = $scpArgs + @("deploy.zip", "nginx-lichtluxenaturals.conf", "${serverHost}:/home/healing/")
 
-& "C:\Windows\System32\OpenSSH\scp.exe" @scpArgs
+& "C:\Windows\System32\OpenSSH\scp.exe" @scpFiles
 if ($LASTEXITCODE -ne 0) {
-    Remove-Item -Force build.tar.gz -ErrorAction SilentlyContinue
-    Write-Error "SCP upload failed! Check server connection, username, or key."
+    Remove-Item -Force deploy.zip -ErrorAction SilentlyContinue
+    Write-Error "SCP upload failed! Check server connection or password."
     exit 1
 }
-Remove-Item -Force build.tar.gz -ErrorAction SilentlyContinue
+Remove-Item -Force deploy.zip -ErrorAction SilentlyContinue
 
-# 4. Extract on server, set permissions, reload NGINX
-Write-Host "`n4. Deploying to /var/www/lichtluxenaturals and reloading NGINX..." -ForegroundColor Green
+# 4. Extract on server, link Nginx, set permissions, reload NGINX
+Write-Host "`n4. Extracting frontend, linking Nginx configuration, and reloading..." -ForegroundColor Green
 $remoteCommands = "sudo mkdir -p /var/www/lichtluxenaturals; " +
-                  "sudo rm -rf /var/www/lichtluxenaturals/*; " +
-                  "sudo tar -xzf ~/build.tar.gz -C /var/www/lichtluxenaturals/; " +
+                  "sudo unzip -o /home/healing/deploy.zip -d /var/www/lichtluxenaturals/; " +
+                  "sudo cp /home/healing/nginx-lichtluxenaturals.conf /etc/nginx/sites-available/lichtluxenaturals.org 2>/dev/null || sudo cp /home/healing/nginx-lichtluxenaturals.conf /etc/nginx/conf.d/lichtluxenaturals.conf; " +
+                  "sudo ln -sf /etc/nginx/sites-available/lichtluxenaturals.org /etc/nginx/sites-enabled/ 2>/dev/null; " +
                   "sudo chown -R www-data:www-data /var/www/lichtluxenaturals 2>/dev/null || sudo chown -R nginx:nginx /var/www/lichtluxenaturals 2>/dev/null; " +
                   "sudo chmod -R 755 /var/www/lichtluxenaturals; " +
-                  "sudo systemctl reload nginx; " +
-                  "rm -f ~/build.tar.gz"
+                  "sudo nginx -t && sudo systemctl reload nginx; " +
+                  "rm -f /home/healing/deploy.zip"
 
 $sshArgs = @("-o", "StrictHostKeyChecking=no")
 if ($keyPath -and (Test-Path $keyPath)) {
