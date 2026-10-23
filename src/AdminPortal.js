@@ -177,6 +177,11 @@ export default function AdminPortal({
   // Team & Administrator Access State
   const [users, setUsers] = useState([]);
   const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
+  // Email Audit Logs State
+  const [emailLogs, setEmailLogs] = useState([]);
+  const [emailSearchQuery, setEmailSearchQuery] = useState('');
+  const [emailStatusFilter, setEmailStatusFilter] = useState('all');
+
   const [promoteMode, setPromoteMode] = useState('promote'); // 'promote' | 'create'
   const [promoteEmail, setPromoteEmail] = useState('');
   const [promoteLoading, setPromoteLoading] = useState(false);
@@ -297,6 +302,19 @@ export default function AdminPortal({
           });
           setInventory(mappedInventory);
         }
+      }
+
+      // 4. Fetch Email Audit Logs
+      try {
+        const eRes = await fetch(`${API_BASE}/admin/email-logs`, { headers: authHeaders });
+        if (eRes.ok) {
+          const eData = await eRes.json();
+          if (Array.isArray(eData)) {
+            setEmailLogs(eData);
+          }
+        }
+      } catch (eErr) {
+        console.warn('Email logs fetch error:', eErr);
       }
     } catch (err) {
       console.warn('Backend sync error:', err);
@@ -750,6 +768,21 @@ export default function AdminPortal({
                 </div>
                 <span className="admin-nav-badge" style={{ backgroundColor: '#C5A059', color: '#161D15', fontWeight: 700 }}>
                   {users.length}
+                </span>
+              </button>
+            </li>
+
+            <li>
+              <button 
+                className={`admin-nav-item ${activeAdminTab === 'emails' ? 'active' : ''}`}
+                onClick={() => { setActiveAdminTab('emails'); setSearchQuery(''); }}
+              >
+                <div className="admin-nav-item-content">
+                  <Mail size={17} color={activeAdminTab === 'emails' ? '#C5A059' : '#A0A89F'} />
+                  <span>Email Audit & Logs</span>
+                </div>
+                <span className="admin-nav-badge" style={{ backgroundColor: '#C5A059', color: '#161D15', fontWeight: 700 }}>
+                  {emailLogs.length}
                 </span>
               </button>
             </li>
@@ -1695,6 +1728,313 @@ export default function AdminPortal({
                           </tr>
                         );
                       })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* TAB 7: EMAIL AUDIT & TRANSACTIONAL LOGS                                   */}
+          {/* ========================================================================= */}
+          {activeAdminTab === 'emails' && (
+            <div className="admin-tab-content animate-fade-in">
+              <div className="admin-page-header">
+                <div>
+                  <h1 className="admin-page-title">Email Delivery & Audit Logs</h1>
+                  <p className="admin-page-sub">
+                    Real-time transactional email history, OTP reset codes, and delivery statuses recorded in Supabase Cloud.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <button
+                    className="admin-btn admin-btn-outline"
+                    onClick={fetchLiveAdminData}
+                    disabled={isRefreshing}
+                    title="Refresh Email Logs"
+                  >
+                    <RefreshCw size={14} className={isRefreshing ? 'admin-spin' : ''} />
+                    <span>Sync Logs</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* KPI CARDS */}
+              <div className="admin-kpi-grid" style={{ marginBottom: '1.75rem' }}>
+                <div className="admin-kpi-card">
+                  <div className="admin-kpi-header">
+                    <span className="admin-kpi-label">Total Outbound</span>
+                    <Mail size={18} color="#C5A059" />
+                  </div>
+                  <div className="admin-kpi-value">{emailLogs.length}</div>
+                  <div className="admin-kpi-sub">Lifetime email attempts</div>
+                </div>
+
+                <div className="admin-kpi-card">
+                  <div className="admin-kpi-header">
+                    <span className="admin-kpi-label">Delivered</span>
+                    <CheckCircle2 size={18} color="#4AB97A" />
+                  </div>
+                  <div className="admin-kpi-value" style={{ color: '#4AB97A' }}>
+                    {emailLogs.filter(e => e.status === 'SENT').length}
+                  </div>
+                  <div className="admin-kpi-sub">Confirmed via SMTP</div>
+                </div>
+
+                <div className="admin-kpi-card">
+                  <div className="admin-kpi-header">
+                    <span className="admin-kpi-label">Failed / Issues</span>
+                    <AlertTriangle size={18} color="#FF6B6B" />
+                  </div>
+                  <div className="admin-kpi-value" style={{ color: '#FF6B6B' }}>
+                    {emailLogs.filter(e => e.status === 'FAILED').length}
+                  </div>
+                  <div className="admin-kpi-sub">Auth or relay rejections</div>
+                </div>
+
+                <div className="admin-kpi-card">
+                  <div className="admin-kpi-header">
+                    <span className="admin-kpi-label">Password OTPs</span>
+                    <Lock size={18} color="#C5A059" />
+                  </div>
+                  <div className="admin-kpi-value">
+                    {emailLogs.filter(e => (e.emailType || '').includes('OTP')).length}
+                  </div>
+                  <div className="admin-kpi-sub">Reset verification requests</div>
+                </div>
+              </div>
+
+              {/* FILTER BAR */}
+              <div className="admin-filter-bar" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '1.5rem', backgroundColor: '#1A2118', padding: '1rem 1.25rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
+                  <Search size={15} color="#A0A89F" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type="text"
+                    placeholder="Search by recipient, subject, or purpose..."
+                    value={emailSearchQuery}
+                    onChange={(e) => setEmailSearchQuery(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.6rem 0.85rem 0.6rem 2.4rem',
+                      backgroundColor: '#121711',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '6px',
+                      color: '#FAF7F2',
+                      fontSize: '0.85rem'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  {['all', 'SENT', 'FAILED'].map(st => (
+                    <button
+                      key={st}
+                      onClick={() => setEmailStatusFilter(st)}
+                      style={{
+                        padding: '0.45rem 0.85rem',
+                        borderRadius: '6px',
+                        border: '1px solid',
+                        borderColor: emailStatusFilter === st ? '#C5A059' : 'rgba(255,255,255,0.1)',
+                        backgroundColor: emailStatusFilter === st ? 'rgba(197, 160, 89, 0.15)' : 'transparent',
+                        color: emailStatusFilter === st ? '#C5A059' : '#A0A89F',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      {st === 'all' ? 'All Statuses' : st}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* TABLE */}
+              <div className="admin-table-container">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '70px' }}>ID</th>
+                      <th>Recipient</th>
+                      <th>Email Purpose</th>
+                      <th>Subject Line</th>
+                      <th>Status</th>
+                      <th>Diagnostics</th>
+                      <th style={{ textAlign: 'right' }}>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {emailLogs
+                      .filter(e => {
+                        const q = emailSearchQuery.toLowerCase();
+                        const matchQ = !q || 
+                          (e.recipient || '').toLowerCase().includes(q) ||
+                          (e.subject || '').toLowerCase().includes(q) ||
+                          (e.emailType || '').toLowerCase().includes(q);
+                        const matchStatus = emailStatusFilter === 'all' || e.status === emailStatusFilter;
+                        return matchQ && matchStatus;
+                      })
+                      .map(e => {
+                        const isSent = e.status === 'SENT';
+                        const isFailed = e.status === 'FAILED';
+
+                        // Purpose label & color
+                        let typeLabel = e.emailType || 'GENERAL';
+                        let typeBg = 'rgba(255,255,255,0.08)';
+                        let typeColor = '#FAF7F2';
+
+                        if (e.emailType === 'WELCOME') {
+                          typeLabel = 'Member Welcome';
+                          typeBg = 'rgba(74, 185, 122, 0.15)';
+                          typeColor = '#4AB97A';
+                        } else if (e.emailType === 'PASSWORD_RESET_OTP') {
+                          typeLabel = 'Password Reset OTP';
+                          typeBg = 'rgba(197, 160, 89, 0.18)';
+                          typeColor = '#C5A059';
+                        } else if (e.emailType === 'PASSWORD_CHANGED') {
+                          typeLabel = 'Security Notice';
+                          typeBg = 'rgba(104, 178, 255, 0.15)';
+                          typeColor = '#68B2FF';
+                        } else if (e.emailType === 'ORDER_CONFIRMATION') {
+                          typeLabel = 'Order Receipt';
+                          typeBg = 'rgba(180, 130, 255, 0.15)';
+                          typeColor = '#D4A5FF';
+                        } else if ((e.emailType || '').startsWith('ORDER_STATUS')) {
+                          typeLabel = 'Shipping Update';
+                          typeBg = 'rgba(80, 210, 220, 0.15)';
+                          typeColor = '#50D2DC';
+                        }
+
+                        return (
+                          <tr key={e.id}>
+                            <td style={{ color: '#8A9488', fontSize: '0.8rem', fontWeight: 600 }}>
+                              #{e.id}
+                            </td>
+
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <div style={{
+                                  width: '28px',
+                                  height: '28px',
+                                  borderRadius: '50%',
+                                  backgroundColor: 'rgba(197, 160, 89, 0.15)',
+                                  color: '#C5A059',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700
+                                }}>
+                                  {(e.recipient || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <a
+                                  href={`mailto:${e.recipient}`}
+                                  style={{ color: '#FAF7F2', fontWeight: 600, textDecoration: 'none' }}
+                                >
+                                  {e.recipient}
+                                </a>
+                              </div>
+                            </td>
+
+                            <td>
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                padding: '0.2rem 0.6rem',
+                                borderRadius: '9999px',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                backgroundColor: typeBg,
+                                color: typeColor,
+                                letterSpacing: '0.03em'
+                              }}>
+                                {typeLabel}
+                              </span>
+                            </td>
+
+                            <td style={{ color: '#D6DDD3', fontSize: '0.85rem', maxWidth: '320px' }}>
+                              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={e.subject}>
+                                {e.subject}
+                              </div>
+                            </td>
+
+                            <td>
+                              {isSent ? (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  backgroundColor: 'rgba(74, 185, 122, 0.15)',
+                                  color: '#4AB97A',
+                                  padding: '0.2rem 0.6rem',
+                                  borderRadius: '4px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700
+                                }}>
+                                  <CheckCircle2 size={12} /> SENT
+                                </span>
+                              ) : isFailed ? (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  backgroundColor: 'rgba(255, 107, 107, 0.15)',
+                                  color: '#FF6B6B',
+                                  padding: '0.2rem 0.6rem',
+                                  borderRadius: '4px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700
+                                }}>
+                                  <AlertTriangle size={12} /> FAILED
+                                </span>
+                              ) : (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                                  color: '#A0A89F',
+                                  padding: '0.2rem 0.6rem',
+                                  borderRadius: '4px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 600
+                                }}>
+                                  {e.status}
+                                </span>
+                              )}
+                            </td>
+
+                            <td style={{ fontSize: '0.78rem' }}>
+                              {isFailed ? (
+                                <span style={{ color: '#FF9E9E', fontStyle: 'italic' }}>
+                                  {e.errorMessage || 'Authentication failed'} (x{e.retryCount || 2} retries)
+                                </span>
+                              ) : (
+                                <span style={{ color: '#8A9488' }}>
+                                  Delivered via SMTP
+                                </span>
+                              )}
+                            </td>
+
+                            <td style={{ textAlign: 'right', color: '#8A9488', fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
+                              {e.createdAt ? new Date(e.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Recent'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+
+                    {emailLogs.length === 0 && (
+                      <tr>
+                        <td colSpan={7} style={{ textAlign: 'center', padding: '3rem 1rem', color: '#8A9488' }}>
+                          <Mail size={32} color="#C5A059" style={{ opacity: 0.5, marginBottom: '0.75rem' }} />
+                          <div style={{ fontSize: '1rem', fontWeight: 600, color: '#FAF7F2' }}>No Email Records Found</div>
+                          <div style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                            Outgoing emails triggered by customer registration, forgot password, or orders will appear here automatically.
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
