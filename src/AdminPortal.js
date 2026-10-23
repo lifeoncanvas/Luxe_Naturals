@@ -30,7 +30,9 @@ import {
 } from 'lucide-react';
 import './AdminPortal.css';
 
-const API_BASE = process.env.REACT_APP_API_BASE || (window.location.hostname === 'localhost' ? 'http://localhost:9090/api' : '/api');
+const API_BASE = (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+  ? '/api'
+  : (process.env.REACT_APP_API_BASE || 'https://lichtluxenaturals.org/api');
 
 // Initial Mock Inventory if not already passed
 export const DEFAULT_INVENTORY = [
