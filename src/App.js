@@ -19,10 +19,29 @@ import {
   Sparkle,
   Award,
   ArrowLeft,
-  User
+  User,
+  Menu,
+  ShieldCheck
 } from 'lucide-react';
 import './App.css';
+import AdminPortal, { DEFAULT_ORDERS, DEFAULT_INVENTORY } from './AdminPortal';
+import './AdminPortal.css';
 
+// Horizontal Side-by-Side Logo Component (Icon on Left, Bold Company Typography on Right)
+const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', variant = 'light', markOnly = false }) => {
+  const isDark = variant === 'dark' || color === '#FAF7F2' || color === '#FFFFFF' || color === 'white' || size === 'footer';
+  
+  const markSrc = isDark ? '/logo-dark-mark.png' : '/logo-light-mark.png';
+  const titleColor = isDark ? '#FAF7F2' : (color !== 'currentColor' ? color : '#1E221D');
+  const subColor = isDark ? '#C5A059' : '#6E5535';
+
+  if (markOnly) {
+    return (
+      <div className={`licht-logo-container mark-only ${className} ${size}`}>
+        <img 
+          src={markSrc} 
+          alt="LICHT Mark" 
+          className="licht-logo-mark-img bold-mark" 
 // Dynamic Logo Component for LICHT LUXE NATURALS with high-contrast, crystal-clear typography
 const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', variant = 'light', markOnly = false, style = {} }) => {
   const isDark = variant === 'dark' || color === '#FAF7F2' || color === '#FFFFFF' || color === 'white' || size === 'footer';
@@ -41,6 +60,21 @@ const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', va
   }
 
   return (
+    <div className={`licht-logo-container horizontal-brand ${className} ${size}`}>
+      <div className="licht-logo-mark-wrap">
+        <img 
+          src={markSrc} 
+          alt="LICHT Logo Mark" 
+          className="licht-logo-mark-img bold-mark" 
+        />
+      </div>
+      <div className="licht-logo-text-col">
+        <span className="licht-brand-title" style={{ color: titleColor }}>
+          LICHT
+        </span>
+        <span className="licht-brand-subtitle" style={{ color: subColor }}>
+          LUXE NATURALS
+        </span>
     <div 
       className={`licht-logo-container ${className} ${size} ${isDark ? 'dark-variant' : 'light-variant'}`} 
       style={style}
@@ -164,6 +198,123 @@ const PRODUCTS = [
     ]
   },
   {
+    id: 'african-black-liquid-soap',
+    name: 'African Black Soap',
+    tagline: 'Deep cleansing. Skin & body.',
+    subtitle: 'Deep Cleansing • Clarifying • 100% Botanical',
+    price: 24,
+    badge: '100% NATURAL CLEANSE',
+    volume: '500 ml / 16.9 fl oz',
+    rating: '5.0',
+    reviewsCount: 152,
+    image: '/african_black_soap_primary.jpg',
+    shortDescription: 'Our African Black Soap is a rich, natural cleanser made from traditional African ingredients. It gently cleanses, helps remove impurities, and leaves the skin feeling fresh, clean and smooth.',
+    description: 'Our African Black Soap is a rich, natural cleanser crafted from traditional African botanical ingredients. It gently cleanses and purifies the skin, helps remove dirt and excess oils, helps reduce acne and blemishes, and leaves the skin feeling revitalised, fresh and smooth. Available in both a convenient Liquid Soap pump bottle and a traditional 300g normal soap jar.',
+    ingredients: 'Water, Potash (from Plantain Skins), Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter Extract, Natural Botanicals (Neem, Camwood, Aloe Vera), Fragrance.',
+    benefits: [
+      'Gently cleanses and purifies the skin',
+      'Helps reduce acne, blemishes and breakouts',
+      'Leaves skin feeling fresh, clean and smooth',
+      'Supports clearer, healthier-looking skin',
+      'Suitable for all skin types'
+    ],
+    perfectFor: [
+      'Daily facial & body cleansing',
+      'Blemish-prone & oily skin',
+      'Deep pore purification',
+      'Clearing breakouts & acne',
+      'Balancing and soothing skin',
+      'All skin types & sensitive skin'
+    ],
+    howToUse: 'Apply a small amount to wet skin or sponge, lather gently and massage across face and body. Rinse thoroughly with water. Use daily for best results.',
+    gallery: [
+      '/african_black_soap_primary.jpg',
+      '/african_black_soap_dual.jpg',
+      '/clear_skin_model.jpg'
+    ],
+    variants: [
+      {
+        id: 'african-black-liquid-soap',
+        variantType: 'liquid',
+        name: 'African Black Liquid Soap',
+        formatLabel: 'Liquid Soap (Pump)',
+        tagline: 'Deep Cleansing • Skin & Body',
+        subtitle: 'Deep Cleansing • Clarifying • 100% Botanical',
+        price: 24,
+        volume: '500 ml / 16.9 fl oz',
+        badge: '100% NATURAL CLEANSE',
+        packaging: 'Amber Pump Dispenser (500 ml)',
+        highlight: 'Skin & Body Wash',
+        image: '/african_black_soap_primary.jpg',
+        gallery: [
+          '/african_black_soap_primary.jpg',
+          '/african_black_soap_dual.jpg',
+          '/clear_skin_model.jpg'
+        ],
+        shortDescription: 'Our African Black Liquid Soap is a rich, natural cleanser made from traditional African ingredients. It gently cleanses, helps remove impurities, and leaves the skin feeling fresh, clean and smooth.',
+        description: 'Our African Black Liquid Soap is a rich, natural cleanser crafted from traditional African botanical ingredients. Formulated for everyday convenience with an amber pump dispenser, it gently cleanses and purifies the skin, helps remove dirt and excess oils, helps reduce acne and blemishes, and leaves the skin feeling revitalised, fresh and smooth. Suitable for daily use on both face and body, across all skin types.',
+        ingredients: 'Water, Potash (from Plantain Skins), Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter Extract, Natural Botanicals (Neem, Camwood, Aloe Vera), Fragrance.',
+        benefits: [
+          'Gently cleanses and purifies skin & body',
+          'Helps reduce acne, blemishes and excess oil',
+          'Refreshes and soothes irritated skin',
+          'Convenient mess-free pump dispenser',
+          'Supports clearer, healthier-looking skin',
+          'Suitable for all skin types'
+        ],
+        perfectFor: [
+          'Daily facial & body cleansing',
+          'Blemish-prone & oily skin',
+          'In-shower body wash convenience',
+          'Deep pore purification',
+          'Clearing breakouts & acne',
+          'All skin types'
+        ],
+        howToUse: 'Dispense 1–2 pumps onto wet hands or sponge, lather gently and massage across face and body. Rinse thoroughly with water. Use daily for best results.'
+      },
+      {
+        id: 'african-black-soap-jar',
+        variantType: 'normal',
+        name: 'African Black Soap',
+        formatLabel: 'Normal Soap (Jar)',
+        tagline: 'Deep Cleansing • Purifying • Natural Glow',
+        subtitle: 'Deep Cleansing • Purifying • Natural Glow (Face & Body)',
+        price: 22,
+        volume: '300g / 10.5 oz',
+        badge: 'TRADITIONAL 300G JAR',
+        packaging: 'Wide-Mouth Jar (300g)',
+        highlight: 'Face & Body Ritual',
+        image: '/african_black_soap_jar.jpg',
+        gallery: [
+          '/african_black_soap_jar.jpg',
+          '/african_black_soap_dual.jpg',
+          '/clear_skin_model.jpg'
+        ],
+        shortDescription: 'Our African Black Soap is a traditional natural cleanser made from plantain skins, cocoa pod ash and natural botanicals. It gently cleanses, removes dirt and excess oil, helps clear blemishes and leaves the skin fresh, smooth and healthy.',
+        description: 'Our African Black Soap is a traditional natural cleanser made from plantain skins, cocoa pod ash and natural botanicals. Hand-packed in a 300g jar, it gently cleanses, removes dirt and excess oil, helps clear blemishes and leaves the skin fresh, smooth and healthy. Suitable for daily use on face and body across all skin types.',
+        ingredients: 'Plantain Skins, Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter, Water, Natural Botanicals (e.g. Neem, Camwood, Aloe Vera, etc.).',
+        benefits: [
+          'Deeply cleanses and purifies the skin',
+          'Helps reduce acne, blemishes and excess oil',
+          'Improves skin texture and tone',
+          'Leaves skin fresh, smooth and glowing',
+          'Suitable for all skin types',
+          '100% chemical free & gentle on skin'
+        ],
+        perfectFor: [
+          'Targeted acne & blemish clearing',
+          'Traditional face & body cleansing ritual',
+          'Improving skin texture & tone',
+          'Balancing oily & congested skin',
+          'Natural glow enhancement',
+          'All skin types'
+        ],
+        howToUse: 'Apply a small amount to wet skin, massage gently and rinse thoroughly with water. Use daily for best results.',
+        storage: 'Store in a cool, dry place. Keep away from direct sunlight. For external use only.'
+      }
+    ]
+  },
+  {
     id: 'luxe-trio-gift-set',
     name: 'The Luxe Trio Gift Set',
     tagline: 'The complete natural luxury collection.',
@@ -217,6 +368,13 @@ const REVIEWS = [
     author: "Sophia R.",
     role: "Verified Customer",
     product: "Pure Coconut Oil"
+  },
+  {
+    id: 4,
+    quote: "The African Black Liquid Soap transformed my daily wash routine. It leaves my skin deeply cleansed, blemish-free and calm without any tightness.",
+    author: "Amara T.",
+    role: "Verified Customer",
+    product: "African Black Liquid Soap"
   }
 ];
 
@@ -267,9 +425,19 @@ function App() {
   // Navigation active tab: 'home' | 'shop' | 'story' | 'gifting' | 'contact' | 'product'
   const [activeTab, setActiveTab] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0]);
+  const [selectedVariant, setSelectedVariant] = useState(
+    PRODUCTS[0].variants && PRODUCTS[0].variants.length > 0 ? PRODUCTS[0].variants[0] : null
+  );
   const [pdpQuantity, setPdpQuantity] = useState(1);
   const [pdpPrimaryImage, setPdpPrimaryImage] = useState(PRODUCTS[0].image);
   const [pdpGalleryImages, setPdpGalleryImages] = useState(PRODUCTS[0].gallery);
+
+  // Variant Selection Logic (switches primary image, gallery views, and formula specifications)
+  const handleSelectVariant = (variant) => {
+    setSelectedVariant(variant);
+    setPdpPrimaryImage(variant.image);
+    setPdpGalleryImages(variant.gallery || [variant.image]);
+  };
 
   // Gallery Image Swapping Logic (clicking secondary thumbnail replaces primary image)
   const handleSwapGalleryImage = (clickedIndex) => {
@@ -329,6 +497,9 @@ function App() {
   const [toastMessage, setToastMessage] = useState(null);
   const [expandedFaq, setExpandedFaq] = useState(null);
 
+  // Admin & Operations Portal State
+  const [adminOrders, setAdminOrders] = useState(DEFAULT_ORDERS);
+  const [adminInventory, setAdminInventory] = useState(DEFAULT_INVENTORY);
   // PayPal payment state
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [orderConfirmation, setOrderConfirmation] = useState(null);
@@ -404,26 +575,110 @@ function App() {
     }, 5000);
   };
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   // Navigate to tab & scroll to top
   const navigateToTab = (tabName) => {
     setActiveTab(tabName);
+    setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Process and sync completed storefront checkout into Admin Orders & Inventory
+  const processCompletedOrder = (paymentMethod = 'Credit / Debit Card') => {
+    if (cart.length === 0) return;
+    const newOrderId = `LN-${1083 + adminOrders.length}`;
+    const orderDate = new Date().toLocaleDateString('en-GB', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    
+    const newOrder = {
+      id: newOrderId,
+      date: orderDate,
+      customer: {
+        name: 'Online Guest Client',
+        email: 'guest.checkout@example.co.uk',
+        phone: '+44 7831 082965',
+        address: '10 Downing Street, Westminster, London SW1A 2AA, UK'
+      },
+      items: cart.map(item => ({
+        name: `${item.name}${item.volume ? ` (${item.volume})` : ''}`,
+        qty: item.quantity,
+        price: item.price
+      })),
+      total: cartSubtotal,
+      paymentMethod: paymentMethod,
+      paymentStatus: 'Paid',
+      deliveryStatus: 'Processing',
+      courier: 'Royal Mail Tracked 24',
+      trackingNumber: `RM${Math.floor(100000000 + Math.random() * 900000000)}GB`,
+      source: 'Online Storefront',
+      notes: 'Placed via web storefront checkout.'
+    };
+
+    // Deduct inventory for matching items
+    setAdminInventory(prevInv => {
+      return prevInv.map(invItem => {
+        const cartMatch = cart.find(c => 
+          (c.id && (invItem.productId === c.id || invItem.sku.toLowerCase().includes(c.id.toLowerCase()))) ||
+          (c.name && invItem.name.toLowerCase().includes(c.name.toLowerCase()))
+        );
+        if (cartMatch) {
+          return {
+            ...invItem,
+            stock: Math.max(0, invItem.stock - cartMatch.quantity)
+          };
+        }
+        return invItem;
+      });
+    });
+
+    // Append to admin orders
+    setAdminOrders(prev => [newOrder, ...prev]);
+    showToast(`Order #${newOrderId} confirmed! Logged to Admin Portal.`);
+    setIsCheckoutOpen(false);
+    setCart([]);
   };
 
   // Open dedicated product detail page
   const openProductDetail = (product) => {
     setSelectedProduct(product);
     setPdpQuantity(1);
-    setPdpPrimaryImage(product.image);
-    setPdpGalleryImages(product.gallery || [
+    const initialVariant = product.variants && product.variants.length > 0 ? product.variants[0] : null;
+    setSelectedVariant(initialVariant);
+    const primaryImg = initialVariant ? initialVariant.image : product.image;
+    const galleryImgs = initialVariant ? initialVariant.gallery : (product.gallery || [
       product.image,
       '/body_butter_hand_apply.jpg',
       'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=500&q=80'
     ]);
+    setPdpPrimaryImage(primaryImg);
+    setPdpGalleryImages(galleryImgs);
     setActiveTab('product');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Active product resolver for PDP (uses selected variant if available)
+  const activeProduct = (selectedProduct && selectedProduct.variants && selectedProduct.variants.length > 0)
+    ? (selectedVariant || selectedProduct.variants[0])
+    : selectedProduct;
+
+  // If activeTab is 'admin', render dedicated standalone Admin Portal view
+  if (activeTab === 'admin') {
+    return (
+      <AdminPortal 
+        orders={adminOrders} 
+        setOrders={setAdminOrders} 
+        inventory={adminInventory} 
+        setInventory={setAdminInventory} 
+        onExitToStore={() => navigateToTab('home')} 
+      />
+    );
+  }
   // Open Checkout with auto pre-fill
   const openCheckout = () => {
     setIsCartOpen(false);
@@ -778,6 +1033,14 @@ function App() {
         <span>•</span>
         <span>Order online or call us at <a href="tel:07831082965">07831082965</a></span>
         <span>•</span>
+        <button 
+          onClick={() => navigateToTab('admin')}
+          style={{ background: 'none', border: 'none', color: '#FAF7F2', opacity: 0.95, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: 'inherit', fontFamily: 'inherit', textDecoration: 'underline', padding: 0 }}
+          title="Open Operations & Inventory Management"
+        >
+          <ShieldCheck size={13} color="#C5A059" /> Admin Portal
+        </button>
+        <span>•</span>
         <span className="loveworld-badge" style={{ padding: '0.2rem 0.6rem', fontSize: '0.65rem' }}>
           MADE IN LOVEWORLD
         </span>
@@ -786,7 +1049,16 @@ function App() {
       {/* HEADER / NAVIGATION WITH LOGO IN CENTER */}
       <header className="site-header">
         <div className="header-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Left Navigation Menu */}
+          {/* Mobile Hamburger Toggle Button */}
+          <button 
+            className="mobile-menu-toggle"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+          >
+            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+
+          {/* Left Navigation Menu (Desktop) */}
           <nav className="nav-links-left">
             <button 
               className={`nav-link ${activeTab === 'home' ? 'active' : ''}`}
@@ -845,6 +1117,14 @@ function App() {
           <div className="header-actions">
             <button 
               className="icon-btn" 
+              title="Admin & Operations Portal" 
+              onClick={() => navigateToTab('admin')}
+              style={{ color: '#C5A059' }}
+            >
+              <ShieldCheck size={20} />
+            </button>
+            <button 
+              className="icon-btn" 
               title="Sign In / Register" 
               onClick={() => { setAuthMode('login'); setIsAuthOpen(true); }}
             >
@@ -859,16 +1139,102 @@ function App() {
             </button>
             
             <button 
-              className="btn-primary" 
+              className="btn-primary header-cart-btn" 
               onClick={() => setIsCartOpen(true)}
               style={{ padding: '0.6rem 1.25rem', fontSize: '0.825rem', gap: '0.45rem', fontWeight: 600 }}
             >
               <ShoppingBag size={16} />
-              <span>SHOP NOW</span>
+              <span className="cart-btn-text">SHOP NOW</span>
               <span className="cart-count-badge">({cart.reduce((a, b) => a + b.quantity, 0)})</span>
             </button>
           </div>
         </div>
+
+        {/* Mobile Slide-in Navigation Drawer */}
+        {isMobileMenuOpen && (
+          <div className="mobile-nav-drawer-overlay" onClick={() => setIsMobileMenuOpen(false)}>
+            <div className="mobile-nav-drawer" onClick={(e) => e.stopPropagation()}>
+              <div className="mobile-nav-header">
+                <LichtLogo size="header" />
+                <button className="mobile-nav-close" onClick={() => setIsMobileMenuOpen(false)}>
+                  <X size={22} />
+                </button>
+              </div>
+
+              <div className="mobile-nav-links">
+                <button 
+                  className={`mobile-nav-link ${activeTab === 'home' ? 'active' : ''}`}
+                  onClick={() => navigateToTab('home')}
+                >
+                  <span>HOME</span>
+                  <ArrowUpRight size={16} />
+                </button>
+                <button 
+                  className={`mobile-nav-link ${activeTab === 'shop' || activeTab === 'product' ? 'active' : ''}`}
+                  onClick={() => navigateToTab('shop')}
+                >
+                  <span>SHOP COLLECTION</span>
+                  <ArrowUpRight size={16} />
+                </button>
+                <button 
+                  className={`mobile-nav-link ${activeTab === 'story' ? 'active' : ''}`}
+                  onClick={() => navigateToTab('story')}
+                >
+                  <span>OUR STORY</span>
+                  <ArrowUpRight size={16} />
+                </button>
+                <button 
+                  className={`mobile-nav-link ${activeTab === 'gifting' ? 'active' : ''}`}
+                  onClick={() => navigateToTab('gifting')}
+                >
+                  <span>GIFTING & SETS</span>
+                  <ArrowUpRight size={16} />
+                </button>
+                <button 
+                  className={`mobile-nav-link ${activeTab === 'contact' ? 'active' : ''}`}
+                  onClick={() => navigateToTab('contact')}
+                >
+                  <span>CONTACT US</span>
+                  <ArrowUpRight size={16} />
+                </button>
+                <button 
+                  className={`mobile-nav-link ${activeTab === 'admin' ? 'active' : ''}`}
+                  onClick={() => navigateToTab('admin')}
+                  style={{ color: '#C5A059', borderTop: '1px solid rgba(197, 160, 89, 0.2)', marginTop: '0.4rem', paddingTop: '0.8rem' }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <ShieldCheck size={18} color="#C5A059" /> ADMIN PORTAL
+                  </span>
+                  <ArrowUpRight size={16} />
+                </button>
+              </div>
+
+              <div className="mobile-nav-actions">
+                <button 
+                  className="mobile-nav-btn secondary"
+                  onClick={() => { setIsMobileMenuOpen(false); setAuthMode('login'); setIsAuthOpen(true); }}
+                >
+                  <User size={16} /> Member Sign In / Register
+                </button>
+                <a 
+                  href="tel:07831082965"
+                  className="mobile-nav-btn primary"
+                >
+                  <Phone size={16} /> Call to Order: 07831082965
+                </a>
+              </div>
+
+              <div className="mobile-nav-footer">
+                <div className="loveworld-badge" style={{ margin: '0 auto', width: 'fit-content' }}>
+                  MADE IN LOVEWORLD
+                </div>
+                <p style={{ fontSize: '0.75rem', color: '#6E5535', marginTop: '0.5rem', textAlign: 'center' }}>
+                  Pure. Natural. Handcrafted with Love.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ========================================================================= */}
@@ -878,13 +1244,13 @@ function App() {
         <main style={{ backgroundColor: '#EAD8BA', minHeight: '85vh', paddingBottom: '5rem' }}>
           {/* Breadcrumb Header Bar */}
           <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
-            <div className="container" style={{ fontSize: '0.85rem', color: '#5C635B', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className="container" style={{ fontSize: '0.85rem', color: '#5C635B', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
                 <span>/</span>
                 <button onClick={() => navigateToTab('shop')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Shop Collection</button>
                 <span>/</span>
-                <span style={{ color: '#2D3A29', fontWeight: 600 }}>{selectedProduct.name}</span>
+                <span style={{ color: '#2D3A29', fontWeight: 600 }}>{activeProduct.name}</span>
               </div>
 
               <button 
@@ -902,20 +1268,20 @@ function App() {
               beautiful
             </div>
             <div className="container">
-              <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '4rem', alignItems: 'start' }}>
+              <div className="responsive-pdp-grid">
                 
                 {/* Left Product Image Gallery Column */}
                 <div>
-                  <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', border: '2px solid #C5A059', boxShadow: '0 20px 50px rgba(74, 93, 78, 0.12)', height: '520px', backgroundColor: '#DFCAA7' }}>
+                  <div className="pdp-main-image-wrap" style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', border: '2px solid #C5A059', boxShadow: '0 20px 50px rgba(74, 93, 78, 0.12)', height: '520px', backgroundColor: '#DFCAA7' }}>
                     <img 
                       src={pdpPrimaryImage} 
-                      alt={selectedProduct.name} 
+                      alt={activeProduct.name} 
                       style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.35s ease' }}
                     />
                     
                     {/* Badge Overlay */}
                     <span style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.75rem', padding: '0.35rem 0.85rem', borderRadius: '4px', letterSpacing: '0.12em', fontWeight: 600 }}>
-                      {selectedProduct.badge}
+                      {activeProduct.badge || selectedProduct.badge}
                     </span>
 
                     {/* Wishlist Button */}
@@ -929,7 +1295,7 @@ function App() {
                   </div>
 
                   {/* Thumbnail Gallery Swatches - Clicking swaps primary and secondary image */}
-                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${pdpGalleryImages.length}, 1fr)`, gap: '1rem', marginTop: '1.25rem' }}>
+                  <div className="pdp-gallery-thumbs" style={{ display: 'grid', gridTemplateColumns: `repeat(${pdpGalleryImages.length}, 1fr)`, gap: '1rem', marginTop: '1.25rem' }}>
                     {pdpGalleryImages.map((imgSrc, idx) => (
                       <div 
                         key={idx}
@@ -947,36 +1313,114 @@ function App() {
                         }}
                         title="Click to view as main image"
                       >
-                        <img src={imgSrc} alt={`${selectedProduct.name} view ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={imgSrc} alt={`${activeProduct.name} view ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
                     ))}
                   </div>
+
+                  {/* STYLED VARIANT OPTIONS TILES (DIRECTLY UNDER THE SMALL IMAGES) */}
+                  {selectedProduct.variants && selectedProduct.variants.length > 0 && (
+                    <div className="pdp-variant-selector-panel" style={{ marginTop: '1.5rem', backgroundColor: '#F4EFE6', border: '1px solid #E5DFC5', borderRadius: '14px', padding: '1.25rem', boxShadow: 'var(--shadow-soft)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                          <Sparkle size={15} color="#C5A059" />
+                          <span style={{ fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2D3A29' }}>
+                            CHOOSE VARIANT / FORMULA:
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '0.72rem', color: '#6E5535', fontStyle: 'italic' }}>
+                          Click to show that variant's photos & info
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '0.85rem' }}>
+                        {selectedProduct.variants.map((variantItem) => {
+                          const isCurrentSelected = (activeProduct.id === variantItem.id) || (activeProduct.variantType === variantItem.variantType);
+                          return (
+                            <div
+                              key={variantItem.id}
+                              onClick={() => handleSelectVariant(variantItem)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.85rem',
+                                padding: '0.85rem 1rem',
+                                borderRadius: '10px',
+                                cursor: 'pointer',
+                                backgroundColor: isCurrentSelected ? '#FFFFFF' : '#FAF7F2',
+                                border: isCurrentSelected ? '2px solid #C5A059' : '1.5px solid #E5DFC5',
+                                boxShadow: isCurrentSelected ? '0 8px 22px rgba(197, 160, 89, 0.28)' : 'none',
+                                transform: isCurrentSelected ? 'translateY(-2px)' : 'none',
+                                transition: 'all 0.25s ease',
+                                position: 'relative'
+                              }}
+                            >
+                              {/* Variant Mini Image Swatch */}
+                              <div style={{ width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, border: isCurrentSelected ? '1.5px solid #C5A059' : '1px solid #E5DFC5', backgroundColor: '#DFCAA7' }}>
+                                <img 
+                                  src={variantItem.image} 
+                                  alt={variantItem.name} 
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                />
+                              </div>
+
+                              {/* Variant Text Information */}
+                              <div style={{ flexGrow: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.25rem', marginBottom: '0.2rem' }}>
+                                  <span style={{ fontSize: '0.875rem', fontWeight: 700, color: isCurrentSelected ? '#2D3A29' : '#5C635B' }}>
+                                    {variantItem.formatLabel}
+                                  </span>
+                                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#6E5535' }}>
+                                    £{variantItem.price}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#5C635B', marginBottom: '0.25rem' }}>
+                                  {variantItem.volume}
+                                </div>
+                                <div>
+                                  {isCurrentSelected ? (
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.65rem', fontWeight: 700, color: '#2D3A29', backgroundColor: '#DFCAA7', padding: '0.15rem 0.5rem', borderRadius: '4px', letterSpacing: '0.04em' }}>
+                                      <Check size={11} color="#2D3A29" /> ACTIVE VIEW
+                                    </span>
+                                  ) : (
+                                    <span style={{ fontSize: '0.68rem', color: '#8C948B', fontStyle: 'italic' }}>
+                                      Click to view
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Product Details Column */}
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                     <span className="loveworld-badge">MADE IN LOVEWORLD</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#C5A059', fontSize: '0.9rem', fontWeight: 600 }}>
                       ★★★★★ <span>{selectedProduct.rating} ({selectedProduct.reviewsCount} reviews)</span>
                     </div>
                   </div>
 
-                  <h1 className="font-display" style={{ fontSize: '3.75rem', color: '#1E221D', marginBottom: '0.25rem', lineHeight: 1.05 }}>
-                    {selectedProduct.name}
+                  <h1 className="font-display pdp-title" style={{ fontSize: '3.75rem', color: '#1E221D', marginBottom: '0.25rem', lineHeight: 1.05 }}>
+                    {activeProduct.name}
                   </h1>
 
                   <div style={{ fontSize: '1.05rem', color: '#C5A059', fontStyle: 'italic', marginBottom: '1.25rem', fontWeight: 500 }}>
-                    {selectedProduct.subtitle}
+                    {activeProduct.subtitle}
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid #E5DFC5', paddingBottom: '1.25rem' }}>
-                    <span style={{ fontSize: '2.25rem', fontWeight: 700, color: '#6E5535' }}>£{selectedProduct.price}</span>
-                    <span style={{ fontSize: '1rem', color: '#5C635B' }}>({selectedProduct.volume})</span>
+                    <span style={{ fontSize: '2.25rem', fontWeight: 700, color: '#6E5535' }}>£{activeProduct.price}</span>
+                    <span style={{ fontSize: '1rem', color: '#5C635B' }}>({activeProduct.volume})</span>
                   </div>
 
                   <p style={{ color: '#5C635B', fontSize: '1.05rem', lineHeight: 1.75, marginBottom: '2rem' }}>
-                    {selectedProduct.description}
+                    {activeProduct.description}
                   </p>
 
                   {/* Quantity Selector & Action Buttons */}
@@ -994,9 +1438,9 @@ function App() {
                       <button 
                         className="btn-primary" 
                         style={{ flexGrow: 1, justifyContent: 'center', padding: '1rem 2rem', fontSize: '0.95rem', fontWeight: 600 }}
-                        onClick={() => addToCart(selectedProduct, pdpQuantity)}
+                        onClick={() => addToCart(activeProduct, pdpQuantity)}
                       >
-                        <ShoppingBag size={18} /> ADD TO BAG · £{(selectedProduct.price * pdpQuantity).toFixed(2)}
+                        <ShoppingBag size={18} /> ADD TO BAG · £{(activeProduct.price * pdpQuantity).toFixed(2)}
                       </button>
 
                       <a 
@@ -1015,7 +1459,7 @@ function App() {
                       PERFECT FOR YOUR ROUTINE:
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', fontSize: '0.9rem', color: '#5C635B' }}>
-                      {selectedProduct.perfectFor.map((item, idx) => (
+                      {activeProduct.perfectFor && activeProduct.perfectFor.map((item, idx) => (
                         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <Check size={14} color="#4A5D4E" /> {item}
                         </div>
@@ -1023,14 +1467,36 @@ function App() {
                     </div>
                   </div>
 
-                  <div style={{ backgroundColor: '#DFCAA7', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.5rem' }}>
+                  <div style={{ backgroundColor: '#DFCAA7', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.5rem', marginBottom: '1.5rem' }}>
                     <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6E5535', marginBottom: '0.35rem' }}>
                       HOW TO USE YOUR RITUAL:
                     </div>
                     <div style={{ fontSize: '0.95rem', color: '#2D3A29', fontStyle: 'italic', lineHeight: 1.6 }}>
-                      “{selectedProduct.howToUse}”
+                      “{activeProduct.howToUse}”
                     </div>
                   </div>
+
+                  {activeProduct.storage && (
+                    <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.25rem 1.5rem', marginBottom: '1.5rem', boxShadow: 'var(--shadow-soft)' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2D3A29', marginBottom: '0.35rem' }}>
+                        STORAGE & CARE:
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#5C635B', lineHeight: 1.6 }}>
+                        {activeProduct.storage}
+                      </div>
+                    </div>
+                  )}
+
+                  {activeProduct.ingredients && (
+                    <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.5rem', boxShadow: 'var(--shadow-soft)' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2D3A29', marginBottom: '0.5rem' }}>
+                        AUTHENTIC BOTANICAL INGREDIENTS:
+                      </div>
+                      <div style={{ fontSize: '0.875rem', color: '#5C635B', lineHeight: 1.6 }}>
+                        {activeProduct.ingredients}
+                      </div>
+                    </div>
+                  )}
 
                 </div>
 
@@ -1038,7 +1504,7 @@ function App() {
             </div>
           </section>
 
-          {/* SIMILAR PRODUCTS / YOU MAY ALSO LOVE SECTION */}
+          {/* SIMILAR PRODUCTS / YOU MAY ALSO LOVE SECTION (2 COLUMNS & ROWS ON MOBILE) */}
           <section style={{ padding: '4.5rem 0', backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5' }}>
             <div className="container">
               <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
@@ -1053,10 +1519,11 @@ function App() {
                 </p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
+              <div className="product-cards-grid">
                 {PRODUCTS.filter(p => p.id !== selectedProduct.id).map(product => (
                   <div 
                     key={product.id}
+                    className="responsive-product-card"
                     style={{ 
                       backgroundColor: '#F4EFE6', 
                       borderRadius: '12px', 
@@ -1068,6 +1535,7 @@ function App() {
                     }}
                   >
                     <div 
+                      className="card-media-wrap"
                       style={{ position: 'relative', height: '240px', overflow: 'hidden', backgroundColor: '#DFCAA7', cursor: 'pointer' }}
                       onClick={() => openProductDetail(product)}
                     >
@@ -1076,36 +1544,43 @@ function App() {
                         alt={product.name} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.65rem', padding: '0.25rem 0.65rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
+                      <span className="card-badge" style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.65rem', padding: '0.25rem 0.65rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
                         {product.badge}
                       </span>
+                      <button 
+                        className="card-wishlist-btn"
+                        onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
+                        style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
+                      >
+                        <Heart size={18} fill={wishlist.includes(product.id) ? '#C5A059' : 'none'} color={wishlist.includes(product.id) ? '#C5A059' : '#1E221D'} />
+                      </button>
                     </div>
 
-                    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                      <div style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                    <div className="card-body" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                      <div className="card-subtitle" style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
                         {product.subtitle}
                       </div>
                       <h3 
-                        className="font-display" 
+                        className="card-title font-display" 
                         style={{ fontSize: '1.65rem', color: '#2D3A29', marginBottom: '0.35rem', cursor: 'pointer' }}
                         onClick={() => openProductDetail(product)}
                       >
                         {product.name}
                       </h3>
-                      <div style={{ fontSize: '1.15rem', fontWeight: 600, color: '#6E5535', marginBottom: '0.75rem' }}>
-                        £{product.price}
+                      <div className="card-price-row" style={{ fontSize: '1.15rem', fontWeight: 600, color: '#6E5535', marginBottom: '0.75rem' }}>
+                        £{product.price} <span className="card-volume" style={{ fontSize: '0.8rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
                       </div>
 
-                      <div style={{ marginTop: 'auto', display: 'flex', gap: '0.5rem' }}>
+                      <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.5rem' }}>
                         <button 
-                          className="btn-primary" 
+                          className="btn-primary card-btn-primary" 
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.75rem', fontSize: '0.8rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          ADD TO CART · £{product.price}
+                          <ShoppingBag size={14} /> ADD · £{product.price}
                         </button>
                         <button 
-                          className="btn-secondary" 
+                          className="btn-secondary card-btn-secondary" 
                           style={{ padding: '0.75rem 1rem', fontSize: '0.8rem' }}
                           onClick={() => openProductDetail(product)}
                         >
@@ -1157,7 +1632,7 @@ function App() {
           {/* Main Editorial Story Section */}
           <section style={{ padding: '2rem 0 5rem 0' }}>
             <div className="container">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
+              <div className="responsive-story-grid">
                 
                 <div style={{ position: 'relative' }}>
                   <div style={{ borderRadius: '12px', overflow: 'hidden', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(74, 93, 78, 0.1)' }}>
@@ -1211,7 +1686,7 @@ function App() {
                 </h2>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
+              <div className="product-cards-grid">
                 <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem 1.75rem', borderRadius: '12px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
                   <div style={{ backgroundColor: '#EAF0E8', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4A5D4E', marginBottom: '1.25rem' }}>
                     <Leaf size={24} />
@@ -1317,10 +1792,11 @@ function App() {
                 </p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
+              <div className="product-cards-grid">
                 {PRODUCTS.map(product => (
                   <div 
                     key={product.id}
+                    className="responsive-product-card"
                     style={{ 
                       backgroundColor: '#F4EFE6', 
                       borderRadius: '12px', 
@@ -1332,6 +1808,7 @@ function App() {
                     }}
                   >
                     <div 
+                      className="card-media-wrap"
                       style={{ position: 'relative', height: '300px', overflow: 'hidden', backgroundColor: '#DFCAA7', cursor: 'pointer' }}
                       onClick={() => openProductDetail(product)}
                     >
@@ -1340,10 +1817,11 @@ function App() {
                         alt={product.name} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.7rem', padding: '0.3rem 0.75rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
+                      <span className="card-badge" style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.7rem', padding: '0.3rem 0.75rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
                         {product.badge}
                       </span>
                       <button 
+                        className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
                         style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
                       >
@@ -1351,35 +1829,35 @@ function App() {
                       </button>
                     </div>
 
-                    <div style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                      <div style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                    <div className="card-body" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                      <div className="card-subtitle" style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
                         {product.subtitle}
                       </div>
                       <h3 
-                        className="font-display" 
+                        className="card-title font-display" 
                         style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '0.5rem', cursor: 'pointer' }}
                         onClick={() => openProductDetail(product)}
                       >
                         {product.name}
                       </h3>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 600, color: '#6E5535', marginBottom: '1rem' }}>
-                        £{product.price} <span style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
+                      <div className="card-price-row" style={{ fontSize: '1.25rem', fontWeight: 600, color: '#6E5535', marginBottom: '1rem' }}>
+                        £{product.price} <span className="card-volume" style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
                       </div>
 
-                      <p style={{ fontSize: '0.9rem', color: '#5C635B', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+                      <p className="card-desc" style={{ fontSize: '0.9rem', color: '#5C635B', marginBottom: '1.25rem', lineHeight: 1.6 }}>
                         {product.shortDescription}
                       </p>
 
-                      <div style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
+                      <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
                         <button 
-                          className="btn-primary" 
+                          className="btn-primary card-btn-primary" 
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={16} /> ADD TO CART · £{product.price}
+                          <ShoppingBag size={16} /> ADD · £{product.price}
                         </button>
                         <button 
-                          className="btn-secondary" 
+                          className="btn-secondary card-btn-secondary" 
                           style={{ padding: '0.85rem', justifyContent: 'center' }}
                           onClick={() => openProductDetail(product)}
                         >
@@ -1425,7 +1903,7 @@ function App() {
                 </p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
+              <div className="responsive-gifting-grid">
                 <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(197, 160, 89, 0.15)' }}>
                   <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                     <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C5A059', fontWeight: 700 }}>
@@ -1438,7 +1916,7 @@ function App() {
 
                   <div 
                     style={{ borderRadius: '8px', overflow: 'hidden', height: '280px', marginBottom: '1.5rem', cursor: 'pointer' }}
-                    onClick={() => openProductDetail(PRODUCTS[3])}
+                    onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
                   >
                     <img 
                       src="/luxe_trio_primary.jpg" 
@@ -1463,14 +1941,14 @@ function App() {
                     <button 
                       className="btn-primary" 
                       style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
-                      onClick={() => addToCart(PRODUCTS[3])}
+                      onClick={() => addToCart(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
                     >
                       Add to Bag · £68
                     </button>
                     <button 
                       className="btn-secondary" 
                       style={{ padding: '0.95rem 1.25rem' }}
-                      onClick={() => openProductDetail(PRODUCTS[3])}
+                      onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
                     >
                       View Details
                     </button>
@@ -1526,7 +2004,7 @@ function App() {
               nourish
             </div>
             <div className="container">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'start' }}>
+              <div className="responsive-contact-grid">
                 <div>
                   <span className="loveworld-badge" style={{ marginBottom: '1rem' }}>
                     GET IN TOUCH
@@ -1682,7 +2160,7 @@ function App() {
             </div>
 
             <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 1fr', gap: '3.5rem', alignItems: 'center' }}>
+              <div className="responsive-home-hero">
                 
                 {/* Left Content Column */}
                 <div>
@@ -1721,7 +2199,7 @@ function App() {
                 <div style={{ position: 'relative' }}>
                   
                   {/* Model Image Container */}
-                  <div style={{ borderRadius: '6px', overflow: 'hidden', height: '560px', position: 'relative', boxShadow: '0 20px 50px rgba(45, 58, 41, 0.08)', backgroundColor: '#DFCAA7' }}>
+                  <div className="hero-image-wrap" style={{ borderRadius: '6px', overflow: 'hidden', height: '560px', position: 'relative', boxShadow: '0 20px 50px rgba(45, 58, 41, 0.08)', backgroundColor: '#DFCAA7' }}>
                     <img 
                       src="/hero_trio_ingredients.png" 
                       alt="LICHT LUXE NATURALS Products Trio — Pure Coconut Oil, Body Butter & Shea Butter" 
@@ -1768,6 +2246,7 @@ function App() {
 
                   {/* Overlapping Floating Product Highlight Card (matching img 1) */}
                   <div 
+                    className="hero-floating-card"
                     style={{ 
                       position: 'absolute', 
                       bottom: '25px', 
@@ -1776,10 +2255,10 @@ function App() {
                       backgroundColor: '#DFCAA7', 
                       padding: '0.75rem', 
                       borderRadius: '4px', 
-                      width: '210px',
-                      boxShadow: '0 15px 35px rgba(0,0,0,0.12)',
-                      border: '1px solid #E5DFC5',
-                      cursor: 'pointer'
+                      width: '210px', 
+                      boxShadow: '0 15px 35px rgba(0,0,0,0.12)', 
+                      border: '1px solid #E5DFC5', 
+                      cursor: 'pointer' 
                     }}
                     onClick={() => openProductDetail(PRODUCTS[2])}
                   >
@@ -1805,7 +2284,7 @@ function App() {
           {/* 4-PILLAR BRAND TRUST BAR (matching img 1 bottom banner) */}
           <section style={{ backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5', borderBottom: '1px solid #E5DFC5', padding: '1.25rem 0' }}>
             <div className="container">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', textAlign: 'center' }}>
+              <div className="brand-trust-bar-grid">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#4A5D4E', fontWeight: 500 }}>
                   <Leaf size={16} /> Botanical ingredients
                 </div>
@@ -1823,9 +2302,9 @@ function App() {
           </section>
 
           {/* EDITORIAL SECTION 1 (MATCHING IMG 2 TOP SPLIT BANNER): THE LUXE NATURALS PHILOSOPHY */}
-          <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: '80vh', minHeight: '600px', backgroundColor: '#DFE5DC' }}>
+          <section className="responsive-hero-split">
             {/* Left Column: Full-bleed Radiant Clear Skin Model Image (img 2 reference) */}
-            <div style={{ height: '80vh', minHeight: '600px', overflow: 'hidden' }}>
+            <div className="split-image-col" style={{ height: '80vh', minHeight: '600px', overflow: 'hidden' }}>
               <img 
                 src="/clear_skin_model.png" 
                 alt="Radiant clear skin model — LICHT LUXE NATURALS" 
@@ -1834,7 +2313,7 @@ function App() {
             </div>
 
             {/* Right Column: Sage / Olive Tint Background with Philosophy Copy */}
-            <div style={{ padding: '4.5rem 4rem', height: '80vh', minHeight: '600px', display: 'flex', flexDirection: 'column', justifyContent: 'center', backgroundColor: '#DFE5DC', position: 'relative' }}>
+            <div className="split-content-col" style={{ padding: '4.5rem 4rem', height: '80vh', minHeight: '600px', display: 'flex', flexDirection: 'column', justifyContent: 'center', backgroundColor: '#DFE5DC', position: 'relative' }}>
               <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', right: '5%', color: 'rgba(74, 93, 78, 0.035)', zIndex: 1 }}>
                 grace
               </div>
@@ -1892,7 +2371,7 @@ function App() {
             </div>
 
             <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr 1fr', gap: '2.5rem', alignItems: 'start' }}>
+              <div className="source-values-grid">
                 
                 {/* Column 1: Section Header Text */}
                 <div style={{ paddingRight: '1rem' }}>
@@ -1988,7 +2467,7 @@ function App() {
             </div>
 
             <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '2rem', alignItems: 'stretch' }}>
+              <div className="editorial-cards-grid">
                 <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', overflow: 'hidden', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
                   <div style={{ height: '340px', overflow: 'hidden' }}>
                     <img 
@@ -2060,10 +2539,11 @@ function App() {
                 </p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
+              <div className="product-cards-grid">
                 {PRODUCTS.map(product => (
                   <div 
                     key={product.id}
+                    className="responsive-product-card"
                     style={{ 
                       backgroundColor: '#F4EFE6', 
                       borderRadius: '12px', 
@@ -2075,6 +2555,7 @@ function App() {
                     }}
                   >
                     <div 
+                      className="card-media-wrap"
                       style={{ position: 'relative', height: '280px', overflow: 'hidden', backgroundColor: '#DFCAA7', cursor: 'pointer' }}
                       onClick={() => openProductDetail(product)}
                     >
@@ -2083,10 +2564,11 @@ function App() {
                         alt={product.name} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.7rem', padding: '0.3rem 0.75rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
+                      <span className="card-badge" style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.7rem', padding: '0.3rem 0.75rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
                         {product.badge}
                       </span>
                       <button 
+                        className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
                         style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
                       >
@@ -2094,35 +2576,35 @@ function App() {
                       </button>
                     </div>
 
-                    <div style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                      <div style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                    <div className="card-body" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                      <div className="card-subtitle" style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
                         {product.subtitle}
                       </div>
                       <h3 
-                        className="font-display" 
+                        className="card-title font-display" 
                         style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '0.5rem', cursor: 'pointer' }}
                         onClick={() => openProductDetail(product)}
                       >
                         {product.name}
                       </h3>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 600, color: '#6E5535', marginBottom: '1rem' }}>
-                        £{product.price} <span style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
+                      <div className="card-price-row" style={{ fontSize: '1.25rem', fontWeight: 600, color: '#6E5535', marginBottom: '1rem' }}>
+                        £{product.price} <span className="card-volume" style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
                       </div>
 
-                      <p style={{ fontSize: '0.9rem', color: '#5C635B', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+                      <p className="card-desc" style={{ fontSize: '0.9rem', color: '#5C635B', marginBottom: '1.25rem', lineHeight: 1.6 }}>
                         {product.shortDescription}
                       </p>
 
-                      <div style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
+                      <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
                         <button 
-                          className="btn-primary" 
+                          className="btn-primary card-btn-primary" 
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={16} /> ADD TO CART · £{product.price}
+                          <ShoppingBag size={16} /> ADD · £{product.price}
                         </button>
                         <button 
-                          className="btn-secondary" 
+                          className="btn-secondary card-btn-secondary" 
                           style={{ padding: '0.85rem', justifyContent: 'center' }}
                           onClick={() => openProductDetail(product)}
                         >
@@ -2175,17 +2657,17 @@ function App() {
                 </h2>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
+              <div className="reviews-cards-grid">
                 {REVIEWS.map(rev => (
-                  <div key={rev.id} style={{ backgroundColor: '#F4EFE6', padding: '2rem', borderRadius: '12px', border: '1px solid #E5DFC5' }}>
+                  <div key={rev.id} className="review-card" style={{ backgroundColor: '#F4EFE6', padding: '2rem', borderRadius: '12px', border: '1px solid #E5DFC5' }}>
                     <div style={{ color: '#C5A059', fontSize: '1rem', marginBottom: '0.75rem' }}>★★★★★</div>
                     <blockquote style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: '#2D3A29', lineHeight: 1.6, marginBottom: '1.25rem', fontStyle: 'italic' }}>
                       “{rev.quote}”
                     </blockquote>
-                    <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1E221D' }}>
+                    <div className="review-author" style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1E221D' }}>
                       — {rev.author}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: '#6E5535' }}>
+                    <div className="review-meta" style={{ fontSize: '0.75rem', color: '#6E5535' }}>
                       {rev.role} · {rev.product}
                     </div>
                   </div>
@@ -2261,7 +2743,7 @@ function App() {
       {/* FOOTER */}
       <footer style={{ backgroundColor: '#2D3A29', color: '#FAF7F2', paddingTop: '4rem', paddingBottom: '2rem', borderTop: '2px solid #C5A059' }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '3rem', paddingBottom: '3.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="responsive-footer-grid">
             
             {/* Brand Column */}
             <div>
@@ -2287,7 +2769,8 @@ function App() {
                 <li><button onClick={() => openProductDetail(PRODUCTS[0])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Pure Shea Butter</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS[1])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Pure Coconut Oil</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS[2])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Body Butter</button></li>
-                <li><button onClick={() => openProductDetail(PRODUCTS[3])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Gift Sets</button></li>
+                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-liquid-soap'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Liquid Soap</button></li>
+                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Gift Sets</button></li>
               </ul>
             </div>
 
@@ -2313,6 +2796,7 @@ function App() {
                 <li><button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>FAQs</button></li>
                 <li><a href="tel:07831082965" style={{ color: '#D6DDD3', textDecoration: 'none' }}>Phone: 07831082965</a></li>
                 <li><button onClick={() => navigateToTab('contact')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Privacy Policy</button></li>
+                <li><button onClick={() => navigateToTab('admin')} style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', textAlign: 'left', padding: 0, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><ShieldCheck size={14} /> Admin & Inventory Portal</button></li>
               </ul>
             </div>
 
@@ -2324,7 +2808,13 @@ function App() {
               © 2026 LICHT LUXE NATURALS. All Rights Reserved. Pure. Natural. Made with Love.
             </div>
 
-            <div style={{ display: 'flex', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+              <button 
+                onClick={() => navigateToTab('admin')}
+                style={{ background: 'none', border: 'none', color: '#C5A059', fontSize: '0.8rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: 0 }}
+              >
+                <ShieldCheck size={14} /> Staff Admin Portal
+              </button>
               <a href="https://instagram.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Instagram</a>
               <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Facebook</a>
               <a href="https://tiktok.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>TikTok</a>
@@ -2461,6 +2951,7 @@ function App() {
           <div className="modal-card checkout-modal" style={{ maxWidth: '880px', width: '95%', maxHeight: '92vh', padding: '0', display: 'flex', flexDirection: 'row', overflow: 'hidden', borderRadius: '8px', boxShadow: '0 25px 60px rgba(45,58,41,0.18)' }} onClick={(e) => e.stopPropagation()}>
             
             {/* Left Side: Order Summary */}
+            <div className="checkout-summary-col" style={{ backgroundColor: '#FDFCF9', padding: '2rem', width: '45%', borderRight: '1px solid #E5DFC5', display: 'flex', flexDirection: 'column' }}>
             <div style={{ backgroundColor: '#FDFCF9', padding: '2rem', width: '42%', borderRight: '1px solid #E5DFC5', display: 'flex', flexDirection: 'column' }}>
               <div style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
                 Order Summary
@@ -2508,6 +2999,8 @@ function App() {
               </div>
             </div>
 
+            {/* Right Side: Payment Options (UK) */}
+            <div className="checkout-form-col" style={{ backgroundColor: '#FFFFFF', padding: '2rem', width: '55%', position: 'relative', overflowY: 'auto' }}>
             {/* Right Side: Two-Step Checkout (Address & Payment) */}
             <div style={{ backgroundColor: '#FFFFFF', padding: '2rem 2.25rem', width: '58%', position: 'relative', overflowY: 'auto' }}>
               <button className="close-modal-btn" onClick={() => setIsCheckoutOpen(false)} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem' }}>
@@ -2541,6 +3034,29 @@ function App() {
                 </button>
               </div>
 
+              {/* Express Checkout Options (Apple/Google Pay mock) */}
+              <div style={{ marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                  <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                  <span style={{ fontSize: '0.75rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Express Checkout</span>
+                  <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <button 
+                    style={{ flex: 1, backgroundColor: '#000', color: '#FFF', border: 'none', padding: '0.85rem', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 500 }}
+                    onClick={() => processCompletedOrder('Apple Pay')}
+                  >
+                    <svg viewBox="0 0 384 512" width="16" height="16" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg> Pay
+                  </button>
+                  <button 
+                    style={{ flex: 1, backgroundColor: '#FFF', color: '#3C4043', border: '1px solid #DADCE0', padding: '0.85rem', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 500, boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)' }}
+                    onClick={() => processCompletedOrder('Google Pay')}
+                  >
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M23.64 12.2045C23.64 11.3523 23.5636 10.5341 23.4218 9.75H12V14.3886H18.5236C18.24 15.8886 17.3891 17.1545 16.1236 17.9977V20.9705H20.0455C22.3364 18.8614 23.64 15.8182 23.64 12.2045Z"/><path fill="#34A853" d="M12 24C15.2727 24 18.0218 22.92 20.0455 20.9705L16.1236 17.9977C15.0327 18.7364 13.6364 19.1727 12 19.1727C8.83636 19.1727 6.15273 17.0364 5.18182 14.1705H1.13455V17.3073C3.14182 21.2891 7.23273 24 12 24Z"/><path fill="#FBBC05" d="M5.18182 14.1705C4.93091 13.425 4.78909 12.6341 4.78909 11.8227C4.78909 11.0114 4.93091 10.2205 5.18182 9.475V6.33818H1.13455C0.414545 7.76727 0 9.38182 0 11.8227C0 14.2636 0.414545 15.8782 1.13455 17.3073L5.18182 14.1705Z"/><path fill="#EA4335" d="M12 4.47273C13.7782 4.47273 15.3709 5.08364 16.6255 6.27818L20.1327 2.77091C18.0109 0.796364 15.2618 0 12 0C7.23273 0 3.14182 2.71091 1.13455 6.33818L5.18182 9.475C6.15273 6.60909 8.83636 4.47273 12 4.47273Z"/></svg> Pay
+                  </button>
+                </div>
+              </div>
               {/* ─── STEP 1: DELIVERY ADDRESS ─── */}
               {checkoutStep === 'address' && (
                 <div>
@@ -2724,8 +3240,44 @@ function App() {
                         <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M23.64 12.2045C23.64 11.3523 23.5636 10.5341 23.4218 9.75H12V14.3886H18.5236C18.24 15.8886 17.3891 17.1545 16.1236 17.9977V20.9705H20.0455C22.3364 18.8614 23.64 15.8182 23.64 12.2045Z"/><path fill="#34A853" d="M12 24C15.2727 24 18.0218 22.92 20.0455 20.9705L16.1236 17.9977C15.0327 18.7364 13.6364 19.1727 12 19.1727C8.83636 19.1727 6.15273 17.0364 5.18182 14.1705H1.13455V17.3073C3.14182 21.2891 7.23273 24 12 24Z"/><path fill="#FBBC05" d="M5.18182 14.1705C4.93091 13.425 4.78909 12.6341 4.78909 11.8227C4.78909 11.0114 4.93091 10.2205 5.18182 9.475V6.33818H1.13455C0.414545 7.76727 0 9.38182 0 11.8227C0 14.2636 0.414545 15.8782 1.13455 17.3073L5.18182 14.1705Z"/><path fill="#EA4335" d="M12 4.47273C13.7782 4.47273 15.3709 5.08364 16.6255 6.27818L20.1327 2.77091C18.0109 0.796364 15.2618 0 12 0C7.23273 0 3.14182 2.71091 1.13455 6.33818L5.18182 9.475C6.15273 6.60909 8.83636 4.47273 12 4.47273Z"/></svg> Pay
                       </button>
                     </div>
+                    <input type="text" placeholder="Name on card" style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '1rem' }} />
+                  </div>
+                  
+                  <button 
+                    style={{ width: '100%', padding: '1.15rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', marginTop: '1.5rem', fontSize: '1.05rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                    onClick={() => processCompletedOrder('Stripe (Card)')}
+                  >
+                    Pay £{cartSubtotal.toFixed(2)} Securely <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  </button>
+                  <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by Stripe
                   </div>
 
+                {/* PAYPAL OPTION */}
+                <div 
+                  style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                  onClick={() => {
+                    showToast('Redirecting to PayPal for secure checkout...');
+                    setTimeout(() => {
+                      processCompletedOrder('PayPal');
+                    }, 1200);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid #D6DDD3', display: 'inline-block' }}></div>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '24px' }} />
+                  </div>
+                </div>
+                
+                {/* KLARNA OPTION (Popular in UK) */}
+                <div 
+                  style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                  onClick={() => processCompletedOrder('Klarna (3 Instalments)')}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid #D6DDD3', display: 'inline-block' }}></div>
+                    <span style={{ fontWeight: 600, color: '#FFB3C7', backgroundColor: '#0A0A0A', padding: '0.2rem 0.6rem', borderRadius: '15px', fontSize: '0.9rem' }}>Klarna.</span>
+                    <span style={{ fontSize: '0.9rem', color: '#5C635B' }}>Pay in 3 interest-free instalments</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                     <div style={{ height: '1px', backgroundColor: '#E5DFC5', flexGrow: 1 }}></div>
                     <span style={{ fontSize: '0.72rem', color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Or pay with</span>
@@ -3210,6 +3762,19 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* QUICK FLOATING ADMIN TOGGLE */}
+      <div className="admin-quick-dock">
+        <button 
+          className="admin-dock-btn" 
+          onClick={() => navigateToTab('admin')}
+          title="Open Operations & Inventory Management Portal"
+        >
+          <ShieldCheck size={16} />
+          <span>Admin Portal</span>
+          <span className="admin-pulse-dot" style={{ width: 6, height: 6 }}></span>
+        </button>
+      </div>
     </div>
     </PayPalScriptProvider>
   );
