@@ -48,7 +48,7 @@ export const DEFAULT_INVENTORY = [
     stock: 84,
     minThreshold: 25,
     unitCost: 7.50,
-    price: 24.00,
+    price: 1.00,
     image: '/shea_butter_primary.jpg'
   },
   {

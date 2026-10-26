@@ -95,7 +95,7 @@ const PRODUCTS = [
     name: 'Pure Shea Butter',
     tagline: 'Pure nourishment from nature.',
     subtitle: 'Pure • Rich • Nourishing',
-    price: 24,
+    price: 1,
     badge: '100% RAW & UNREFINED',
     volume: '250 ml / 8.8 oz',
     rating: '5.0',
@@ -680,9 +680,12 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password: authForm.password })
       });
-      const data = await response.json();
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (_) {}
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed. Please verify credentials.');
+        throw new Error(data.message || 'Invalid email or password. Please check your credentials.');
       }
       localStorage.setItem('lln_token', data.token);
       localStorage.setItem('lln_user', JSON.stringify(data));
@@ -917,15 +920,18 @@ function App() {
         }),
       });
 
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (_) {}
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create PayPal order');
+        throw new Error(data.message || 'Failed to create PayPal order. Please try again.');
       }
 
-      const data = await response.json();
       return data.id; // PayPal order ID
     } catch (error) {
-      showToast('Error creating order: ' + error.message);
+      showToast('Payment notice: ' + (error.message || 'Error initializing payment'));
       setPaymentProcessing(false);
       throw error;
     }
@@ -970,12 +976,14 @@ function App() {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Payment capture failed');
-      }
+      let result = {};
+      try {
+        result = await response.json();
+      } catch (_) {}
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Payment capture failed. Please check your account.');
+      }
       
       setPaymentProcessing(false);
       setIsCheckoutOpen(false);
