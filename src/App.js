@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, 
   Search, 
@@ -20,14 +20,16 @@ import {
   ArrowLeft,
   User,
   Menu,
-  ShieldCheck
+  Settings
 } from 'lucide-react';
 import './App.css';
 import AdminPortal, { DEFAULT_ORDERS, DEFAULT_INVENTORY } from './AdminPortal';
+import AdminLogin from './AdminLogin';
+import SettingsModal from './SettingsModal';
 import './AdminPortal.css';
 
 // Horizontal Side-by-Side Logo Component (Icon on Left, Bold Company Typography on Right)
-const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', variant = 'light', markOnly = false }) => {
+const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', variant = 'light', markOnly = false, style = {} }) => {
   const isDark = variant === 'dark' || color === '#FAF7F2' || color === '#FFFFFF' || color === 'white' || size === 'footer';
   
   const markSrc = isDark ? '/logo-dark-mark.png' : '/logo-light-mark.png';
@@ -36,7 +38,7 @@ const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', va
 
   if (markOnly) {
     return (
-      <div className={`licht-logo-container mark-only ${className} ${size}`}>
+      <div className={`licht-logo-container mark-only ${className} ${size}`} style={style}>
         <img 
           src={markSrc} 
           alt="LICHT Mark" 
@@ -47,7 +49,10 @@ const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', va
   }
 
   return (
-    <div className={`licht-logo-container horizontal-brand ${className} ${size}`}>
+    <div 
+      className={`licht-logo-container horizontal-brand ${className} ${size}`}
+      style={{ display: 'inline-flex', flexDirection: 'row', alignItems: 'center', ...style }}
+    >
       <div className="licht-logo-mark-wrap">
         <img 
           src={markSrc} 
@@ -173,120 +178,80 @@ const PRODUCTS = [
   },
   {
     id: 'african-black-liquid-soap',
-    name: 'African Black Soap',
-    tagline: 'Deep cleansing. Skin & body.',
+    name: 'African Black Liquid Soap',
+    tagline: 'Deep cleansing. Skin & body wash.',
     subtitle: 'Deep Cleansing • Clarifying • 100% Botanical',
     price: 24,
-    badge: '100% NATURAL CLEANSE',
     volume: '500 ml / 16.9 fl oz',
+    packaging: 'Amber Pump Dispenser (500 ml)',
+    highlight: 'Skin & Body Wash',
     rating: '5.0',
     reviewsCount: 152,
     image: '/african_black_soap_primary.jpg',
-    shortDescription: 'Our African Black Soap is a rich, natural cleanser made from traditional African ingredients. It gently cleanses, helps remove impurities, and leaves the skin feeling fresh, clean and smooth.',
-    description: 'Our African Black Soap is a rich, natural cleanser crafted from traditional African botanical ingredients. It gently cleanses and purifies the skin, helps remove dirt and excess oils, helps reduce acne and blemishes, and leaves the skin feeling revitalised, fresh and smooth. Available in both a convenient Liquid Soap pump bottle and a traditional 300g normal soap jar.',
+    gallery: [
+      '/african_black_soap_primary.jpg',
+      '/african_black_soap_dual.jpg',
+      '/clear_skin_model.jpg'
+    ],
+    shortDescription: 'Our African Black Liquid Soap is a rich, natural cleanser made from traditional African ingredients. It gently cleanses, helps remove impurities, and leaves the skin feeling fresh, clean and smooth.',
+    description: 'Our African Black Liquid Soap is a rich, natural cleanser crafted from traditional African botanical ingredients. Formulated for everyday convenience with an amber pump dispenser, it gently cleanses and purifies the skin, helps remove dirt and excess oils, helps reduce acne and blemishes, and leaves the skin feeling revitalised, fresh and smooth. Suitable for daily use on both face and body, across all skin types.',
     ingredients: 'Water, Potash (from Plantain Skins), Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter Extract, Natural Botanicals (Neem, Camwood, Aloe Vera), Fragrance.',
     benefits: [
-      'Gently cleanses and purifies the skin',
-      'Helps reduce acne, blemishes and breakouts',
-      'Leaves skin feeling fresh, clean and smooth',
+      'Gently cleanses and purifies skin & body',
+      'Helps reduce acne, blemishes and excess oil',
+      'Refreshes and soothes irritated skin',
+      'Convenient mess-free pump dispenser',
       'Supports clearer, healthier-looking skin',
       'Suitable for all skin types'
     ],
     perfectFor: [
       'Daily facial & body cleansing',
       'Blemish-prone & oily skin',
+      'In-shower body wash convenience',
       'Deep pore purification',
       'Clearing breakouts & acne',
-      'Balancing and soothing skin',
       'All skin types & sensitive skin'
     ],
-    howToUse: 'Apply a small amount to wet skin or sponge, lather gently and massage across face and body. Rinse thoroughly with water. Use daily for best results.',
+    howToUse: 'Dispense 1–2 pumps onto wet hands or sponge, lather gently and massage across face and body. Rinse thoroughly with water. Use daily for best results.'
+  },
+  {
+    id: 'african-black-soap-jar',
+    name: 'African Black Soap (Jar)',
+    tagline: 'Deep cleansing. Purifying. Natural glow.',
+    subtitle: 'Deep Cleansing • Purifying • Natural Glow (Face & Body)',
+    price: 22,
+    volume: '300g / 10.5 oz',
+    packaging: 'Wide-Mouth Jar (300g)',
+    highlight: 'Face & Body Ritual',
+    rating: '5.0',
+    reviewsCount: 96,
+    image: '/african_black_soap_jar.jpg',
     gallery: [
-      '/african_black_soap_primary.jpg',
-      '/african_black_soap_dual.jpg',
+      '/african_black_soap_jar.jpg',
+      '/african_black_soap_jar_open.jpg',
       '/clear_skin_model.jpg'
     ],
-    variants: [
-      {
-        id: 'african-black-liquid-soap',
-        variantType: 'liquid',
-        name: 'African Black Liquid Soap',
-        formatLabel: 'Liquid Soap (Pump)',
-        tagline: 'Deep Cleansing • Skin & Body',
-        subtitle: 'Deep Cleansing • Clarifying • 100% Botanical',
-        price: 24,
-        volume: '500 ml / 16.9 fl oz',
-        badge: '100% NATURAL CLEANSE',
-        packaging: 'Amber Pump Dispenser (500 ml)',
-        highlight: 'Skin & Body Wash',
-        image: '/african_black_soap_primary.jpg',
-        gallery: [
-          '/african_black_soap_primary.jpg',
-          '/african_black_soap_dual.jpg',
-          '/clear_skin_model.jpg'
-        ],
-        shortDescription: 'Our African Black Liquid Soap is a rich, natural cleanser made from traditional African ingredients. It gently cleanses, helps remove impurities, and leaves the skin feeling fresh, clean and smooth.',
-        description: 'Our African Black Liquid Soap is a rich, natural cleanser crafted from traditional African botanical ingredients. Formulated for everyday convenience with an amber pump dispenser, it gently cleanses and purifies the skin, helps remove dirt and excess oils, helps reduce acne and blemishes, and leaves the skin feeling revitalised, fresh and smooth. Suitable for daily use on both face and body, across all skin types.',
-        ingredients: 'Water, Potash (from Plantain Skins), Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter Extract, Natural Botanicals (Neem, Camwood, Aloe Vera), Fragrance.',
-        benefits: [
-          'Gently cleanses and purifies skin & body',
-          'Helps reduce acne, blemishes and excess oil',
-          'Refreshes and soothes irritated skin',
-          'Convenient mess-free pump dispenser',
-          'Supports clearer, healthier-looking skin',
-          'Suitable for all skin types'
-        ],
-        perfectFor: [
-          'Daily facial & body cleansing',
-          'Blemish-prone & oily skin',
-          'In-shower body wash convenience',
-          'Deep pore purification',
-          'Clearing breakouts & acne',
-          'All skin types'
-        ],
-        howToUse: 'Dispense 1–2 pumps onto wet hands or sponge, lather gently and massage across face and body. Rinse thoroughly with water. Use daily for best results.'
-      },
-      {
-        id: 'african-black-soap-jar',
-        variantType: 'normal',
-        name: 'African Black Soap',
-        formatLabel: 'Normal Soap (Jar)',
-        tagline: 'Deep Cleansing • Purifying • Natural Glow',
-        subtitle: 'Deep Cleansing • Purifying • Natural Glow (Face & Body)',
-        price: 22,
-        volume: '300g / 10.5 oz',
-        badge: 'TRADITIONAL 300G JAR',
-        packaging: 'Wide-Mouth Jar (300g)',
-        highlight: 'Face & Body Ritual',
-        image: '/african_black_soap_jar.jpg',
-        gallery: [
-          '/african_black_soap_jar.jpg',
-          '/african_black_soap_dual.jpg',
-          '/clear_skin_model.jpg'
-        ],
-        shortDescription: 'Our African Black Soap is a traditional natural cleanser made from plantain skins, cocoa pod ash and natural botanicals. It gently cleanses, removes dirt and excess oil, helps clear blemishes and leaves the skin fresh, smooth and healthy.',
-        description: 'Our African Black Soap is a traditional natural cleanser made from plantain skins, cocoa pod ash and natural botanicals. Hand-packed in a 300g jar, it gently cleanses, removes dirt and excess oil, helps clear blemishes and leaves the skin fresh, smooth and healthy. Suitable for daily use on face and body across all skin types.',
-        ingredients: 'Plantain Skins, Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter, Water, Natural Botanicals (e.g. Neem, Camwood, Aloe Vera, etc.).',
-        benefits: [
-          'Deeply cleanses and purifies the skin',
-          'Helps reduce acne, blemishes and excess oil',
-          'Improves skin texture and tone',
-          'Leaves skin fresh, smooth and glowing',
-          'Suitable for all skin types',
-          '100% chemical free & gentle on skin'
-        ],
-        perfectFor: [
-          'Targeted acne & blemish clearing',
-          'Traditional face & body cleansing ritual',
-          'Improving skin texture & tone',
-          'Balancing oily & congested skin',
-          'Natural glow enhancement',
-          'All skin types'
-        ],
-        howToUse: 'Apply a small amount to wet skin, massage gently and rinse thoroughly with water. Use daily for best results.',
-        storage: 'Store in a cool, dry place. Keep away from direct sunlight. For external use only.'
-      }
-    ]
+    shortDescription: 'Our African Black Soap is a traditional natural cleanser made from plantain skins, cocoa pod ash and natural botanicals. It gently cleanses, removes dirt and excess oil, helps clear blemishes and leaves the skin fresh, smooth and healthy.',
+    description: 'Our African Black Soap is a traditional natural cleanser made from plantain skins, cocoa pod ash and natural botanicals. Hand-packed in a 300g jar, it gently cleanses, removes dirt and excess oil, helps clear blemishes and leaves the skin fresh, smooth and healthy. Suitable for daily use on face and body across all skin types.',
+    ingredients: 'Plantain Skins, Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter, Water, Natural Botanicals (e.g. Neem, Camwood, Aloe Vera, etc.).',
+    benefits: [
+      'Deeply cleanses and purifies the skin',
+      'Helps reduce acne, blemishes and excess oil',
+      'Improves skin texture and tone',
+      'Leaves skin fresh, smooth and glowing',
+      'Suitable for all skin types',
+      '100% chemical free & gentle on skin'
+    ],
+    perfectFor: [
+      'Targeting acne & blemish clearing',
+      'Traditional face & body cleansing ritual',
+      'Improving skin texture & tone',
+      'Balancing oily & congested skin',
+      'Natural glow enhancement',
+      'All skin types'
+    ],
+    howToUse: 'Apply a small amount to wet skin, massage gently and rinse thoroughly with water. Use daily for best results.',
+    storage: 'Store in a cool, dry place. Keep away from direct sunlight. For external use only.'
   },
   {
     id: 'luxe-trio-gift-set',
@@ -384,9 +349,17 @@ const FAQS = [
   }
 ];
 
+// Helper: check if currently on /admin or #/admin
+const checkIsAdminPath = () => {
+  if (typeof window === 'undefined') return false;
+  const path = window.location.pathname.toLowerCase();
+  const hash = window.location.hash.toLowerCase();
+  return path === '/admin' || path.startsWith('/admin/') || hash === '#/admin' || hash === '#admin';
+};
+
 function App() {
-  // Navigation active tab: 'home' | 'shop' | 'story' | 'gifting' | 'contact' | 'product'
-  const [activeTab, setActiveTab] = useState('home');
+  // Navigation active tab: 'home' | 'shop' | 'story' | 'gifting' | 'contact' | 'product' | 'admin'
+  const [activeTab, setActiveTab] = useState(() => checkIsAdminPath() ? 'admin' : 'home');
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0]);
   const [selectedVariant, setSelectedVariant] = useState(
     PRODUCTS[0].variants && PRODUCTS[0].variants.length > 0 ? PRODUCTS[0].variants[0] : null
@@ -431,6 +404,50 @@ function App() {
   // Admin & Operations Portal State
   const [adminOrders, setAdminOrders] = useState(DEFAULT_ORDERS);
   const [adminInventory, setAdminInventory] = useState(DEFAULT_INVENTORY);
+
+  // Admin Authentication State
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    try {
+      const localAuth = localStorage.getItem('licht_admin_auth');
+      const sessionAuth = sessionStorage.getItem('licht_admin_auth');
+      return !!(localAuth || sessionAuth);
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const [adminUser, setAdminUser] = useState(() => {
+    try {
+      const raw = localStorage.getItem('licht_admin_auth') || sessionStorage.getItem('licht_admin_auth');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return parsed.displayName || 'Operations Lead';
+      }
+    } catch (e) {}
+    return 'Operations Lead';
+  });
+
+  // Settings Modal State & Store Preferences
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeCurrency, setActiveCurrency] = useState('GBP');
+
+  // Synchronize browser history and path changes
+  useEffect(() => {
+    const handleLocationChange = () => {
+      if (checkIsAdminPath()) {
+        setActiveTab('admin');
+      } else if (activeTab === 'admin') {
+        setActiveTab('home');
+      }
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, [activeTab]);
 
   // Contact Form State
   const [contactForm, setContactForm] = useState({
@@ -505,11 +522,57 @@ function App() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Navigate to admin path
+  const navigateToAdmin = () => {
+    if (window.location.pathname !== '/admin') {
+      window.history.pushState(null, '', '/admin');
+    }
+    setActiveTab('admin');
+    setIsMobileMenuOpen(false);
+    setIsSettingsOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Navigate to customer storefront
+  const navigateToStore = (tabName = 'home') => {
+    if (window.location.pathname === '/admin') {
+      window.history.pushState(null, '', '/');
+    }
+    setActiveTab(tabName);
+    setIsMobileMenuOpen(false);
+    setIsSettingsOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Navigate to tab & scroll to top
   const navigateToTab = (tabName) => {
+    if (tabName === 'admin') {
+      navigateToAdmin();
+      return;
+    }
+    if (window.location.pathname === '/admin') {
+      window.history.pushState(null, '', '/');
+    }
     setActiveTab(tabName);
     setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handle Admin Login Success
+  const handleAdminLoginSuccess = (adminData) => {
+    setIsAdminAuthenticated(true);
+    setAdminUser(adminData.displayName || 'Operations Lead');
+    showToast(`Welcome back, ${adminData.displayName || 'Administrator'}`);
+  };
+
+  // Handle Admin Logout
+  const handleAdminLogout = () => {
+    try {
+      localStorage.removeItem('licht_admin_auth');
+      sessionStorage.removeItem('licht_admin_auth');
+    } catch (e) {}
+    setIsAdminAuthenticated(false);
+    showToast('Signed out of Operations Console');
   };
 
   // Process and sync completed storefront checkout into Admin Orders & Inventory
@@ -597,13 +660,24 @@ function App() {
 
   // If activeTab is 'admin', render dedicated standalone Admin Portal view
   if (activeTab === 'admin') {
+    if (!isAdminAuthenticated) {
+      return (
+        <AdminLogin 
+          onLoginSuccess={handleAdminLoginSuccess} 
+          onExitToStore={() => navigateToStore('home')} 
+        />
+      );
+    }
+
     return (
       <AdminPortal 
         orders={adminOrders} 
         setOrders={setAdminOrders} 
         inventory={adminInventory} 
         setInventory={setAdminInventory} 
-        onExitToStore={() => navigateToTab('home')} 
+        onExitToStore={() => navigateToStore('home')} 
+        onLogout={handleAdminLogout}
+        adminUser={adminUser}
       />
     );
   }
@@ -617,25 +691,6 @@ function App() {
           <span>{toastMessage}</span>
         </div>
       )}
-
-      {/* TOP ANNOUNCEMENT BAR */}
-      <div className="announcement-bar">
-        <span>🌿 Pure. Natural. Made with Love and from LOVEWORLD</span>
-        <span>•</span>
-        <span>Order online or call us at <a href="tel:07831082965">07831082965</a></span>
-        <span>•</span>
-        <button 
-          onClick={() => navigateToTab('admin')}
-          style={{ background: 'none', border: 'none', color: '#FAF7F2', opacity: 0.95, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: 'inherit', fontFamily: 'inherit', textDecoration: 'underline', padding: 0 }}
-          title="Open Operations & Inventory Management"
-        >
-          <ShieldCheck size={13} color="#C5A059" /> Admin Portal
-        </button>
-        <span>•</span>
-        <span className="loveworld-badge" style={{ padding: '0.2rem 0.6rem', fontSize: '0.65rem' }}>
-          MADE IN LOVEWORLD
-        </span>
-      </div>
 
       {/* HEADER / NAVIGATION WITH LOGO IN CENTER */}
       <header className="site-header">
@@ -707,22 +762,22 @@ function App() {
           {/* Right Header Actions */}
           <div className="header-actions">
             <button 
-              className="icon-btn" 
-              title="Admin & Operations Portal" 
-              onClick={() => navigateToTab('admin')}
-              style={{ color: '#C5A059' }}
+              className="icon-btn header-desktop-action" 
+              title="Preferences & Settings" 
+              onClick={() => setIsSettingsOpen(true)}
+              aria-label="Settings"
             >
-              <ShieldCheck size={20} />
+              <Settings size={19} />
             </button>
             <button 
-              className="icon-btn" 
+              className="icon-btn header-desktop-action" 
               title="Sign In / Register" 
               onClick={() => { setAuthMode('login'); setIsAuthOpen(true); }}
             >
               <User size={19} />
             </button>
             <button 
-              className="icon-btn" 
+              className="icon-btn header-desktop-action" 
               title="Search" 
               onClick={() => setIsSearchOpen(true)}
             >
@@ -740,93 +795,114 @@ function App() {
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Slide-in Navigation Drawer */}
-        {isMobileMenuOpen && (
-          <div className="mobile-nav-drawer-overlay" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="mobile-nav-drawer" onClick={(e) => e.stopPropagation()}>
-              <div className="mobile-nav-header">
-                <LichtLogo size="header" />
-                <button className="mobile-nav-close" onClick={() => setIsMobileMenuOpen(false)}>
-                  <X size={22} />
-                </button>
-              </div>
+      {/* Mobile Slide-in Navigation Drawer (Placed outside header so backdrop-filter does not clip height) */}
+      {isMobileMenuOpen && (
+        <div className="mobile-nav-drawer-overlay" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="mobile-nav-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-nav-header">
+              <LichtLogo size="header" />
+              <button className="mobile-nav-close" onClick={() => setIsMobileMenuOpen(false)}>
+                <X size={22} />
+              </button>
+            </div>
 
-              <div className="mobile-nav-links">
+            <div className="mobile-nav-links">
+              <button 
+                className={`mobile-nav-link ${activeTab === 'home' ? 'active' : ''}`}
+                onClick={() => navigateToTab('home')}
+              >
+                <span>HOME</span>
+                <ArrowUpRight size={16} />
+              </button>
+              <button 
+                className={`mobile-nav-link ${activeTab === 'shop' || activeTab === 'product' ? 'active' : ''}`}
+                onClick={() => navigateToTab('shop')}
+              >
+                <span>SHOP COLLECTION</span>
+                <ArrowUpRight size={16} />
+              </button>
+              <button 
+                className={`mobile-nav-link ${activeTab === 'story' ? 'active' : ''}`}
+                onClick={() => navigateToTab('story')}
+              >
+                <span>OUR STORY</span>
+                <ArrowUpRight size={16} />
+              </button>
+              <button 
+                className={`mobile-nav-link ${activeTab === 'gifting' ? 'active' : ''}`}
+                onClick={() => navigateToTab('gifting')}
+              >
+                <span>GIFTING & SETS</span>
+                <ArrowUpRight size={16} />
+              </button>
+              <button 
+                className={`mobile-nav-link ${activeTab === 'contact' ? 'active' : ''}`}
+                onClick={() => navigateToTab('contact')}
+              >
+                <span>CONTACT US</span>
+                <ArrowUpRight size={16} />
+              </button>
+
+              {/* Quick Actions (Search, Account, Settings) inside Drawer */}
+              <div style={{ borderTop: '1px solid rgba(45, 58, 41, 0.12)', marginTop: '0.75rem', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#5A6658', padding: '0 0.85rem', marginBottom: '0.2rem' }}>
+                  QUICK ACCESS
+                </div>
                 <button 
-                  className={`mobile-nav-link ${activeTab === 'home' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('home')}
+                  className="mobile-nav-link"
+                  onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}
+                  style={{ color: '#2D3A29' }}
                 >
-                  <span>HOME</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <Search size={17} color="#C5A059" /> SEARCH PRODUCTS
+                  </span>
                   <ArrowUpRight size={16} />
                 </button>
                 <button 
-                  className={`mobile-nav-link ${activeTab === 'shop' || activeTab === 'product' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('shop')}
+                  className="mobile-nav-link"
+                  onClick={() => { setIsMobileMenuOpen(false); setAuthMode('login'); setIsAuthOpen(true); }}
+                  style={{ color: '#2D3A29' }}
                 >
-                  <span>SHOP COLLECTION</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <User size={17} color="#C5A059" /> MY ACCOUNT / SIGN IN
+                  </span>
                   <ArrowUpRight size={16} />
                 </button>
                 <button 
-                  className={`mobile-nav-link ${activeTab === 'story' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('story')}
+                  className="mobile-nav-link"
+                  onClick={() => { setIsMobileMenuOpen(false); setIsSettingsOpen(true); }}
+                  style={{ color: '#2D3A29' }}
                 >
-                  <span>OUR STORY</span>
-                  <ArrowUpRight size={16} />
-                </button>
-                <button 
-                  className={`mobile-nav-link ${activeTab === 'gifting' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('gifting')}
-                >
-                  <span>GIFTING & SETS</span>
-                  <ArrowUpRight size={16} />
-                </button>
-                <button 
-                  className={`mobile-nav-link ${activeTab === 'contact' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('contact')}
-                >
-                  <span>CONTACT US</span>
-                  <ArrowUpRight size={16} />
-                </button>
-                <button 
-                  className={`mobile-nav-link ${activeTab === 'admin' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('admin')}
-                  style={{ color: '#C5A059', borderTop: '1px solid rgba(197, 160, 89, 0.2)', marginTop: '0.4rem', paddingTop: '0.8rem' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <ShieldCheck size={18} color="#C5A059" /> ADMIN PORTAL
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <Settings size={17} color="#C5A059" /> PREFERENCES & SETTINGS
                   </span>
                   <ArrowUpRight size={16} />
                 </button>
               </div>
+            </div>
 
-              <div className="mobile-nav-actions">
-                <button 
-                  className="mobile-nav-btn secondary"
-                  onClick={() => { setIsMobileMenuOpen(false); setAuthMode('login'); setIsAuthOpen(true); }}
-                >
-                  <User size={16} /> Member Sign In / Register
-                </button>
-                <a 
-                  href="tel:07831082965"
-                  className="mobile-nav-btn primary"
-                >
-                  <Phone size={16} /> Call to Order: 07831082965
-                </a>
-              </div>
+            <div className="mobile-nav-actions">
+              <a 
+                href="tel:07831082965"
+                className="mobile-nav-btn primary"
+              >
+                <Phone size={16} /> Call to Order: 07831082965
+              </a>
+            </div>
 
-              <div className="mobile-nav-footer">
-                <div className="loveworld-badge" style={{ margin: '0 auto', width: 'fit-content' }}>
-                  MADE IN LOVEWORLD
-                </div>
-                <p style={{ fontSize: '0.75rem', color: '#6E5535', marginTop: '0.5rem', textAlign: 'center' }}>
-                  Pure. Natural. Handcrafted with Love.
-                </p>
+            <div className="mobile-nav-footer">
+              <div className="loveworld-badge" style={{ margin: '0 auto', width: 'fit-content' }}>
+                MADE IN LOVEWORLD
               </div>
+              <p style={{ fontSize: '0.75rem', color: '#6E5535', marginTop: '0.5rem', textAlign: 'center' }}>
+                Pure. Natural. Handcrafted with Love.
+              </p>
             </div>
           </div>
-        )}
-      </header>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* SEPARATE DEDICATED PRODUCT DETAIL PAGE (PDP)                              */}
@@ -870,11 +946,6 @@ function App() {
                       style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.35s ease' }}
                     />
                     
-                    {/* Badge Overlay */}
-                    <span style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.75rem', padding: '0.35rem 0.85rem', borderRadius: '4px', letterSpacing: '0.12em', fontWeight: 600 }}>
-                      {activeProduct.badge || selectedProduct.badge}
-                    </span>
-
                     {/* Wishlist Button */}
                     <button 
                       onClick={() => toggleWishlist(selectedProduct.id)}
@@ -1051,8 +1122,9 @@ function App() {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', fontSize: '0.9rem', color: '#5C635B' }}>
                       {activeProduct.perfectFor && activeProduct.perfectFor.map((item, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <Check size={14} color="#4A5D4E" /> {item}
+                        <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', lineHeight: 1.4 }}>
+                          <Check size={14} color="#4A5D4E" style={{ flexShrink: 0, marginTop: '3px' }} />
+                          <span>{item}</span>
                         </div>
                       ))}
                     </div>
@@ -1135,9 +1207,6 @@ function App() {
                         alt={product.name} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span className="card-badge" style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.65rem', padding: '0.25rem 0.65rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
-                        {product.badge}
-                      </span>
                       <button 
                         className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
@@ -1408,9 +1477,6 @@ function App() {
                         alt={product.name} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span className="card-badge" style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.7rem', padding: '0.3rem 0.75rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
-                        {product.badge}
-                      </span>
                       <button 
                         className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
@@ -1768,7 +1834,7 @@ function App() {
                   </h1>
 
                   <p style={{ color: '#5C635B', fontSize: '1.08rem', lineHeight: 1.7, marginBottom: '2.25rem', maxWidth: '440px' }}>
-                    Botanical skincare that nurtures your skin, honours the earth, and turns the everyday into a little luxury.
+                    Botanical skincare that nurtures your skin, honours the earth, and turns everyday a bit more luxurious.
                   </p>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
@@ -1841,7 +1907,7 @@ function App() {
                     style={{ 
                       position: 'absolute', 
                       bottom: '25px', 
-                      left: '-65px', 
+                      left: '-125px', 
                       zIndex: 20, 
                       backgroundColor: '#DFCAA7', 
                       padding: '0.75rem', 
@@ -1899,7 +1965,7 @@ function App() {
               <img 
                 src="/clear_skin_model.png" 
                 alt="Radiant clear skin model — LICHT LUXE NATURALS" 
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 55%' }}
               />
             </div>
 
@@ -2039,8 +2105,8 @@ function App() {
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   </div>
-                  <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#1E221D', marginBottom: '0.25rem', fontWeight: 400 }}>
-                    Botanical Vitamin E
+                  <h3 className="font-display" style={{ fontSize: 'clamp(1.35rem, 4.2vw, 1.6rem)', color: '#1E221D', marginBottom: '0.25rem', fontWeight: 400, lineHeight: 1.2 }}>
+                    Botanical <span style={{ whiteSpace: 'nowrap' }}>Vitamin E</span>
                   </h3>
                   <p style={{ color: '#5C635B', fontSize: '0.875rem', lineHeight: 1.5 }}>
                     Antioxidant-rich natural oils that nourish & soothe the skin.
@@ -2155,9 +2221,6 @@ function App() {
                         alt={product.name} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span className="card-badge" style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.7rem', padding: '0.3rem 0.75rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
-                        {product.badge}
-                      </span>
                       <button 
                         className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
@@ -2361,6 +2424,7 @@ function App() {
                 <li><button onClick={() => openProductDetail(PRODUCTS[1])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Pure Coconut Oil</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS[2])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Body Butter</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-liquid-soap'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Liquid Soap</button></li>
+                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-jar'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Soap (Jar)</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Gift Sets</button></li>
               </ul>
             </div>
@@ -2387,7 +2451,7 @@ function App() {
                 <li><button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>FAQs</button></li>
                 <li><a href="tel:07831082965" style={{ color: '#D6DDD3', textDecoration: 'none' }}>Phone: 07831082965</a></li>
                 <li><button onClick={() => navigateToTab('contact')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Privacy Policy</button></li>
-                <li><button onClick={() => navigateToTab('admin')} style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', textAlign: 'left', padding: 0, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><ShieldCheck size={14} /> Admin & Inventory Portal</button></li>
+                <li><button onClick={() => setIsSettingsOpen(true)} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Settings size={13} /> Preferences & Settings</button></li>
               </ul>
             </div>
 
@@ -2401,10 +2465,10 @@ function App() {
 
             <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
               <button 
-                onClick={() => navigateToTab('admin')}
-                style={{ background: 'none', border: 'none', color: '#C5A059', fontSize: '0.8rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: 0 }}
+                onClick={() => setIsSettingsOpen(true)}
+                style={{ background: 'none', border: 'none', color: '#A0A89F', fontSize: '0.8rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: 0 }}
               >
-                <ShieldCheck size={14} /> Staff Admin Portal
+                <Settings size={13} /> Settings
               </button>
               <a href="https://instagram.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Instagram</a>
               <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Facebook</a>
@@ -2805,18 +2869,17 @@ function App() {
         </div>
       )}
 
-      {/* QUICK FLOATING ADMIN TOGGLE */}
-      <div className="admin-quick-dock">
-        <button 
-          className="admin-dock-btn" 
-          onClick={() => navigateToTab('admin')}
-          title="Open Operations & Inventory Management Portal"
-        >
-          <ShieldCheck size={16} />
-          <span>Admin Portal</span>
-          <span className="admin-pulse-dot" style={{ width: 6, height: 6 }}></span>
-        </button>
-      </div>
+      {/* PREFERENCES & SETTINGS MODAL */}
+      <SettingsModal 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onNavigateToAdmin={navigateToAdmin}
+        activeCurrency={activeCurrency}
+        onCurrencyChange={(curr) => {
+          setActiveCurrency(curr);
+          showToast(`Currency updated to ${curr}`);
+        }}
+      />
     </div>
   );
 }

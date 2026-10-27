@@ -22,7 +22,9 @@ import {
   FileText, 
   Check, 
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 import './AdminPortal.css';
 
@@ -91,7 +93,7 @@ export const DEFAULT_INVENTORY = [
   },
   {
     sku: 'LN-SKU-AB300',
-    productId: 'african-black-liquid-soap',
+    productId: 'african-black-soap-jar',
     variantId: 'african-black-soap-jar',
     name: 'African Black Soap (Jar)',
     variant: 'Traditional Jar (300g)',
@@ -280,7 +282,9 @@ export default function AdminPortal({
   setOrders, 
   inventory = DEFAULT_INVENTORY, 
   setInventory, 
-  onExitToStore 
+  onExitToStore,
+  onLogout,
+  adminUser = 'Operations Lead'
 }) {
   const [activeAdminTab, setActiveAdminTab] = useState('overview'); // 'overview' | 'orders' | 'inventory' | 'deliveries' | 'analytics'
   const [searchQuery, setSearchQuery] = useState('');
@@ -488,10 +492,15 @@ export default function AdminPortal({
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#D6DDD3', backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.4rem 0.85rem', borderRadius: '6px' }}>
             <Phone size={13} color="#C5A059" />
             <span>Dispatch Line: <strong>07831082965</strong></span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.4rem 0.75rem', backgroundColor: 'rgba(197, 160, 89, 0.12)', border: '1px solid rgba(197, 160, 89, 0.25)', borderRadius: '6px', fontSize: '0.8rem', color: '#FAF7F2' }}>
+            <UserCheck size={14} color="#C5A059" />
+            <span>{adminUser}</span>
           </div>
 
           <button 
@@ -500,8 +509,19 @@ export default function AdminPortal({
             title="Return to Customer Storefront"
           >
             <ArrowLeft size={15} />
-            <span>Back to Storefront</span>
+            <span>View Store</span>
           </button>
+
+          {onLogout && (
+            <button 
+              className="admin-logout-btn" 
+              onClick={onLogout}
+              title="Sign out of Operations Console"
+            >
+              <LogOut size={15} />
+              <span>Log Out</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -591,6 +611,39 @@ export default function AdminPortal({
                 Direct UK & Global fulfillment channel active. All raw batches authenticated.
               </div>
             </div>
+
+            {onLogout && (
+              <button 
+                onClick={onLogout}
+                style={{
+                  marginTop: '0.75rem',
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.6rem',
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  color: '#FCA5A5',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)';
+                  e.currentTarget.style.color = '#FFF';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)';
+                  e.currentTarget.style.color = '#FCA5A5';
+                }}
+              >
+                <LogOut size={14} /> Sign Out of Admin
+              </button>
+            )}
           </div>
         </aside>
 
