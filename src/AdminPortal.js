@@ -30,9 +30,17 @@ import {
 } from 'lucide-react';
 import './AdminPortal.css';
 
-const API_BASE = (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
-  ? '/api'
-  : (process.env.REACT_APP_API_BASE || 'https://lichtluxenaturals.org/api');
+const API_BASE = (() => {
+  if (typeof window === 'undefined') return process.env.REACT_APP_API_BASE || 'http://localhost:8080/api';
+  const host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return process.env.REACT_APP_API_BASE || 'http://localhost:8080/api';
+  }
+  if (host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.')) {
+    return `http://${host}:8080/api`;
+  }
+  return '/api';
+})();
 
 // Initial Mock Inventory if not already passed
 export const DEFAULT_INVENTORY = [
@@ -256,7 +264,7 @@ export default function AdminPortal({
               items: (o.items && o.items.length > 0) ? o.items.map(it => ({
                 name: it.productName || 'Bespoke Skincare',
                 qty: it.quantity || 1,
-                price: Number(it.price || 24.00)
+                price: Number(it.unitPrice !== undefined ? it.unitPrice : (it.price || 24.00))
               })) : [
                 { name: 'Pure Botanical Formulation', qty: 1, price: Number(o.totalAmount || 24.00) }
               ],

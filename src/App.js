@@ -21,8 +21,7 @@ import {
   ArrowLeft,
   User,
   Menu,
-  ShieldCheck,
-  Lock
+  ShieldCheck
 } from 'lucide-react';
 import './App.css';
 import AdminPortal, { DEFAULT_INVENTORY } from './AdminPortal';
@@ -387,15 +386,23 @@ const FAQS = [
 
 // ─── PayPal Sandbox Configuration ──────────────────────────────────
 const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || 'test';
-const API_BASE = (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
-  ? '/api'
-  : (process.env.REACT_APP_API_BASE || 'https://lichtluxenaturals.org/api');
+const API_BASE = (() => {
+  if (typeof window === 'undefined') return process.env.REACT_APP_API_BASE || 'http://localhost:8080/api';
+  const host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return process.env.REACT_APP_API_BASE || 'http://localhost:8080/api';
+  }
+  if (host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.')) {
+    return `http://${host}:8080/api`;
+  }
+  return '/api';
+})();
 
 const paypalInitialOptions = {
   'client-id': PAYPAL_CLIENT_ID,
   currency: 'GBP',
   intent: 'capture',
-  'disable-funding': 'credit',
+  'disable-funding': 'credit,card',
 };
 
 function App() {
@@ -436,6 +443,7 @@ function App() {
   const [checkoutStep, setCheckoutStep] = useState('address'); // 'address' | 'payment'
   const [shippingAddress, setShippingAddress] = useState({
     shippingName: '',
+    shippingEmail: '',
     shippingPhone: '',
     shippingAddress: '',
     shippingCity: '',
@@ -616,9 +624,16 @@ function App() {
 
     // Append to admin orders
     setAdminOrders(prev => [newOrder, ...prev]);
-    showToast(`Order #${newOrderId} confirmed! Logged to Admin Portal.`);
+    setOrderConfirmation({
+      orderNumber: newOrderId,
+      total: cartSubtotal.toFixed(2),
+      method: paymentMethod,
+      shipping: shippingAddress
+    });
+    setPaymentProcessing(false);
     setIsCheckoutOpen(false);
     setCart([]);
+    showToast(`✨ Payment successful! Order #${newOrderId} confirmed.`);
   };
 
   // Open dedicated product detail page
@@ -652,6 +667,7 @@ function App() {
       setShippingAddress(prev => ({
         ...prev,
         shippingName: prev.shippingName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim(),
+        shippingEmail: prev.shippingEmail || currentUser.email || '',
         shippingPhone: prev.shippingPhone || currentUser.phone || ''
       }));
     }
@@ -895,19 +911,14 @@ function App() {
     try {
       setPaymentProcessing(true);
       const token = getAuthToken();
-      
-      // If no backend token, create order client-side for demo/testing
-      if (!token) {
-        // Client-side order creation for demo mode
-        return 'DEMO_ORDER';
-      }
+      const authHeaders = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
 
       const response = await fetch(`${API_BASE}/paypal/create-order`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: authHeaders,
         body: JSON.stringify({
           amount: cartSubtotal.toFixed(2),
           shippingInfo: shippingAddress,
@@ -929,6 +940,7 @@ function App() {
         throw new Error(data.message || 'Failed to create PayPal order. Please try again.');
       }
 
+      setPaymentProcessing(false);
       return data.id; // PayPal order ID
     } catch (error) {
       showToast('Payment notice: ' + (error.message || 'Error initializing payment'));
@@ -939,31 +951,17 @@ function App() {
 
   // Capture PayPal order after buyer approval
   const capturePayPalOrder = useCallback(async (data) => {
-    if (paymentProcessing) return;
     setPaymentProcessing(true);
     try {
       const token = getAuthToken();
-      
-      // Demo mode — no backend
-      if (!token || data.orderID === 'DEMO_ORDER') {
-        setPaymentProcessing(false);
-        setIsCheckoutOpen(false);
-        setCart([]);
-        setOrderConfirmation({
-          orderNumber: 'LLN-DEMO-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-          total: cartSubtotal.toFixed(2),
-          shipping: shippingAddress
-        });
-        showToast('✨ Order placed successfully via PayPal!');
-        return;
-      }
+      const authHeaders = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
 
       const response = await fetch(`${API_BASE}/paypal/capture-order/${data.orderID}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: authHeaders,
         body: JSON.stringify({
           amount: cartSubtotal.toFixed(2),
           shippingInfo: shippingAddress,
@@ -985,7 +983,6 @@ function App() {
         throw new Error(result.message || 'Payment capture failed. Please check your account.');
       }
       
-      setPaymentProcessing(false);
       setIsCheckoutOpen(false);
       setCart([]);
       setOrderConfirmation({
@@ -996,10 +993,11 @@ function App() {
       });
       showToast('✨ Payment successful! Order ' + result.orderNumber + ' placed.');
     } catch (error) {
-      setPaymentProcessing(false);
       showToast('Payment error: ' + error.message);
+    } finally {
+      setPaymentProcessing(false);
     }
-  }, [cart, cartSubtotal, shippingAddress, paymentProcessing]);
+  }, [cart, cartSubtotal, shippingAddress]);
 
   // Helper to determine administrator authorization
   const isAdmin = Boolean(
@@ -1015,164 +1013,15 @@ function App() {
   if (activeTab === 'admin') {
     if (!isAdmin) {
       return (
-        <div style={{
-          minHeight: '100vh',
-          backgroundColor: '#141B13',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '2rem',
-          color: '#FAF7F2',
-          fontFamily: "'Plus Jakarta Sans', sans-serif"
-        }}>
-          <div style={{
-            maxWidth: '520px',
-            width: '100%',
-            backgroundColor: '#1E271D',
-            border: '1px solid rgba(197, 160, 89, 0.4)',
-            borderRadius: '16px',
-            padding: '2.75rem 2.25rem',
-            textAlign: 'center',
-            boxShadow: '0 25px 60px rgba(0,0,0,0.5)'
-          }}>
-            <div style={{
-              width: '68px',
-              height: '68px',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(197, 160, 89, 0.15)',
-              border: '1px solid rgba(197, 160, 89, 0.45)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 1.5rem',
-              color: '#C5A059'
-            }}>
-              <ShieldCheck size={34} />
-            </div>
-
-            <span style={{
-              display: 'inline-block',
-              fontSize: '0.725rem',
-              fontWeight: 700,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: '#C5A059',
-              marginBottom: '0.5rem'
-            }}>
-              Executive Access Control
-            </span>
-
-            <h2 style={{
-              fontSize: '1.75rem',
-              fontWeight: 700,
-              fontFamily: "'Playfair Display', serif",
-              margin: '0.25rem 0 1rem',
-              color: '#FAF7F2'
-            }}>
-              Administrator Portal
-            </h2>
-
-            <p style={{
-              fontSize: '0.925rem',
-              color: '#B5BEB4',
-              lineHeight: 1.6,
-              marginBottom: '1.75rem'
-            }}>
-              {currentUser ? (
-                <>
-                  You are signed in as <strong style={{ color: '#FAF7F2' }}>{currentUser.email}</strong>, which does not have executive administrative permissions.
-                </>
-              ) : (
-                <>
-                  Access to the LICHT LUXE NATURALS operations & inventory management suite is strictly restricted to authorized administrators.
-                </>
-              )}
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-              {currentUser ? (
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsAuthOpen(true);
-                    setAuthMode('login');
-                  }}
-                  style={{
-                    backgroundColor: '#C5A059',
-                    color: '#161D15',
-                    border: 'none',
-                    padding: '0.85rem 1.5rem',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <Lock size={16} /> Sign In with Admin Account
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setIsAuthOpen(true);
-                    setAuthMode('login');
-                  }}
-                  style={{
-                    backgroundColor: '#C5A059',
-                    color: '#161D15',
-                    border: 'none',
-                    padding: '0.85rem 1.5rem',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <Lock size={16} /> Sign In as Administrator
-                </button>
-              )}
-
-              <button
-                onClick={() => navigateToTab('home')}
-                style={{
-                  backgroundColor: 'transparent',
-                  color: '#FAF7F2',
-                  border: '1px solid rgba(229, 223, 197, 0.25)',
-                  padding: '0.8rem 1.5rem',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <ArrowLeft size={16} /> Return to Storefront
-              </button>
-            </div>
-
-            <div style={{
-              marginTop: '1.75rem',
-              paddingTop: '1.25rem',
-              borderTop: '1px solid rgba(229, 223, 197, 0.12)',
-              fontSize: '0.75rem',
-              color: '#8A9488'
-            }}>
-              Authorized Admin Account: <code style={{ color: '#C5A059' }}>sharonshelke1@gmail.com</code>
-            </div>
-          </div>
+        <div style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', textAlign: 'center', backgroundColor: '#FAF7F2', color: '#161D15' }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.2rem', marginBottom: '1rem', color: '#2D3A29' }}>Page Not Found</h2>
+          <p style={{ color: '#5A6258', marginBottom: '2rem', fontSize: '1rem' }}>The requested page could not be found or has been moved.</p>
+          <button 
+            onClick={() => navigateToTab('home')}
+            style={{ padding: '0.85rem 2.25rem', cursor: 'pointer', backgroundColor: '#2D3A29', color: '#FAF7F2', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '0.9rem', letterSpacing: '0.05em' }}
+          >
+            Return to Boutique
+          </button>
         </div>
       );
     }
@@ -1205,14 +1054,18 @@ function App() {
         <span>🌿 Pure. Natural. Made with Love and from LOVEWORLD</span>
         <span>•</span>
         <span>Order online or call us at <a href="tel:07831082965">07831082965</a></span>
-        <span>•</span>
-        <button 
-          onClick={() => navigateToTab('admin')}
-          style={{ background: 'none', border: 'none', color: '#FAF7F2', opacity: 0.95, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: 'inherit', fontFamily: 'inherit', textDecoration: 'underline', padding: 0 }}
-          title="Open Operations & Inventory Management"
-        >
-          <ShieldCheck size={13} color="#C5A059" /> Admin Portal
-        </button>
+        {isAdmin && (
+          <>
+            <span>•</span>
+            <button 
+              onClick={() => navigateToTab('admin')}
+              style={{ background: 'none', border: 'none', color: '#FAF7F2', opacity: 0.95, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: 'inherit', fontFamily: 'inherit', textDecoration: 'underline', padding: 0 }}
+              title="Open Operations & Inventory Management"
+            >
+              <ShieldCheck size={13} color="#C5A059" /> Admin Portal
+            </button>
+          </>
+        )}
         <span>•</span>
         <span className="loveworld-badge" style={{ padding: '0.2rem 0.6rem', fontSize: '0.65rem' }}>
           MADE IN LOVEWORLD
@@ -1288,14 +1141,16 @@ function App() {
 
           {/* Right Header Actions */}
           <div className="header-actions">
-            <button 
-              className="icon-btn" 
-              title="Admin & Operations Portal" 
-              onClick={() => navigateToTab('admin')}
-              style={{ color: '#C5A059' }}
-            >
-              <ShieldCheck size={20} />
-            </button>
+            {isAdmin && (
+              <button 
+                className="icon-btn" 
+                title="Admin & Operations Portal" 
+                onClick={() => navigateToTab('admin')}
+                style={{ color: '#C5A059' }}
+              >
+                <ShieldCheck size={20} />
+              </button>
+            )}
             <button 
               className="icon-btn" 
               title="Sign In / Register" 
@@ -1370,16 +1225,18 @@ function App() {
                   <span>CONTACT US</span>
                   <ArrowUpRight size={16} />
                 </button>
-                <button 
-                  className={`mobile-nav-link ${activeTab === 'admin' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('admin')}
-                  style={{ color: '#C5A059', borderTop: '1px solid rgba(197, 160, 89, 0.2)', marginTop: '0.4rem', paddingTop: '0.8rem' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <ShieldCheck size={18} color="#C5A059" /> ADMIN PORTAL
-                  </span>
-                  <ArrowUpRight size={16} />
-                </button>
+                {isAdmin && (
+                  <button 
+                    className={`mobile-nav-link ${activeTab === 'admin' ? 'active' : ''}`}
+                    onClick={() => navigateToTab('admin')}
+                    style={{ color: '#C5A059', borderTop: '1px solid rgba(197, 160, 89, 0.2)', marginTop: '0.4rem', paddingTop: '0.8rem' }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <ShieldCheck size={18} color="#C5A059" /> ADMIN PORTAL
+                    </span>
+                    <ArrowUpRight size={16} />
+                  </button>
+                )}
               </div>
 
               <div className="mobile-nav-actions">
@@ -2969,7 +2826,9 @@ function App() {
                 <li><button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>FAQs</button></li>
                 <li><a href="tel:07831082965" style={{ color: '#D6DDD3', textDecoration: 'none' }}>Phone: 07831082965</a></li>
                 <li><button onClick={() => navigateToTab('contact')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Privacy Policy</button></li>
-                <li><button onClick={() => navigateToTab('admin')} style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', textAlign: 'left', padding: 0, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><ShieldCheck size={14} /> Admin & Inventory Portal</button></li>
+                {isAdmin && (
+                  <li><button onClick={() => navigateToTab('admin')} style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', textAlign: 'left', padding: 0, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><ShieldCheck size={14} /> Admin & Inventory Portal</button></li>
+                )}
               </ul>
             </div>
 
@@ -2982,12 +2841,14 @@ function App() {
             </div>
 
             <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-              <button 
-                onClick={() => navigateToTab('admin')}
-                style={{ background: 'none', border: 'none', color: '#C5A059', fontSize: '0.8rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: 0 }}
-              >
-                <ShieldCheck size={14} /> Staff Admin Portal
-              </button>
+              {isAdmin && (
+                <button 
+                  onClick={() => navigateToTab('admin')}
+                  style={{ background: 'none', border: 'none', color: '#C5A059', fontSize: '0.8rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: 0 }}
+                >
+                  <ShieldCheck size={14} /> Staff Admin Portal
+                </button>
+              )}
               <a href="https://instagram.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Instagram</a>
               <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Facebook</a>
               <a href="https://tiktok.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>TikTok</a>
@@ -3232,6 +3093,20 @@ function App() {
                         placeholder="e.g. Eleanor Vance" 
                         value={shippingAddress.shippingName}
                         onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingName: e.target.value }))}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                        Email Address for Order Confirmation & Tracking *
+                      </label>
+                      <input 
+                        type="email" 
+                        required 
+                        placeholder="e.g. eleanor@example.com" 
+                        value={shippingAddress.shippingEmail}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingEmail: e.target.value }))}
                         style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
                       />
                     </div>
@@ -3826,17 +3701,19 @@ function App() {
       )}
 
       {/* QUICK FLOATING ADMIN TOGGLE */}
-      <div className="admin-quick-dock">
-        <button 
-          className="admin-dock-btn" 
-          onClick={() => navigateToTab('admin')}
-          title="Open Operations & Inventory Management Portal"
-        >
-          <ShieldCheck size={16} />
-          <span>Admin Portal</span>
-          <span className="admin-pulse-dot" style={{ width: 6, height: 6 }}></span>
-        </button>
-      </div>
+      {isAdmin && (
+        <div className="admin-quick-dock">
+          <button 
+            className="admin-dock-btn" 
+            onClick={() => navigateToTab('admin')}
+            title="Open Operations & Inventory Management Portal"
+          >
+            <ShieldCheck size={16} />
+            <span>Admin Portal</span>
+            <span className="admin-pulse-dot" style={{ width: 6, height: 6 }}></span>
+          </button>
+        </div>
+      )}
     </div>
     </PayPalScriptProvider>
   );
