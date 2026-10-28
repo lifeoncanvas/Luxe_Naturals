@@ -94,9 +94,9 @@ const PRODUCTS = [
     name: 'Pure Shea Butter',
     tagline: 'Pure nourishment from nature.',
     subtitle: 'Pure • Rich • Nourishing',
-    price: 1,
+    price: 14.99,
     badge: '100% RAW & UNREFINED',
-    volume: '250 ml / 8.8 oz',
+    volume: '250 g / 8.8 oz',
     rating: '5.0',
     reviewsCount: 168,
     image: '/shea_butter_primary.jpg',
@@ -122,7 +122,7 @@ const PRODUCTS = [
     name: 'Pure Coconut Oil',
     tagline: 'Nature\'s nourishing oil.',
     subtitle: 'Natural • Versatile • Nourishing',
-    price: 22,
+    price: 11.99,
     badge: 'COLD PRESSED',
     volume: '200 ml / 7.0 fl oz',
     rating: '4.9',
@@ -149,7 +149,7 @@ const PRODUCTS = [
     name: 'Luxe Body Butter',
     tagline: 'Deep nourishment. Luxurious feel.',
     subtitle: 'Rich • Creamy • Luxurious',
-    price: 28,
+    price: 18.99,
     badge: 'SIGNATURE FORMULA',
     volume: '250 g / 8.8 oz',
     rating: '5.0',
@@ -173,119 +173,75 @@ const PRODUCTS = [
   },
   {
     id: 'african-black-liquid-soap',
-    name: 'African Black Soap',
+    name: 'African Black Liquid Soap',
     tagline: 'Deep cleansing. Skin & body.',
     subtitle: 'Deep Cleansing • Clarifying • 100% Botanical',
-    price: 24,
+    price: 12.99,
     badge: '100% NATURAL CLEANSE',
     volume: '500 ml / 16.9 fl oz',
     rating: '5.0',
     reviewsCount: 152,
     image: '/african_black_soap_primary.jpg',
-    shortDescription: 'Our African Black Soap is a rich, natural cleanser made from traditional African ingredients. It gently cleanses, helps remove impurities, and leaves the skin feeling fresh, clean and smooth.',
-    description: 'Our African Black Soap is a rich, natural cleanser crafted from traditional African botanical ingredients. It gently cleanses and purifies the skin, helps remove dirt and excess oils, helps reduce acne and blemishes, and leaves the skin feeling revitalised, fresh and smooth. Available in both a convenient Liquid Soap pump bottle and a traditional 300g normal soap jar.',
+    shortDescription: 'Our African Black Liquid Soap is a rich, natural cleanser crafted from traditional African botanical ingredients. It gently cleanses and purifies the skin, helps remove dirt and excess oils, and leaves skin fresh and smooth.',
+    description: 'Our African Black Liquid Soap is a rich, natural cleanser crafted from traditional African botanical ingredients. Formulated for everyday convenience with an amber pump dispenser, it gently cleanses and purifies the skin, helps remove dirt and excess oils, helps reduce acne and blemishes, and leaves the skin feeling revitalised, fresh and smooth. Suitable for daily use on both face and body, across all skin types.',
     ingredients: 'Water, Potash (from Plantain Skins), Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter Extract, Natural Botanicals (Neem, Camwood, Aloe Vera), Fragrance.',
     benefits: [
-      'Gently cleanses and purifies the skin',
-      'Helps reduce acne, blemishes and breakouts',
-      'Leaves skin feeling fresh, clean and smooth',
+      'Gently cleanses and purifies skin & body',
+      'Helps reduce acne, blemishes and excess oil',
+      'Refreshes and soothes irritated skin',
+      'Convenient mess-free pump dispenser',
       'Supports clearer, healthier-looking skin',
       'Suitable for all skin types'
     ],
     perfectFor: [
       'Daily facial & body cleansing',
       'Blemish-prone & oily skin',
+      'In-shower body wash convenience',
       'Deep pore purification',
       'Clearing breakouts & acne',
-      'Balancing and soothing skin',
-      'All skin types & sensitive skin'
+      'All skin types'
     ],
-    howToUse: 'Apply a small amount to wet skin or sponge, lather gently and massage across face and body. Rinse thoroughly with water. Use daily for best results.',
+    howToUse: 'Dispense 1–2 pumps onto wet hands or sponge, lather gently and massage across face and body. Rinse thoroughly with water. Use daily for best results.',
     gallery: [
       '/african_black_soap_primary.jpg',
-      '/african_black_soap_dual.jpg',
       '/clear_skin_model.jpg'
+    ]
+  },
+  {
+    id: 'african-black-soap-jar',
+    name: 'African Black Soap',
+    tagline: 'Deep cleansing • Purifying • Natural glow.',
+    subtitle: 'Deep Cleansing • Purifying • Natural Glow (Face & Body)',
+    price: 11.99,
+    badge: 'TRADITIONAL 300G JAR',
+    volume: '300 g / 10.5 oz',
+    rating: '5.0',
+    reviewsCount: 136,
+    image: '/african_black_soap_jar.jpg',
+    shortDescription: 'Our African Black Soap is a traditional natural cleanser made from plantain skins, cocoa pod ash and natural botanicals. Hand-packed in a 300g jar, it gently cleanses, clears blemishes and leaves skin glowing.',
+    description: 'Our African Black Soap is a traditional natural cleanser made from plantain skins, cocoa pod ash and natural botanicals. Hand-packed in a 300g jar, it gently cleanses, removes dirt and excess oil, helps clear blemishes and leaves the skin fresh, smooth and healthy. Suitable for daily use on face and body across all skin types.',
+    ingredients: 'Plantain Skins, Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter, Water, Natural Botanicals (e.g. Neem, Camwood, Aloe Vera, etc.).',
+    benefits: [
+      'Deeply cleanses and purifies the skin',
+      'Helps reduce acne, blemishes and excess oil',
+      'Improves skin texture and tone',
+      'Leaves skin fresh, smooth and glowing',
+      'Suitable for all skin types',
+      '100% chemical free & gentle on skin'
     ],
-    variants: [
-      {
-        id: 'african-black-liquid-soap',
-        variantType: 'liquid',
-        name: 'African Black Liquid Soap',
-        formatLabel: 'Liquid Soap (Pump)',
-        tagline: 'Deep Cleansing • Skin & Body',
-        subtitle: 'Deep Cleansing • Clarifying • 100% Botanical',
-        price: 24,
-        volume: '500 ml / 16.9 fl oz',
-        badge: '100% NATURAL CLEANSE',
-        packaging: 'Amber Pump Dispenser (500 ml)',
-        highlight: 'Skin & Body Wash',
-        image: '/african_black_soap_primary.jpg',
-        gallery: [
-          '/african_black_soap_primary.jpg',
-          '/african_black_soap_dual.jpg',
-          '/clear_skin_model.jpg'
-        ],
-        shortDescription: 'Our African Black Liquid Soap is a rich, natural cleanser made from traditional African ingredients. It gently cleanses, helps remove impurities, and leaves the skin feeling fresh, clean and smooth.',
-        description: 'Our African Black Liquid Soap is a rich, natural cleanser crafted from traditional African botanical ingredients. Formulated for everyday convenience with an amber pump dispenser, it gently cleanses and purifies the skin, helps remove dirt and excess oils, helps reduce acne and blemishes, and leaves the skin feeling revitalised, fresh and smooth. Suitable for daily use on both face and body, across all skin types.',
-        ingredients: 'Water, Potash (from Plantain Skins), Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter Extract, Natural Botanicals (Neem, Camwood, Aloe Vera), Fragrance.',
-        benefits: [
-          'Gently cleanses and purifies skin & body',
-          'Helps reduce acne, blemishes and excess oil',
-          'Refreshes and soothes irritated skin',
-          'Convenient mess-free pump dispenser',
-          'Supports clearer, healthier-looking skin',
-          'Suitable for all skin types'
-        ],
-        perfectFor: [
-          'Daily facial & body cleansing',
-          'Blemish-prone & oily skin',
-          'In-shower body wash convenience',
-          'Deep pore purification',
-          'Clearing breakouts & acne',
-          'All skin types'
-        ],
-        howToUse: 'Dispense 1–2 pumps onto wet hands or sponge, lather gently and massage across face and body. Rinse thoroughly with water. Use daily for best results.'
-      },
-      {
-        id: 'african-black-soap-jar',
-        variantType: 'normal',
-        name: 'African Black Soap',
-        formatLabel: 'Normal Soap (Jar)',
-        tagline: 'Deep Cleansing • Purifying • Natural Glow',
-        subtitle: 'Deep Cleansing • Purifying • Natural Glow (Face & Body)',
-        price: 22,
-        volume: '300g / 10.5 oz',
-        badge: 'TRADITIONAL 300G JAR',
-        packaging: 'Wide-Mouth Jar (300g)',
-        highlight: 'Face & Body Ritual',
-        image: '/african_black_soap_jar.jpg',
-        gallery: [
-          '/african_black_soap_jar.jpg',
-          '/african_black_soap_dual.jpg',
-          '/clear_skin_model.jpg'
-        ],
-        shortDescription: 'Our African Black Soap is a traditional natural cleanser made from plantain skins, cocoa pod ash and natural botanicals. It gently cleanses, removes dirt and excess oil, helps clear blemishes and leaves the skin fresh, smooth and healthy.',
-        description: 'Our African Black Soap is a traditional natural cleanser made from plantain skins, cocoa pod ash and natural botanicals. Hand-packed in a 300g jar, it gently cleanses, removes dirt and excess oil, helps clear blemishes and leaves the skin fresh, smooth and healthy. Suitable for daily use on face and body across all skin types.',
-        ingredients: 'Plantain Skins, Cocoa Pod Ash, Palm Kernel Oil, Coconut Oil, Shea Butter, Water, Natural Botanicals (e.g. Neem, Camwood, Aloe Vera, etc.).',
-        benefits: [
-          'Deeply cleanses and purifies the skin',
-          'Helps reduce acne, blemishes and excess oil',
-          'Improves skin texture and tone',
-          'Leaves skin fresh, smooth and glowing',
-          'Suitable for all skin types',
-          '100% chemical free & gentle on skin'
-        ],
-        perfectFor: [
-          'Targeted acne & blemish clearing',
-          'Traditional face & body cleansing ritual',
-          'Improving skin texture & tone',
-          'Balancing oily & congested skin',
-          'Natural glow enhancement',
-          'All skin types'
-        ],
-        howToUse: 'Apply a small amount to wet skin, massage gently and rinse thoroughly with water. Use daily for best results.',
-        storage: 'Store in a cool, dry place. Keep away from direct sunlight. For external use only.'
-      }
+    perfectFor: [
+      'Targeted acne & blemish clearing',
+      'Traditional face & body cleansing ritual',
+      'Improving skin texture & tone',
+      'Balancing oily & congested skin',
+      'Natural glow enhancement',
+      'All skin types'
+    ],
+    howToUse: 'Apply a small amount to wet skin, massage gently and rinse thoroughly with water. Use daily for best results.',
+    storage: 'Store in a cool, dry place. Keep away from direct sunlight. For external use only.',
+    gallery: [
+      '/african_black_soap_jar.jpg',
+      '/clear_skin_model.jpg'
     ]
   },
   {
@@ -293,8 +249,8 @@ const PRODUCTS = [
     name: 'The Luxe Trio Gift Set',
     tagline: 'The complete natural luxury collection.',
     subtitle: 'Pure Shea Butter + Pure Coconut Oil + Luxe Body Butter',
-    price: 68,
-    originalPrice: 74,
+    price: 39.99,
+    originalPrice: 45.97,
     badge: 'MADE IN LOVEWORLD BOX',
     volume: 'Full Size 3-Piece Set',
     rating: '5.0',
@@ -1957,7 +1913,7 @@ function App() {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.75rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', color: '#2D3A29' }}>
-                      <Check size={18} color="#C5A059" /> <strong>Pure Shea Butter</strong> (250ml)
+                      <Check size={18} color="#C5A059" /> <strong>Pure Shea Butter</strong> (250g)
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', color: '#2D3A29' }}>
                       <Check size={18} color="#C5A059" /> <strong>Pure Coconut Oil</strong> (200ml)
@@ -2800,6 +2756,7 @@ function App() {
                 <li><button onClick={() => openProductDetail(PRODUCTS[1])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Pure Coconut Oil</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS[2])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Body Butter</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-liquid-soap'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Liquid Soap</button></li>
+                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-jar'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Soap (300g Jar)</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Gift Sets</button></li>
               </ul>
             </div>
@@ -2904,7 +2861,7 @@ function App() {
                           <span className="qty-num">{item.quantity}</span>
                           <button className="qty-btn" onClick={() => updateCartQuantity(item.id, 1)}><Plus size={12} /></button>
                         </div>
-                        <div style={{ fontWeight: 600, color: '#6E5535' }}>£{item.price * item.quantity}</div>
+                        <div style={{ fontWeight: 600, color: '#6E5535' }}>£{(item.price * item.quantity).toFixed(2)}</div>
                       </div>
                     </div>
                   </div>
@@ -3700,20 +3657,6 @@ function App() {
         </div>
       )}
 
-      {/* QUICK FLOATING ADMIN TOGGLE */}
-      {isAdmin && (
-        <div className="admin-quick-dock">
-          <button 
-            className="admin-dock-btn" 
-            onClick={() => navigateToTab('admin')}
-            title="Open Operations & Inventory Management Portal"
-          >
-            <ShieldCheck size={16} />
-            <span>Admin Portal</span>
-            <span className="admin-pulse-dot" style={{ width: 6, height: 6 }}></span>
-          </button>
-        </div>
-      )}
     </div>
     </PayPalScriptProvider>
   );

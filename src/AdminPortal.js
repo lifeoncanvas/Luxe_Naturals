@@ -48,7 +48,7 @@ export const DEFAULT_INVENTORY = [
     sku: 'LN-SKU-SB250',
     productId: 'pure-shea-butter',
     name: 'Pure Shea Butter',
-    variant: 'Standard (250 ml)',
+    variant: 'Standard (250g)',
     category: 'Shea & Body',
     batchNo: 'LN-SB-2026A',
     mfgDate: '10/2026',
@@ -56,7 +56,7 @@ export const DEFAULT_INVENTORY = [
     stock: 84,
     minThreshold: 25,
     unitCost: 7.50,
-    price: 1.00,
+    price: 14.99,
     image: '/shea_butter_primary.jpg'
   },
   {
@@ -71,7 +71,7 @@ export const DEFAULT_INVENTORY = [
     stock: 62,
     minThreshold: 20,
     unitCost: 6.80,
-    price: 22.00,
+    price: 11.99,
     image: '/coconut_oil_primary.jpg'
   },
   {
@@ -86,7 +86,7 @@ export const DEFAULT_INVENTORY = [
     stock: 45,
     minThreshold: 15,
     unitCost: 8.20,
-    price: 28.00,
+    price: 18.99,
     image: '/body_butter_primary.jpg'
   },
   {
@@ -102,13 +102,12 @@ export const DEFAULT_INVENTORY = [
     stock: 118,
     minThreshold: 30,
     unitCost: 6.90,
-    price: 24.00,
+    price: 12.99,
     image: '/african_black_soap_primary.jpg'
   },
   {
     sku: 'LN-SKU-AB300',
-    productId: 'african-black-liquid-soap',
-    variantId: 'african-black-soap-jar',
+    productId: 'african-black-soap-jar',
     name: 'African Black Soap (Jar)',
     variant: 'Traditional Jar (300g)',
     category: 'Cleansers & Soaps',
@@ -118,7 +117,7 @@ export const DEFAULT_INVENTORY = [
     stock: 18, // LOW STOCK
     minThreshold: 25,
     unitCost: 6.20,
-    price: 22.00,
+    price: 11.99,
     image: '/african_black_soap_jar.jpg'
   },
   {
@@ -133,7 +132,7 @@ export const DEFAULT_INVENTORY = [
     stock: 14, // LOW STOCK
     minThreshold: 20,
     unitCost: 21.00,
-    price: 68.00,
+    price: 39.99,
     image: '/luxe_trio_primary.jpg'
   }
 ];
