@@ -963,6 +963,36 @@ function App() {
         throw new Error(result.message || 'Payment capture failed. Please check your account.');
       }
       
+      const liveConfirmedOrder = {
+        id: result.orderNumber || `LN-${Date.now() % 100000}`,
+        date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        customer: {
+          name: shippingAddress.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Direct Customer'),
+          email: shippingAddress.shippingEmail || currentUser?.email || 'customer@lichtluxenaturals.org',
+          phone: shippingAddress.shippingPhone || currentUser?.phone || '',
+          address: [shippingAddress.shippingAddress, shippingAddress.shippingCity, shippingAddress.shippingPostcode].filter(Boolean).join(', ') || 'United Kingdom'
+        },
+        items: cart.map(item => ({
+          name: `${item.name}${item.volume ? ` (${item.volume})` : ''}`,
+          qty: item.quantity,
+          price: item.price
+        })),
+        total: Number(result.totalAmount || cartSubtotal),
+        paymentMethod: 'PayPal (Live)',
+        paymentStatus: 'Paid',
+        deliveryStatus: 'Processing',
+        courier: 'Royal Mail Tracked 24',
+        trackingNumber: `RM${Math.floor(100000000 + Math.random() * 900000000)}GB`,
+        source: 'Online Storefront (PayPal Live)',
+        notes: 'Verified live purchase'
+      };
+
+      setAdminOrders(prev => [liveConfirmedOrder, ...(prev || [])]);
+      try {
+        const stored = JSON.parse(localStorage.getItem('lln_admin_orders') || '[]');
+        localStorage.setItem('lln_admin_orders', JSON.stringify([liveConfirmedOrder, ...stored]));
+      } catch (_) {}
+
       setIsCheckoutOpen(false);
       setCart([]);
       setOrderConfirmation({
@@ -977,7 +1007,7 @@ function App() {
     } finally {
       setPaymentProcessing(false);
     }
-  }, [cart, cartSubtotal, shippingAddress]);
+  }, [cart, cartSubtotal, shippingAddress, currentUser]);
 
   // Helper to determine administrator authorization
   const isAdmin = Boolean(
