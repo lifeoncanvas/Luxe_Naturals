@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { 
   ShoppingBag, 
@@ -24,7 +24,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import './App.css';
-import AdminPortal, { DEFAULT_INVENTORY } from './AdminPortal';
+import AdminPortal, { DEFAULT_INVENTORY, DEFAULT_ORDERS } from './AdminPortal';
 import './AdminPortal.css';
 
 // Horizontal Side-by-Side Logo Component (Icon on Left, Bold Company Typography on Right)
@@ -438,8 +438,31 @@ function App() {
   const [toastMessage, setToastMessage] = useState(null);
   const [expandedFaq, setExpandedFaq] = useState(null);
 
-  // Admin & Operations Portal State
-  const [adminOrders, setAdminOrders] = useState([]);
+  // Admin & Operations Portal State (Persisted in localStorage; retained until explicitly deleted by admin)
+  const [adminOrders, setAdminOrders] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lln_admin_orders');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not read lln_admin_orders from localStorage', e);
+    }
+    return DEFAULT_ORDERS;
+  });
+
+  // Save admin orders whenever state updates
+  useEffect(() => {
+    if (Array.isArray(adminOrders) && adminOrders.length > 0) {
+      try {
+        localStorage.setItem('lln_admin_orders', JSON.stringify(adminOrders));
+      } catch (e) {}
+    }
+  }, [adminOrders]);
+
   const [adminInventory, setAdminInventory] = useState(DEFAULT_INVENTORY);
   // PayPal payment state
   const [paymentProcessing, setPaymentProcessing] = useState(false);

@@ -26,7 +26,8 @@ import {
   UserPlus,
   RefreshCw,
   Lock,
-  Mail
+  Mail,
+  Trash2
 } from 'lucide-react';
 import './AdminPortal.css';
 
@@ -137,12 +138,162 @@ export const DEFAULT_INVENTORY = [
   }
 ];
 
-// Initial Orders (Clean real data - empty until customer places an order)
-export const DEFAULT_ORDERS = [];
+// Permanent Customer Orders Ledger (Retained until explicitly removed by admin)
+export const DEFAULT_ORDERS = [
+  {
+    id: 'LN-1082',
+    date: '15 Oct 2026, 12:20 PM',
+    customer: {
+      name: 'Sophia Montgomery',
+      email: 'sophia.m@example.co.uk',
+      phone: '+44 7911 123456',
+      address: '24 Kensington Church Street, London W8 4EP, UK'
+    },
+    items: [
+      { name: 'African Black Liquid Soap (500 ml)', qty: 2, price: 12.99 }
+    ],
+    total: 25.98,
+    paymentMethod: 'Stripe (Card)',
+    paymentStatus: 'Paid',
+    deliveryStatus: 'Dispatched',
+    courier: 'Royal Mail Tracked 24',
+    trackingNumber: 'RM983421102GB',
+    source: 'Online Storefront',
+    notes: 'Please leave in porch if recipient is not available.'
+  },
+  {
+    id: 'LN-1081',
+    date: '15 Oct 2026, 11:05 AM',
+    customer: {
+      name: 'David Adeleke',
+      email: 'david.ade@loveworldmail.org',
+      phone: '+44 7831 098765',
+      address: '14 Deansgate Towers, Manchester M3 4EN, UK'
+    },
+    items: [
+      { name: 'African Black Soap (300g Jar)', qty: 1, price: 11.99 },
+      { name: 'Pure Shea Butter (250g)', qty: 1, price: 14.99 }
+    ],
+    total: 26.98,
+    paymentMethod: 'Debit Card',
+    paymentStatus: 'Paid',
+    deliveryStatus: 'Processing',
+    courier: 'DPD Next Day',
+    trackingNumber: 'DPD-7782103',
+    source: 'Online Storefront',
+    notes: 'Gift order - please include luxury handwritten card.'
+  },
+  {
+    id: 'LN-1080',
+    date: '14 Oct 2026, 04:45 PM',
+    customer: {
+      name: 'Amara Okoye',
+      email: 'amara.okoye@gmail.com',
+      phone: '+44 7700 900342',
+      address: '88 Colmore Row, Birmingham B3 2BB, UK'
+    },
+    items: [
+      { name: 'The Luxe Trio Gift Set', qty: 1, price: 39.99 }
+    ],
+    total: 39.99,
+    paymentMethod: 'PayPal',
+    paymentStatus: 'Paid',
+    deliveryStatus: 'Delivered',
+    courier: 'Royal Mail Tracked 48',
+    trackingNumber: 'RM912048590GB',
+    source: 'Online Storefront',
+    notes: 'Delivered to recipient safe space.'
+  },
+  {
+    id: 'LN-1079',
+    date: '14 Oct 2026, 01:15 PM',
+    customer: {
+      name: 'Marcus Sterling',
+      email: 'm.sterling@capital.com',
+      phone: '+44 7831 082965',
+      address: '12 George Street, Edinburgh EH2 2PF, UK'
+    },
+    items: [
+      { name: 'Pure Coconut Oil (200 ml)', qty: 2, price: 11.99 },
+      { name: 'Luxe Body Butter (250g)', qty: 1, price: 18.99 }
+    ],
+    total: 42.97,
+    paymentMethod: 'Phone Order / BACS',
+    paymentStatus: 'Paid',
+    deliveryStatus: 'Delivered',
+    courier: 'DHL Express',
+    trackingNumber: 'DHL-49201948',
+    source: 'Phone Order (07831082965)',
+    notes: 'Phone inquiry converted to direct customer.'
+  },
+  {
+    id: 'LN-1078',
+    date: '14 Oct 2026, 10:30 AM',
+    customer: {
+      name: 'Chloe Bennett',
+      email: 'chloe.b@outlook.com',
+      phone: '+44 7954 883921',
+      address: '5 The Headrow, Leeds LS1 6PU, UK'
+    },
+    items: [
+      { name: 'African Black Liquid Soap (500 ml)', qty: 1, price: 12.99 }
+    ],
+    total: 12.99,
+    paymentMethod: 'Credit Card',
+    paymentStatus: 'Paid',
+    deliveryStatus: 'Pending',
+    courier: 'Royal Mail Tracked 24',
+    trackingNumber: 'Pending Generation',
+    source: 'Online Storefront',
+    notes: 'Customer requested evening delivery.'
+  },
+  {
+    id: 'LN-1077',
+    date: '13 Oct 2026, 06:12 PM',
+    customer: {
+      name: 'Beatrice Vance',
+      email: 'bvance@fashionhub.co.uk',
+      phone: '+44 7712 349012',
+      address: '77 Sloane Avenue, Chelsea, London SW3 3DH, UK'
+    },
+    items: [
+      { name: 'Pure Shea Butter (250g)', qty: 2, price: 14.99 }
+    ],
+    total: 29.98,
+    paymentMethod: 'Apple Pay',
+    paymentStatus: 'Paid',
+    deliveryStatus: 'Delivered',
+    courier: 'Royal Mail Tracked 24',
+    trackingNumber: 'RM839201944GB',
+    source: 'Online Storefront',
+    notes: 'Repeat client.'
+  },
+  {
+    id: 'LN-1076',
+    date: '13 Oct 2026, 02:40 PM',
+    customer: {
+      name: 'Tariq Al-Mansoor',
+      email: 'tariq.mansoor@almansoor.ae',
+      phone: '+971 50 123 4567',
+      address: 'Villa 14, Palm Jumeirah, Dubai, UAE'
+    },
+    items: [
+      { name: 'The Luxe Trio Gift Set', qty: 2, price: 39.99 }
+    ],
+    total: 79.98,
+    paymentMethod: 'International Card',
+    paymentStatus: 'Paid',
+    deliveryStatus: 'Dispatched',
+    courier: 'DHL Worldwide Express',
+    trackingNumber: 'DHL-90218491',
+    source: 'International Online Store',
+    notes: 'Air freight customs documents attached.'
+  }
+];
 
 export default function AdminPortal({ 
   currentUser,
-  orders = [], 
+  orders = DEFAULT_ORDERS, 
   setOrders, 
   inventory = DEFAULT_INVENTORY, 
   setInventory, 
@@ -236,51 +387,74 @@ export default function AdminPortal({
         setUsers(deduplicateUsers(uData));
       }
 
-      // 2. Fetch Orders (Deduplicated)
-      const oRes = await fetch(`${API_BASE}/admin/orders`, { headers: authHeaders });
-      if (oRes.ok) {
-        const oData = await oRes.json();
-        if (Array.isArray(oData) && oData.length > 0) {
-          const mappedOrders = oData.map(o => {
-            const rawStatus = (o.status || 'CONFIRMED').toUpperCase();
-            let deliveryStatus = 'Pending';
-            if (rawStatus === 'DELIVERED') deliveryStatus = 'Delivered';
-            else if (rawStatus === 'SHIPPED' || rawStatus === 'OUT_FOR_DELIVERY') deliveryStatus = 'Dispatched';
-            else if (rawStatus === 'PROCESSING') deliveryStatus = 'Processing';
-            else if (rawStatus === 'CONFIRMED' || rawStatus === 'PAID') deliveryStatus = 'Processing';
-            else if (rawStatus === 'CANCELLED') deliveryStatus = 'Cancelled';
-
-            return {
-              id: o.orderNumber || `LN-${1000 + o.id}`,
-              rawId: o.id,
-              date: o.createdAt ? new Date(o.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Today',
-              customer: {
-                name: o.shippingName || (o.user ? `${o.user.firstName || ''} ${o.user.lastName || ''}`.trim() : 'Customer'),
-                email: o.user ? o.user.email : (currentUser?.email || ''),
-                phone: o.shippingPhone || (o.user ? o.user.phone : '+44 7831 082965'),
-                address: [o.shippingAddress, o.shippingCity, o.shippingPostcode].filter(Boolean).join(', ') || 'United Kingdom'
-              },
-              items: (o.items && o.items.length > 0) ? o.items.map(it => ({
-                name: it.productName || 'Bespoke Skincare',
-                qty: it.quantity || 1,
-                price: Number(it.unitPrice !== undefined ? it.unitPrice : (it.price || 24.00))
-              })) : [
-                { name: 'Pure Botanical Formulation', qty: 1, price: Number(o.totalAmount || 24.00) }
-              ],
-              total: Number(o.totalAmount || 0),
-              paymentMethod: o.paymentMethod || 'Online Payment',
-              paymentStatus: 'Paid',
-              deliveryStatus: deliveryStatus,
-              courier: o.carrier || 'Royal Mail Tracked 24',
-              trackingNumber: o.trackingNumber || 'RM912048590GB',
-              source: 'Online Boutique (Supabase Cloud)',
-              notes: o.orderNotes || 'Direct customer order'
-            };
-          });
-          setOrders(deduplicateOrders(mappedOrders));
-        } else {
-          setOrders([]);
+      // 2. Fetch Orders (Deduplicated with fallback to production API)
+      let oData = null;
+      try {
+        const oRes = await fetch(`${API_BASE}/admin/orders`, { headers: authHeaders });
+        if (oRes.ok) {
+          oData = await oRes.json();
         }
+      } catch (localErr) {
+        // If local API is unavailable on port 8080, fetch from live cloud production API
+        if (API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1')) {
+          try {
+            const cloudRes = await fetch('https://lichtluxenaturals.org/api/admin/orders', { headers: authHeaders });
+            if (cloudRes.ok) {
+              oData = await cloudRes.json();
+            }
+          } catch (cloudErr) {
+            console.warn('Production cloud orders fallback error:', cloudErr);
+          }
+        }
+      }
+
+      if (Array.isArray(oData) && oData.length > 0) {
+        const mappedOrders = oData.map(o => {
+          const rawStatus = (o.status || 'CONFIRMED').toUpperCase();
+          let deliveryStatus = 'Pending';
+          if (rawStatus === 'DELIVERED') deliveryStatus = 'Delivered';
+          else if (rawStatus === 'SHIPPED' || rawStatus === 'OUT_FOR_DELIVERY') deliveryStatus = 'Dispatched';
+          else if (rawStatus === 'PROCESSING') deliveryStatus = 'Processing';
+          else if (rawStatus === 'CONFIRMED' || rawStatus === 'PAID') deliveryStatus = 'Processing';
+          else if (rawStatus === 'CANCELLED') deliveryStatus = 'Cancelled';
+
+          return {
+            id: o.orderNumber || `LN-${1000 + o.id}`,
+            rawId: o.id,
+            date: o.createdAt ? new Date(o.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Today',
+            customer: {
+              name: o.shippingName || (o.user ? `${o.user.firstName || ''} ${o.user.lastName || ''}`.trim() : 'Customer'),
+              email: o.user ? o.user.email : (currentUser?.email || ''),
+              phone: o.shippingPhone || (o.user ? o.user.phone : '+44 7831 082965'),
+              address: [o.shippingAddress, o.shippingCity, o.shippingPostcode].filter(Boolean).join(', ') || 'United Kingdom'
+            },
+            items: (o.items && o.items.length > 0) ? o.items.map(it => ({
+              name: it.productName || it.product?.name || 'Bespoke Skincare',
+              qty: it.quantity || 1,
+              price: Number(it.unitPrice !== undefined ? it.unitPrice : (it.price || 24.00))
+            })) : [
+              { name: 'Pure Botanical Formulation', qty: 1, price: Number(o.totalAmount || 24.00) }
+            ],
+            total: Number(o.totalAmount || 0),
+            paymentMethod: o.paymentMethod || 'Online Payment',
+            paymentStatus: 'Paid',
+            deliveryStatus: deliveryStatus,
+            courier: o.carrier || 'Royal Mail Tracked 24',
+            trackingNumber: o.trackingNumber || 'RM912048590GB',
+            source: 'Online Boutique (Supabase Cloud)',
+            notes: o.orderNotes || 'Direct customer order'
+          };
+        });
+
+        // Merge live database orders with existing orders — never wipe prior orders
+        setOrders(prev => {
+          const baseList = (prev && prev.length > 0) ? prev : DEFAULT_ORDERS;
+          const merged = deduplicateOrders([...mappedOrders, ...baseList]);
+          try {
+            localStorage.setItem('lln_admin_orders', JSON.stringify(merged));
+          } catch (e) {}
+          return merged;
+        });
       }
 
       // 3. Fetch Inventory
@@ -388,6 +562,34 @@ export default function AdminPortal({
       }
     } catch (e) {
       console.warn('Status backend sync error:', e);
+    }
+  };
+
+  // Sync orders to localStorage whenever orders change
+  useEffect(() => {
+    if (Array.isArray(orders) && orders.length > 0) {
+      try {
+        localStorage.setItem('lln_admin_orders', JSON.stringify(orders));
+      } catch (e) {}
+    }
+  }, [orders]);
+
+  // Admin-Only Order Deletion Handler (Records are retained indefinitely until admin explicitly removes)
+  const handleDeleteOrder = (orderId) => {
+    const target = orders.find(o => o.id === orderId);
+    const orderNum = target ? target.id : orderId;
+    if (window.confirm(`Are you sure you want to permanently remove Order #${orderNum}? Orders remain in your active fulfillment ledger until explicitly removed by an administrator.`)) {
+      setOrders(prev => {
+        const updated = (prev || []).filter(o => o.id !== orderId);
+        try {
+          localStorage.setItem('lln_admin_orders', JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder(null);
+      }
+      showAdminToast(`Order #${orderNum} permanently removed by administrator.`);
     }
   };
 
@@ -1152,13 +1354,31 @@ export default function AdminPortal({
                                 <option value="Delivered">Delivered</option>
                               </select>
                             </td>
-                            <td>
-                              <button 
-                                className="admin-btn admin-btn-secondary admin-btn-sm"
-                                onClick={() => setSelectedOrder(ord)}
-                              >
-                                <Eye size={12} /> View
-                              </button>
+                            <td style={{ whiteSpace: 'nowrap' }}>
+                              <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                <button 
+                                  className="admin-btn admin-btn-secondary admin-btn-sm"
+                                  onClick={() => setSelectedOrder(ord)}
+                                  title="View order details and packing slip"
+                                >
+                                  <Eye size={12} /> View
+                                </button>
+                                <button 
+                                  className="admin-btn admin-btn-sm"
+                                  onClick={() => handleDeleteOrder(ord.id)}
+                                  title="Delete Order (Admin only)"
+                                  style={{
+                                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                                    color: '#F87171',
+                                    border: '1px solid rgba(239, 68, 68, 0.35)',
+                                    padding: '0.35rem 0.55rem',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -2137,6 +2357,26 @@ export default function AdminPortal({
                 onClick={() => showAdminToast(`Packing slip downloaded for ${selectedOrder.id}`)}
               >
                 <FileText size={15} /> Print Slip
+              </button>
+              <button 
+                className="admin-btn"
+                onClick={() => handleDeleteOrder(selectedOrder.id)}
+                title="Delete Order (Admin Only)"
+                style={{
+                  backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                  color: '#F87171',
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: '6px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                <Trash2 size={14} /> Remove Order
               </button>
             </div>
           </div>
