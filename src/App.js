@@ -1010,18 +1010,6 @@ function App() {
         <span>🌿 Pure. Natural. Made with Love and from LOVEWORLD</span>
         <span>•</span>
         <span>Order online or call us at <a href="tel:07831082965">07831082965</a></span>
-        {isAdmin && (
-          <>
-            <span>•</span>
-            <button 
-              onClick={() => navigateToTab('admin')}
-              style={{ background: 'none', border: 'none', color: '#FAF7F2', opacity: 0.95, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: 'inherit', fontFamily: 'inherit', textDecoration: 'underline', padding: 0 }}
-              title="Open Operations & Inventory Management"
-            >
-              <ShieldCheck size={13} color="#C5A059" /> Admin Portal
-            </button>
-          </>
-        )}
         <span>•</span>
         <span className="loveworld-badge" style={{ padding: '0.2rem 0.6rem', fontSize: '0.65rem' }}>
           MADE IN LOVEWORLD
@@ -1097,20 +1085,17 @@ function App() {
 
           {/* Right Header Actions */}
           <div className="header-actions">
-            {isAdmin && (
-              <button 
-                className="icon-btn" 
-                title="Admin & Operations Portal" 
-                onClick={() => navigateToTab('admin')}
-                style={{ color: '#C5A059' }}
-              >
-                <ShieldCheck size={20} />
-              </button>
-            )}
             <button 
               className="icon-btn" 
-              title="Sign In / Register" 
-              onClick={() => { setAuthMode('login'); setIsAuthOpen(true); }}
+              title={currentUser ? (currentUser.firstName ? `Account (${currentUser.firstName})` : 'My Account') : 'Sign In / Register'} 
+              onClick={() => { 
+                if (currentUser) {
+                  setAuthMode('profile');
+                } else {
+                  setAuthMode('login');
+                }
+                setIsAuthOpen(true); 
+              }}
             >
               <User size={19} />
             </button>
@@ -1181,26 +1166,19 @@ function App() {
                   <span>CONTACT US</span>
                   <ArrowUpRight size={16} />
                 </button>
-                {isAdmin && (
-                  <button 
-                    className={`mobile-nav-link ${activeTab === 'admin' ? 'active' : ''}`}
-                    onClick={() => navigateToTab('admin')}
-                    style={{ color: '#C5A059', borderTop: '1px solid rgba(197, 160, 89, 0.2)', marginTop: '0.4rem', paddingTop: '0.8rem' }}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <ShieldCheck size={18} color="#C5A059" /> ADMIN PORTAL
-                    </span>
-                    <ArrowUpRight size={16} />
-                  </button>
-                )}
-              </div>
-
-              <div className="mobile-nav-actions">
                 <button 
                   className="mobile-nav-btn secondary"
-                  onClick={() => { setIsMobileMenuOpen(false); setAuthMode('login'); setIsAuthOpen(true); }}
+                  onClick={() => { 
+                    setIsMobileMenuOpen(false); 
+                    if (currentUser) {
+                      setAuthMode('profile');
+                    } else {
+                      setAuthMode('login');
+                    }
+                    setIsAuthOpen(true); 
+                  }}
                 >
-                  <User size={16} /> Member Sign In / Register
+                  <User size={16} /> {currentUser ? (currentUser.firstName ? `Account (${currentUser.firstName})` : 'My Account') : 'Member Sign In / Register'}
                 </button>
                 <a 
                   href="tel:07831082965"
@@ -2783,9 +2761,6 @@ function App() {
                 <li><button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>FAQs</button></li>
                 <li><a href="tel:07831082965" style={{ color: '#D6DDD3', textDecoration: 'none' }}>Phone: 07831082965</a></li>
                 <li><button onClick={() => navigateToTab('contact')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Privacy Policy</button></li>
-                {isAdmin && (
-                  <li><button onClick={() => navigateToTab('admin')} style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', textAlign: 'left', padding: 0, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><ShieldCheck size={14} /> Admin & Inventory Portal</button></li>
-                )}
               </ul>
             </div>
 
@@ -2798,14 +2773,6 @@ function App() {
             </div>
 
             <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-              {isAdmin && (
-                <button 
-                  onClick={() => navigateToTab('admin')}
-                  style={{ background: 'none', border: 'none', color: '#C5A059', fontSize: '0.8rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: 0 }}
-                >
-                  <ShieldCheck size={14} /> Staff Admin Portal
-                </button>
-              )}
               <a href="https://instagram.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Instagram</a>
               <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Facebook</a>
               <a href="https://tiktok.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>TikTok</a>
