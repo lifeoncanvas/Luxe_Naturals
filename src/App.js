@@ -24,7 +24,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import './App.css';
-import AdminPortal, { DEFAULT_INVENTORY, DEFAULT_ORDERS } from './AdminPortal';
+import AdminPortal, { DEFAULT_INVENTORY } from './AdminPortal';
 import './AdminPortal.css';
 
 // Horizontal Side-by-Side Logo Component (Icon on Left, Bold Company Typography on Right)
@@ -438,29 +438,30 @@ function App() {
   const [toastMessage, setToastMessage] = useState(null);
   const [expandedFaq, setExpandedFaq] = useState(null);
 
-  // Admin & Operations Portal State (Persisted in localStorage; retained until explicitly deleted by admin)
+  // Admin & Operations Portal State (Real orders only; persisted in localStorage)
   const [adminOrders, setAdminOrders] = useState(() => {
     try {
       const saved = localStorage.getItem('lln_admin_orders');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          const fakeIds = ['LN-1082', 'LN-1081', 'LN-1080', 'LN-1079', 'LN-1078', 'LN-1077', 'LN-1076'];
+          const fakeNames = ['Sophia Montgomery', 'David Adeleke', 'Amara Okoye', 'Marcus Sterling', 'Chloe Bennett', 'Beatrice Vance', 'Tariq Al-Mansoor'];
+          const realOnly = parsed.filter(o => !fakeIds.includes(o.id) && !fakeNames.includes(o.customer?.name));
+          return realOnly;
         }
       }
     } catch (e) {
       console.warn('Could not read lln_admin_orders from localStorage', e);
     }
-    return DEFAULT_ORDERS;
+    return [];
   });
 
-  // Save admin orders whenever state updates
+  // Save admin orders whenever state updates (strictly real data)
   useEffect(() => {
-    if (Array.isArray(adminOrders) && adminOrders.length > 0) {
-      try {
-        localStorage.setItem('lln_admin_orders', JSON.stringify(adminOrders));
-      } catch (e) {}
-    }
+    try {
+      localStorage.setItem('lln_admin_orders', JSON.stringify(adminOrders || []));
+    } catch (e) {}
   }, [adminOrders]);
 
   const [adminInventory, setAdminInventory] = useState(DEFAULT_INVENTORY);
