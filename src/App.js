@@ -21,10 +21,13 @@ import {
   ArrowLeft,
   User,
   Menu,
-  ShieldCheck
+  ShieldCheck,
+  Settings
 } from 'lucide-react';
 import './App.css';
 import AdminPortal, { DEFAULT_INVENTORY } from './AdminPortal';
+import AdminLogin from './AdminLogin';
+import SettingsModal from './SettingsModal';
 import './AdminPortal.css';
 
 // Horizontal Side-by-Side Logo Component (Icon on Left, Bold Company Typography on Right)
@@ -47,7 +50,10 @@ const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', va
   }
 
   return (
-    <div className={`licht-logo-container horizontal-brand ${className} ${size} ${isDark ? 'dark-variant' : 'light-variant'}`} style={style}>
+    <div 
+      className={`licht-logo-container horizontal-brand ${className} ${size} ${isDark ? 'dark-variant' : 'light-variant'}`}
+      style={{ display: 'inline-flex', flexDirection: 'row', alignItems: 'center', ...style }}
+    >
       <div className="licht-logo-mark-wrap">
         <img 
           src={markSrc} 
@@ -213,8 +219,7 @@ const PRODUCTS = [
     tagline: 'Deep cleansing • Purifying • Natural glow.',
     subtitle: 'Deep Cleansing • Purifying • Natural Glow (Face & Body)',
     price: 11.99,
-    badge: 'TRADITIONAL 300G JAR',
-    volume: '300 g / 10.5 oz',
+        volume: '300 g / 10.5 oz',
     rating: '5.0',
     reviewsCount: 136,
     image: '/african_black_soap_jar.jpg',
@@ -241,6 +246,7 @@ const PRODUCTS = [
     storage: 'Store in a cool, dry place. Keep away from direct sunlight. For external use only.',
     gallery: [
       '/african_black_soap_jar.jpg',
+      '/african_black_soap_jar_open.jpg',
       '/clear_skin_model.jpg'
     ]
   },
@@ -361,15 +367,24 @@ const paypalInitialOptions = {
   'disable-funding': 'credit,card',
 };
 
+// Helper: check if currently on /admin or #/admin
+const checkIsAdminPath = () => {
+  if (typeof window === 'undefined') return false;
+  const path = window.location.pathname.toLowerCase();
+  const hash = window.location.hash.toLowerCase();
+  return path === '/admin' || path.startsWith('/admin/') || hash === '#/admin' || hash === '#admin';
+};
+
 function App() {
   // Navigation active tab: 'home' | 'shop' | 'story' | 'gifting' | 'contact' | 'product'
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(() => checkIsAdminPath() ? 'admin' : 'home');
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0]);
   const [selectedVariant, setSelectedVariant] = useState(
     PRODUCTS[0].variants && PRODUCTS[0].variants.length > 0 ? PRODUCTS[0].variants[0] : null
   );
   const [pdpQuantity, setPdpQuantity] = useState(1);
   const [pdpPrimaryImage, setPdpPrimaryImage] = useState(PRODUCTS[0].image);
+  // eslint-disable-next-line no-unused-vars
   const [pdpGalleryImages, setPdpGalleryImages] = useState(PRODUCTS[0].gallery);
 
   // Variant Selection Logic (switches primary image, gallery views, and formula specifications)
@@ -379,21 +394,87 @@ function App() {
     setPdpGalleryImages(variant.gallery || [variant.image]);
   };
 
-  // Gallery Image Swapping Logic (clicking secondary thumbnail replaces primary image)
-  const handleSwapGalleryImage = (clickedIndex) => {
-    const clickedImg = pdpGalleryImages[clickedIndex];
-    if (!clickedImg || clickedImg === pdpPrimaryImage) return;
-
-    const oldPrimary = pdpPrimaryImage;
-    const updatedGallery = [...pdpGalleryImages];
-    
-    setPdpPrimaryImage(clickedImg);
-    updatedGallery[clickedIndex] = oldPrimary;
-    setPdpGalleryImages(updatedGallery);
-  };
   
-  // E-commerce state
-  const [cart, setCart] = useState([]);
+  // Authentication state (declared first for cart persistence integration)
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
+  const [authExpandedOption, setAuthExpandedOption] = useState(null); // 'email' | 'phone' | null
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lln_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  // E-commerce cart state with localStorage refresh persistence (linked to logged-in user)
+  const [cart, setCart] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('lln_user');
+      if (savedUser) {
+        const userObj = JSON.parse(savedUser);
+        const userKey = `lln_cart_${(userObj.email || userObj.id || '').toLowerCase()}`;
+        const userCart = localStorage.getItem(userKey);
+        if (userCart) {
+          const parsed = JSON.parse(userCart);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      }
+      const genericCart = localStorage.getItem('lln_cart');
+      if (genericCart) {
+        const parsed = JSON.parse(genericCart);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.warn('Could not read cart from localStorage', e);
+    }
+    return [];
+  });
+
+  // Save cart to localStorage on any change (keeps cart upon page refresh)
+  useEffect(() => {
+    try {
+      if (currentUser && (currentUser.email || currentUser.id)) {
+        const userKey = `lln_cart_${(currentUser.email || currentUser.id).toLowerCase()}`;
+        localStorage.setItem(userKey, JSON.stringify(cart));
+      }
+      localStorage.setItem('lln_cart', JSON.stringify(cart));
+    } catch (e) {
+      console.warn('Could not save cart to localStorage', e);
+    }
+  }, [cart, currentUser]);
+
+  // When a user logs in, load or merge their saved cart
+  useEffect(() => {
+    if (currentUser && (currentUser.email || currentUser.id)) {
+      try {
+        const userKey = `lln_cart_${(currentUser.email || currentUser.id).toLowerCase()}`;
+        const savedUserCart = localStorage.getItem(userKey);
+        if (savedUserCart) {
+          const parsed = JSON.parse(savedUserCart);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setCart(prev => {
+              if (prev.length === 0) return parsed;
+              const merged = [...prev];
+              parsed.forEach(item => {
+                const existing = merged.find(m => m.id === item.id);
+                if (existing) {
+                  existing.quantity = Math.max(existing.quantity, item.quantity);
+                } else {
+                  merged.push(item);
+                }
+              });
+              return merged;
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Could not restore user cart on login', e);
+      }
+    }
+  }, [currentUser]);
+
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState('address'); // 'address' | 'payment'
@@ -405,17 +486,6 @@ function App() {
     shippingCity: '',
     shippingPostcode: '',
     orderNotes: ''
-  });
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
-  const [authExpandedOption, setAuthExpandedOption] = useState(null); // 'email' | 'phone' | null
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem('lln_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch (e) {
-      return null;
-    }
   });
   const [authLoading, setAuthLoading] = useState(false);
   const [authForm, setAuthForm] = useState({
@@ -465,6 +535,50 @@ function App() {
   }, [adminOrders]);
 
   const [adminInventory, setAdminInventory] = useState(DEFAULT_INVENTORY);
+
+  // Admin Authentication State
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    try {
+      const localAuth = localStorage.getItem('licht_admin_auth');
+      const sessionAuth = sessionStorage.getItem('licht_admin_auth');
+      return !!(localAuth || sessionAuth);
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const [adminUser, setAdminUser] = useState(() => {
+    try {
+      const raw = localStorage.getItem('licht_admin_auth') || sessionStorage.getItem('licht_admin_auth');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return parsed.displayName || 'Operations Lead';
+      }
+    } catch (e) {}
+    return 'Operations Lead';
+  });
+
+  // Settings Modal State & Store Preferences
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeCurrency, setActiveCurrency] = useState('GBP');
+
+  // Synchronize browser history and path changes
+  useEffect(() => {
+    const handleLocationChange = () => {
+      if (checkIsAdminPath()) {
+        setActiveTab('admin');
+      } else if (activeTab === 'admin') {
+        setActiveTab('home');
+      }
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, [activeTab]);
   // PayPal payment state
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [orderConfirmation, setOrderConfirmation] = useState(null);
@@ -542,8 +656,54 @@ function App() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Navigate to admin path
+  const navigateToAdmin = () => {
+    if (window.location.pathname !== '/admin') {
+      window.history.pushState(null, '', '/admin');
+    }
+    setActiveTab('admin');
+    setIsMobileMenuOpen(false);
+    setIsSettingsOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Navigate to customer storefront
+  const navigateToStore = (tabName = 'home') => {
+    if (window.location.pathname === '/admin') {
+      window.history.pushState(null, '', '/');
+    }
+    setActiveTab(tabName);
+    setIsMobileMenuOpen(false);
+    setIsSettingsOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handle Admin Login Success
+  const handleAdminLoginSuccess = (adminData) => {
+    setIsAdminAuthenticated(true);
+    setAdminUser(adminData.displayName || 'Operations Lead');
+    showToast(`Welcome back, ${adminData.displayName || 'Administrator'}`);
+  };
+
+  // Handle Admin Logout
+  const handleAdminLogout = () => {
+    try {
+      localStorage.removeItem('licht_admin_auth');
+      sessionStorage.removeItem('licht_admin_auth');
+    } catch (e) {}
+    setIsAdminAuthenticated(false);
+    showToast('Signed out of Operations Console');
+  };
+
   // Navigate to tab & scroll to top
   const navigateToTab = (tabName) => {
+    if (tabName === 'admin') {
+      navigateToAdmin();
+      return;
+    }
+    if (window.location.pathname === '/admin') {
+      window.history.pushState(null, '', '/');
+    }
     setActiveTab(tabName);
     setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1019,20 +1179,14 @@ function App() {
     )
   );
 
-  // If activeTab is 'admin', enforce strict administrator authorization
+  // If activeTab is 'admin', render dedicated standalone Admin Portal view
   if (activeTab === 'admin') {
-    if (!isAdmin) {
+    if (!isAdmin && !isAdminAuthenticated) {
       return (
-        <div style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', textAlign: 'center', backgroundColor: '#FAF7F2', color: '#161D15' }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.2rem', marginBottom: '1rem', color: '#2D3A29' }}>Page Not Found</h2>
-          <p style={{ color: '#5A6258', marginBottom: '2rem', fontSize: '1rem' }}>The requested page could not be found or has been moved.</p>
-          <button 
-            onClick={() => navigateToTab('home')}
-            style={{ padding: '0.85rem 2.25rem', cursor: 'pointer', backgroundColor: '#2D3A29', color: '#FAF7F2', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '0.9rem', letterSpacing: '0.05em' }}
-          >
-            Return to Boutique
-          </button>
-        </div>
+        <AdminLogin 
+          onLoginSuccess={handleAdminLoginSuccess}
+          onBackToStore={() => navigateToStore('home')}
+        />
       );
     }
 
@@ -1043,7 +1197,9 @@ function App() {
         setOrders={setAdminOrders} 
         inventory={adminInventory} 
         setInventory={setAdminInventory} 
-        onExitToStore={() => navigateToTab('home')} 
+        onExitToStore={() => navigateToStore('home')} 
+        onLogout={handleAdminLogout}
+        adminUser={adminUser}
       />
     );
   }
@@ -1059,16 +1215,6 @@ function App() {
         </div>
       )}
 
-      {/* TOP ANNOUNCEMENT BAR */}
-      <div className="announcement-bar">
-        <span>🌿 Pure. Natural. Made with Love and from LOVEWORLD</span>
-        <span>•</span>
-        <span>Order online or call us at <a href="tel:07831082965">07831082965</a></span>
-        <span>•</span>
-        <span className="loveworld-badge" style={{ padding: '0.2rem 0.6rem', fontSize: '0.65rem' }}>
-          MADE IN LOVEWORLD
-        </span>
-      </div>
 
       {/* HEADER / NAVIGATION WITH LOGO IN CENTER */}
       <header className="site-header">
@@ -1140,7 +1286,7 @@ function App() {
           {/* Right Header Actions */}
           <div className="header-actions">
             <button 
-              className="icon-btn" 
+              className="icon-btn header-desktop-action" 
               title={currentUser ? (currentUser.firstName ? `Account (${currentUser.firstName})` : 'My Account') : 'Sign In / Register'} 
               onClick={() => { 
                 if (currentUser) {
@@ -1154,7 +1300,7 @@ function App() {
               <User size={19} />
             </button>
             <button 
-              className="icon-btn" 
+              className="icon-btn header-desktop-action" 
               title="Search" 
               onClick={() => setIsSearchOpen(true)}
             >
@@ -1220,26 +1366,51 @@ function App() {
                   <span>CONTACT US</span>
                   <ArrowUpRight size={16} />
                 </button>
-                <button 
-                  className="mobile-nav-btn secondary"
-                  onClick={() => { 
-                    setIsMobileMenuOpen(false); 
-                    if (currentUser) {
-                      setAuthMode('profile');
-                    } else {
-                      setAuthMode('login');
-                    }
-                    setIsAuthOpen(true); 
-                  }}
-                >
-                  <User size={16} /> {currentUser ? (currentUser.firstName ? `Account (${currentUser.firstName})` : 'My Account') : 'Member Sign In / Register'}
-                </button>
-                <a 
-                  href="tel:07831082965"
-                  className="mobile-nav-btn primary"
-                >
-                  <Phone size={16} /> Call to Order: 07831082965
-                </a>
+
+                {/* Quick Actions (Search, Account, Settings) inside Drawer */}
+                <div style={{ borderTop: '1px solid rgba(45, 58, 41, 0.12)', marginTop: '0.75rem', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#5A6658', padding: '0 0.85rem', marginBottom: '0.2rem' }}>
+                    QUICK ACCESS
+                  </div>
+                  <button 
+                    className="mobile-nav-link"
+                    onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}
+                    style={{ color: '#2D3A29' }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <Search size={17} color="#C5A059" /> SEARCH PRODUCTS
+                    </span>
+                    <ArrowUpRight size={16} />
+                  </button>
+                  <button 
+                    className="mobile-nav-link"
+                    onClick={() => { 
+                      setIsMobileMenuOpen(false); 
+                      if (currentUser) {
+                        setAuthMode('profile');
+                      } else {
+                        setAuthMode('login');
+                      }
+                      setIsAuthOpen(true); 
+                    }}
+                    style={{ color: '#2D3A29' }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <User size={17} color="#C5A059" /> {currentUser ? (currentUser.firstName ? `MY ACCOUNT (${currentUser.firstName})` : 'MY ACCOUNT') : 'MEMBER SIGN IN / REGISTER'}
+                    </span>
+                    <ArrowUpRight size={16} />
+                  </button>
+                  <button 
+                    className="mobile-nav-link"
+                    onClick={() => { setIsMobileMenuOpen(false); setIsSettingsOpen(true); }}
+                    style={{ color: '#2D3A29' }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <Settings size={17} color="#C5A059" /> PREFERENCES & SETTINGS
+                    </span>
+                    <ArrowUpRight size={16} />
+                  </button>
+                </div>
               </div>
 
               <div className="mobile-nav-footer">
@@ -1297,10 +1468,7 @@ function App() {
                       style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.35s ease' }}
                     />
                     
-                    {/* Badge Overlay */}
-                    <span style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.75rem', padding: '0.35rem 0.85rem', borderRadius: '4px', letterSpacing: '0.12em', fontWeight: 600 }}>
-                      {activeProduct.badge || selectedProduct.badge}
-                    </span>
+
 
                     {/* Wishlist Button */}
                     <button 
@@ -1312,29 +1480,6 @@ function App() {
                     </button>
                   </div>
 
-                  {/* Thumbnail Gallery Swatches - Clicking swaps primary and secondary image */}
-                  <div className="pdp-gallery-thumbs" style={{ display: 'grid', gridTemplateColumns: `repeat(${pdpGalleryImages.length}, 1fr)`, gap: '1rem', marginTop: '1.25rem' }}>
-                    {pdpGalleryImages.map((imgSrc, idx) => (
-                      <div 
-                        key={idx}
-                        onClick={() => handleSwapGalleryImage(idx)}
-                        style={{ 
-                          border: imgSrc === pdpPrimaryImage ? '2px solid #C5A059' : '1.5px solid #E5DFC5', 
-                          borderRadius: '8px', 
-                          overflow: 'hidden', 
-                          height: '110px', 
-                          cursor: 'pointer',
-                          opacity: imgSrc === pdpPrimaryImage ? 1 : 0.85,
-                          transform: imgSrc === pdpPrimaryImage ? 'scale(1.02)' : 'scale(1)',
-                          transition: 'all 0.3s ease',
-                          boxShadow: imgSrc === pdpPrimaryImage ? '0 6px 15px rgba(197, 160, 89, 0.3)' : 'none'
-                        }}
-                        title="Click to view as main image"
-                      >
-                        <img src={imgSrc} alt={`${activeProduct.name} view ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
-                    ))}
-                  </div>
 
                   {/* STYLED VARIANT OPTIONS TILES (DIRECTLY UNDER THE SMALL IMAGES) */}
                   {selectedProduct.variants && selectedProduct.variants.length > 0 && (
@@ -1562,9 +1707,6 @@ function App() {
                         alt={product.name} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span className="card-badge" style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.65rem', padding: '0.25rem 0.65rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
-                        {product.badge}
-                      </span>
                       <button 
                         className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
@@ -1835,9 +1977,6 @@ function App() {
                         alt={product.name} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span className="card-badge" style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.7rem', padding: '0.3rem 0.75rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
-                        {product.badge}
-                      </span>
                       <button 
                         className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
@@ -2195,7 +2334,7 @@ function App() {
                   </h1>
 
                   <p style={{ color: '#5C635B', fontSize: '1.08rem', lineHeight: 1.7, marginBottom: '2.25rem', maxWidth: '440px' }}>
-                    Botanical skincare that nurtures your skin, honours the earth, and turns the everyday into a little luxury.
+                    Botanical skincare that nurtures your skin, honours the earth, and turns everyday a bit more luxurious.
                   </p>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
@@ -2268,7 +2407,7 @@ function App() {
                     style={{ 
                       position: 'absolute', 
                       bottom: '25px', 
-                      left: '-65px', 
+                      left: '-125px', 
                       zIndex: 20, 
                       backgroundColor: '#DFCAA7', 
                       padding: '0.75rem', 
@@ -2326,7 +2465,7 @@ function App() {
               <img 
                 src="/clear_skin_model.png" 
                 alt="Radiant clear skin model — LICHT LUXE NATURALS" 
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 55%' }}
               />
             </div>
 
@@ -2582,9 +2721,6 @@ function App() {
                         alt={product.name} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                      <span className="card-badge" style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#2D3A29', color: '#FAF7F2', fontSize: '0.7rem', padding: '0.3rem 0.75rem', borderRadius: '4px', letterSpacing: '0.1em', fontWeight: 600 }}>
-                        {product.badge}
-                      </span>
                       <button 
                         className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
@@ -2788,7 +2924,7 @@ function App() {
                 <li><button onClick={() => openProductDetail(PRODUCTS[1])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Pure Coconut Oil</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS[2])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Body Butter</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-liquid-soap'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Liquid Soap</button></li>
-                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-jar'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Soap (300g Jar)</button></li>
+                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-jar'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Soap (Jar)</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Gift Sets</button></li>
               </ul>
             </div>
@@ -2815,6 +2951,7 @@ function App() {
                 <li><button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>FAQs</button></li>
                 <li><a href="tel:07831082965" style={{ color: '#D6DDD3', textDecoration: 'none' }}>Phone: 07831082965</a></li>
                 <li><button onClick={() => navigateToTab('contact')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Privacy Policy</button></li>
+                <li><button onClick={() => setIsSettingsOpen(true)} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Settings size={13} /> Preferences & Settings</button></li>
               </ul>
             </div>
 
@@ -3637,6 +3774,18 @@ function App() {
         </div>
       )}
       
+      {/* PREFERENCES & SETTINGS MODAL */}
+      <SettingsModal 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onNavigateToAdmin={navigateToAdmin}
+        activeCurrency={activeCurrency}
+        onCurrencyChange={(curr) => {
+          setActiveCurrency(curr);
+          showToast(`Currency updated to ${curr}`);
+        }}
+      />
+
       {/* ORDER CONFIRMATION MODAL */}
       {orderConfirmation && (
         <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setOrderConfirmation(null)}>
