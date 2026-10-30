@@ -1729,6 +1729,42 @@ h1, h2, h3, h4, .font-serif {
   gap: 2.25rem;
 }
 
+/* Card Media Wrapper & Image Display (Prevents text overlap, centers hero jars) */
+.card-media-wrap {
+  position: relative;
+  overflow: hidden;
+  background-color: #DFCAA7;
+  cursor: pointer;
+}
+
+.card-media-wrap img,
+.card-media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 60%;
+  transform: scale(1.14);
+  transform-origin: center center;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+}
+
+.responsive-product-card:hover .card-media-wrap img,
+.responsive-product-card:hover .card-media-img {
+  transform: scale(1.2);
+}
+
+.responsive-product-card[data-product-id="luxe-trio-gift-set"] .card-media-wrap img,
+.responsive-product-card[data-product-id="luxe-trio-gift-set"] .card-media-img {
+  object-position: center center !important;
+  transform: none !important;
+}
+
+.responsive-product-card[data-product-id="luxe-trio-gift-set"]:hover .card-media-wrap img,
+.responsive-product-card[data-product-id="luxe-trio-gift-set"]:hover .card-media-img {
+  transform: scale(1.04) !important;
+}
+
 .reviews-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -1952,6 +1988,16 @@ h1, h2, h3, h4, .font-serif {
     height: 185px !important;
     position: relative !important;
     overflow: hidden !important;
+  }
+  .responsive-product-card .card-media-wrap img,
+  .responsive-product-card .card-media-img {
+    object-position: center 60% !important;
+    transform: scale(1.14) !important;
+  }
+  .responsive-product-card[data-product-id="luxe-trio-gift-set"] .card-media-wrap img,
+  .responsive-product-card[data-product-id="luxe-trio-gift-set"] .card-media-img {
+    object-position: center center !important;
+    transform: none !important;
   }
 
   .card-badge,

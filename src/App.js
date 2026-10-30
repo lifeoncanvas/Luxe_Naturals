@@ -1465,7 +1465,7 @@ function App() {
                     <img 
                       src={pdpPrimaryImage} 
                       alt={activeProduct.name} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.35s ease' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: selectedProduct.id === 'luxe-trio-gift-set' ? 'center center' : 'center 58%', transform: selectedProduct.id === 'luxe-trio-gift-set' ? 'none' : 'scale(1.10)', transition: 'all 0.35s ease' }}
                     />
                     
 
@@ -1686,7 +1686,7 @@ function App() {
                 {PRODUCTS.filter(p => p.id !== selectedProduct.id).map(product => (
                   <div 
                     key={product.id}
-                    className="responsive-product-card"
+                    className="responsive-product-card" data-product-id={product.id}
                     style={{ 
                       backgroundColor: '#F4EFE6', 
                       borderRadius: '12px', 
@@ -1705,7 +1705,15 @@ function App() {
                       <img 
                         src={product.image} 
                         alt={product.name} 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        className="card-media-img"
+                        style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'cover', 
+                          objectPosition: product.id === 'luxe-trio-gift-set' ? 'center center' : 'center 60%', 
+                          transform: product.id === 'luxe-trio-gift-set' ? 'none' : 'scale(1.14)', 
+                          transition: 'transform 0.4s ease' 
+                        }}
                       />
                       <button 
                         className="card-wishlist-btn"
@@ -1956,7 +1964,7 @@ function App() {
                 {PRODUCTS.map(product => (
                   <div 
                     key={product.id}
-                    className="responsive-product-card"
+                    className="responsive-product-card" data-product-id={product.id}
                     style={{ 
                       backgroundColor: '#F4EFE6', 
                       borderRadius: '12px', 
@@ -1975,7 +1983,15 @@ function App() {
                       <img 
                         src={product.image} 
                         alt={product.name} 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        className="card-media-img"
+                        style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'cover', 
+                          objectPosition: product.id === 'luxe-trio-gift-set' ? 'center center' : 'center 60%', 
+                          transform: product.id === 'luxe-trio-gift-set' ? 'none' : 'scale(1.14)', 
+                          transition: 'transform 0.4s ease' 
+                        }}
                       />
                       <button 
                         className="card-wishlist-btn"
@@ -2700,7 +2716,7 @@ function App() {
                 {PRODUCTS.map(product => (
                   <div 
                     key={product.id}
-                    className="responsive-product-card"
+                    className="responsive-product-card" data-product-id={product.id}
                     style={{ 
                       backgroundColor: '#F4EFE6', 
                       borderRadius: '12px', 
@@ -2719,7 +2735,15 @@ function App() {
                       <img 
                         src={product.image} 
                         alt={product.name} 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        className="card-media-img"
+                        style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'cover', 
+                          objectPosition: product.id === 'luxe-trio-gift-set' ? 'center center' : 'center 60%', 
+                          transform: product.id === 'luxe-trio-gift-set' ? 'none' : 'scale(1.14)', 
+                          transition: 'transform 0.4s ease' 
+                        }}
                       />
                       <button 
                         className="card-wishlist-btn"
