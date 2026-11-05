@@ -1670,7 +1670,7 @@ export default function AdminPortal({
                     £{(totalRevenue / (totalOrdersCount || 1)).toFixed(2)}
                   </div>
                   <p style={{ fontSize: '0.825rem', color: '#A0A89F', lineHeight: 1.6 }}>
-                    Boosted by The Luxe Trio Gift Set (£68) and dual-variant African Black Soap bundles. Free UK shipping threshold active at £50.
+                    Boosted by The Complete 5-Piece Luxe Collection (£59.00) and The Luxe Trio Gift Set (£39.99). Free UK shipping threshold active at £70.
                   </p>
                 </div>
               </div>

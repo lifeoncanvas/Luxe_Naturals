@@ -566,6 +566,7 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState('address'); // 'address' | 'payment'
+  const [deliveryOption, setDeliveryOption] = useState('standard'); // 'standard' | 'express'
   const [shippingAddress, setShippingAddress] = useState({
     shippingName: '',
     shippingEmail: '',
@@ -725,9 +726,14 @@ function App() {
     });
   };
 
-  // Cart Subtotal
+  // Cart Subtotal & Dynamic Delivery Calculations
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const freeShippingThreshold = 50;
+  const freeShippingThreshold = 70; // Free delivery on orders over £70
+  const isFreeShippingEligible = cartSubtotal >= freeShippingThreshold;
+  const standardDeliveryPrice = isFreeShippingEligible ? 0 : 6.99; // Standard delivery: £6.99 or Free over £70
+  const expressDeliveryPrice = 10.99; // Express delivery: £10.99
+  const deliveryFee = cart.length === 0 ? 0 : (deliveryOption === 'express' ? expressDeliveryPrice : standardDeliveryPrice);
+  const cartTotal = cartSubtotal + deliveryFee;
   const progressToFreeShipping = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
   const amountForFreeShipping = Math.max(0, freeShippingThreshold - cartSubtotal);
 
@@ -823,14 +829,17 @@ function App() {
         qty: item.quantity,
         price: item.price
       })),
-      total: cartSubtotal,
+      subtotal: cartSubtotal,
+      deliveryMethod: deliveryOption === 'express' ? 'Express Delivery (1–2 Days)' : 'Standard Delivery (3–5 Days)',
+      deliveryFee: deliveryFee,
+      total: cartTotal,
       paymentMethod: paymentMethod,
       paymentStatus: 'Paid',
       deliveryStatus: 'Processing',
-      courier: 'Royal Mail Tracked 24',
+      courier: deliveryOption === 'express' ? 'Royal Mail Special Delivery Guaranteed' : 'Royal Mail Tracked 48',
       trackingNumber: `RM${Math.floor(100000000 + Math.random() * 900000000)}GB`,
       source: 'Online Storefront',
-      notes: 'Placed via web storefront checkout.'
+      notes: shippingAddress.orderNotes || `Web checkout. ${deliveryOption === 'express' ? 'Express Delivery (£10.99)' : (deliveryFee === 0 ? 'Standard Delivery (FREE over £70)' : 'Standard Delivery (£6.99)')}`
     };
 
     // Deduct inventory for matching items
@@ -854,7 +863,10 @@ function App() {
     setAdminOrders(prev => [newOrder, ...prev]);
     setOrderConfirmation({
       orderNumber: newOrderId,
-      total: cartSubtotal.toFixed(2),
+      subtotal: cartSubtotal.toFixed(2),
+      deliveryFee: deliveryFee.toFixed(2),
+      deliveryMethod: deliveryOption === 'express' ? 'Express Delivery' : 'Standard Delivery',
+      total: cartTotal.toFixed(2),
       method: paymentMethod,
       shipping: shippingAddress
     });
@@ -1148,7 +1160,9 @@ function App() {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify({
-          amount: cartSubtotal.toFixed(2),
+          amount: cartTotal.toFixed(2),
+          deliveryOption: deliveryOption,
+          deliveryFee: deliveryFee.toFixed(2),
           shippingInfo: shippingAddress,
           items: cart.map(item => ({
             id: item.id,
@@ -1175,7 +1189,7 @@ function App() {
       setPaymentProcessing(false);
       throw error;
     }
-  }, [cart, cartSubtotal, shippingAddress]);
+  }, [cart, cartTotal, deliveryOption, deliveryFee, shippingAddress]);
 
   // Capture PayPal order after buyer approval
   const capturePayPalOrder = useCallback(async (data) => {
@@ -3211,9 +3225,9 @@ function App() {
             {/* Free Shipping Bar */}
             <div className="free-shipping-bar">
               {amountForFreeShipping > 0 ? (
-                <>Add <strong>£{amountForFreeShipping.toFixed(2)}</strong> more for complimentary delivery</>
+                <>Add <strong>£{amountForFreeShipping.toFixed(2)}</strong> more for <strong>FREE Delivery</strong> (Orders over £70)</>
               ) : (
-                <>✨ You've unlocked complimentary delivery!</>
+                <>✨ You've unlocked <strong>FREE Standard Delivery</strong> on this order!</>
               )}
               <div className="shipping-progress">
                 <div className="shipping-progress-fill" style={{ width: `${progressToFreeShipping}%`, backgroundColor: '#C5A059' }} />
@@ -3255,12 +3269,75 @@ function App() {
             {/* Cart Footer */}
             {cart.length > 0 && (
               <div className="cart-footer">
-                <div className="cart-subtotal-row">
-                  <span>Subtotal</span>
-                  <span style={{ fontWeight: 700, color: '#2D3A29' }}>£{cartSubtotal.toFixed(2)}</span>
+                {/* Delivery Selector in Drawer */}
+                <div style={{ backgroundColor: '#FAF7F2', borderRadius: '8px', border: '1px solid #E5DFC5', padding: '0.85rem', marginBottom: '1rem' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6E5535', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>DELIVERY METHOD</span>
+                    {isFreeShippingEligible && <span style={{ color: '#2D3A29', backgroundColor: '#EAF0E8', padding: '0.15rem 0.45rem', borderRadius: '3px', fontSize: '0.65rem', fontWeight: 700 }}>FREE OVER £70</span>}
+                  </div>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryOption('standard')}
+                      style={{
+                        padding: '0.65rem 0.5rem',
+                        borderRadius: '6px',
+                        border: deliveryOption === 'standard' ? '2px solid #C5A059' : '1px solid #D6DDD3',
+                        backgroundColor: deliveryOption === 'standard' ? '#FFFFFF' : '#F4EFE6',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2D3A29' }}>Standard</div>
+                      <div style={{ fontSize: '0.68rem', color: '#5C635B' }}>3–5 days</div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isFreeShippingEligible ? '#2D3A29' : '#6E5535', marginTop: '0.2rem' }}>
+                        {isFreeShippingEligible ? 'FREE' : '£6.99'}
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryOption('express')}
+                      style={{
+                        padding: '0.65rem 0.5rem',
+                        borderRadius: '6px',
+                        border: deliveryOption === 'express' ? '2px solid #C5A059' : '1px solid #D6DDD3',
+                        backgroundColor: deliveryOption === 'express' ? '#FFFFFF' : '#F4EFE6',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2D3A29' }}>Express</div>
+                      <div style={{ fontSize: '0.68rem', color: '#5C635B' }}>1–2 days</div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6E5535', marginTop: '0.2rem' }}>
+                        £10.99
+                      </div>
+                    </button>
+                  </div>
                 </div>
+
+                <div className="cart-subtotal-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#5C635B', marginBottom: '0.35rem' }}>
+                  <span>Subtotal</span>
+                  <span>£{cartSubtotal.toFixed(2)}</span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#5C635B', marginBottom: '0.5rem' }}>
+                  <span>Delivery ({deliveryOption === 'express' ? 'Express 1–2 Days' : 'Standard 3–5 Days'})</span>
+                  <span style={{ fontWeight: 600, color: deliveryFee === 0 ? '#2D3A29' : '#6E5535' }}>
+                    {deliveryFee === 0 ? 'FREE' : `£${deliveryFee.toFixed(2)}`}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 700, color: '#2D3A29', borderTop: '1px solid #E5DFC5', paddingTop: '0.5rem', marginBottom: '1rem' }}>
+                  <span>Total</span>
+                  <span style={{ color: '#6E5535' }}>£{cartTotal.toFixed(2)}</span>
+                </div>
+
                 <button className="btn-primary checkout-btn" onClick={openCheckout} style={{ width: '100%', justifyContent: 'center' }}>
-                  Proceed to Checkout · £{cartSubtotal.toFixed(2)}
+                  Proceed to Checkout · £{cartTotal.toFixed(2)}
                 </button>
                 <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.8rem', color: '#5C635B' }}>
                   Or call <a href="tel:07831082965" style={{ color: '#2D3A29', fontWeight: 600 }}>07831082965</a> to order directly
@@ -3356,8 +3433,10 @@ function App() {
                   <span>£{cartSubtotal.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
-                  <span>UK Delivery</span>
-                  <span style={{ color: '#2D3A29', fontWeight: 600 }}>Complimentary (Free)</span>
+                  <span>Delivery ({deliveryOption === 'express' ? 'Express 1–2 Days' : 'Standard 3–5 Days'})</span>
+                  <span style={{ color: deliveryFee === 0 ? '#2D3A29' : '#6E5535', fontWeight: 600 }}>
+                    {deliveryFee === 0 ? 'FREE (Orders over £70)' : `£${deliveryFee.toFixed(2)}`}
+                  </span>
                 </div>
                 {shippingAddress.shippingCity && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#6E5535' }}>
@@ -3365,9 +3444,9 @@ function App() {
                     <span>{shippingAddress.shippingCity}, UK</span>
                   </div>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', color: '#2D3A29', fontWeight: 700, borderTop: '1px solid #ECE7D8', paddingTop: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', color: '#2D3A29', fontWeight: 700, borderTop: '1px solid #ECE7D8', paddingTop: '0.75rem' }}>
                   <span>Total</span>
-                  <span>£{cartSubtotal.toFixed(2)}</span>
+                  <span style={{ color: '#6E5535' }}>£{cartTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -3521,11 +3600,77 @@ function App() {
                       />
                     </div>
 
-                    <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '0.85rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
-                      <Sparkles size={18} color="#C5A059" style={{ flexShrink: 0 }} />
-                      <span style={{ fontSize: '0.8rem', color: '#2D3A29', lineHeight: 1.4 }}>
-                        <strong>Complimentary UK Standard Delivery</strong> — Carefully packaged with eco-friendly natural materials.
-                      </span>
+                    <div style={{ marginTop: '0.75rem', marginBottom: '0.5rem' }}>
+                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>
+                        Select Delivery Method
+                      </label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                        {/* Standard Delivery Option */}
+                        <div 
+                          onClick={() => setDeliveryOption('standard')}
+                          style={{
+                            padding: '0.85rem 1rem',
+                            borderRadius: '6px',
+                            border: deliveryOption === 'standard' ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                            backgroundColor: deliveryOption === 'standard' ? '#FFFFFF' : '#FAF7F2',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            boxShadow: deliveryOption === 'standard' ? '0 4px 12px rgba(197, 160, 89, 0.15)' : 'none',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: deliveryOption === 'standard' ? '5px solid #C5A059' : '2px solid #D6DDD3', backgroundColor: '#FFF' }} />
+                            <div>
+                              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>Standard Delivery (3–5 Business Days)</div>
+                              <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>
+                                {isFreeShippingEligible ? 'Free on orders over £70' : 'Reliable UK Royal Mail Tracked Delivery'}
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: isFreeShippingEligible ? '#2D3A29' : '#6E5535' }}>
+                              {isFreeShippingEligible ? 'FREE' : '£6.99'}
+                            </span>
+                            {isFreeShippingEligible && (
+                              <div style={{ fontSize: '0.65rem', color: '#4A5D4E', fontWeight: 600 }}>OVER £70</div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Express Delivery Option */}
+                        <div 
+                          onClick={() => setDeliveryOption('express')}
+                          style={{
+                            padding: '0.85rem 1rem',
+                            borderRadius: '6px',
+                            border: deliveryOption === 'express' ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                            backgroundColor: deliveryOption === 'express' ? '#FFFFFF' : '#FAF7F2',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            boxShadow: deliveryOption === 'express' ? '0 4px 12px rgba(197, 160, 89, 0.15)' : 'none',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: deliveryOption === 'express' ? '5px solid #C5A059' : '2px solid #D6DDD3', backgroundColor: '#FFF' }} />
+                            <div>
+                              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>Express Delivery (1–2 Business Days)</div>
+                              <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>Priority Royal Mail Tracked 24 dispatch</div>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>
+                              £10.99
+                            </span>
+                            <div style={{ fontSize: '0.65rem', color: '#C5A059', fontWeight: 600 }}>FAST TRACK</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <button 
@@ -3592,7 +3737,7 @@ function App() {
                           processCompletedOrder('Credit / Debit Card');
                         }}
                       >
-                        Pay £{cartSubtotal.toFixed(2)} Securely <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        Pay £{cartTotal.toFixed(2)} Securely <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                       </button>
                       <div style={{ textAlign: 'center', marginTop: '0.65rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by Stripe
@@ -4028,13 +4173,27 @@ function App() {
                 <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Order Number</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2D3A29', letterSpacing: '0.05em' }}>{orderConfirmation.orderNumber}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Total Paid</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2D3A29' }}>£{orderConfirmation.total}</span>
+              {orderConfirmation.subtotal && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Subtotal</span>
+                  <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>£{orderConfirmation.subtotal}</span>
+                </div>
+              )}
+              {orderConfirmation.deliveryMethod && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>{orderConfirmation.deliveryMethod}</span>
+                  <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>
+                    {Number(orderConfirmation.deliveryFee) === 0 ? 'FREE (Over £70)' : `£${orderConfirmation.deliveryFee}`}
+                  </span>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5DFC5', paddingTop: '0.5rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29' }}>Total Paid</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>£{orderConfirmation.total}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Payment Method</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#003087' }}>PayPal ✓</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#003087' }}>{orderConfirmation.method || 'PayPal ✓'}</span>
               </div>
             </div>
             
