@@ -1463,11 +1463,33 @@ function App() {
   // Get JWT token from localStorage (set during auth login)
   const getAuthToken = () => localStorage.getItem('lln_token');
 
-  // Create PayPal order via backend or client-side SDK actions
+  // Create PayPal order via client-side SDK actions or backend
   const createPayPalOrder = useCallback(async (data, actions) => {
     setPaymentProcessing(true);
 
-    // 1. First attempt to create order via Spring Boot backend (if available)
+    // 1. Primary: Direct Client-Side SDK creation with guaranteed USD currency match
+    if (actions && actions.order && typeof actions.order.create === 'function') {
+      try {
+        const orderId = await actions.order.create({
+          intent: 'CAPTURE',
+          purchase_units: [
+            {
+              description: 'LICHT LUXE NATURALS Order — Made in LOVEWORLD',
+              amount: {
+                currency_code: 'USD',
+                value: Number(cartTotal || 0).toFixed(2),
+              },
+            },
+          ],
+        });
+        setPaymentProcessing(false);
+        return orderId;
+      } catch (sdkErr) {
+        console.warn('PayPal actions.order.create fallback to backend:', sdkErr);
+      }
+    }
+
+    // 2. Fallback: Spring Boot backend create-order (with explicit USD currency)
     try {
       const token = getAuthToken();
       const authHeaders = {
@@ -1476,7 +1498,7 @@ function App() {
       };
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
       const response = await fetch(`${API_BASE}/paypal/create-order`, {
         method: 'POST',
@@ -1484,6 +1506,7 @@ function App() {
         signal: controller.signal,
         body: JSON.stringify({
           amount: Number(cartTotal).toFixed(2),
+          currency: 'USD',
           deliveryOption: deliveryOption,
           deliveryFee: Number(deliveryFee).toFixed(2),
           shippingInfo: shippingAddress,
@@ -1505,30 +1528,7 @@ function App() {
         }
       }
     } catch (backendErr) {
-      console.warn('Backend PayPal create-order unavailable, using PayPal client SDK actions:', backendErr.message);
-    }
-
-    // 2. Resilient Client-Side SDK fallback: actions.order.create()
-    if (actions && actions.order && typeof actions.order.create === 'function') {
-      try {
-        const orderId = await actions.order.create({
-          purchase_units: [
-            {
-              description: 'LICHT LUXE NATURALS Order',
-              amount: {
-                currency_code: 'USD',
-                value: Number(cartTotal || 0).toFixed(2),
-              },
-            },
-          ],
-        });
-        setPaymentProcessing(false);
-        return orderId;
-      } catch (sdkErr) {
-        setPaymentProcessing(false);
-        console.error('PayPal actions.order.create error:', sdkErr);
-        throw sdkErr;
-      }
+      console.warn('Backend PayPal create-order unavailable:', backendErr?.message);
     }
 
     setPaymentProcessing(false);
@@ -1561,6 +1561,7 @@ function App() {
           signal: controller.signal,
           body: JSON.stringify({
             amount: Number(cartTotal).toFixed(2),
+            currency: 'USD',
             shippingInfo: shippingAddress,
             items: cart.map(item => ({
               id: item.id,
