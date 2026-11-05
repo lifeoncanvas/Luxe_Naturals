@@ -268,8 +268,8 @@ const PRODUCTS = [
     tagline: 'The complete natural luxury collection.',
     subtitle: 'Pure Shea Butter + Pure Coconut Oil + Luxe Body Butter',
     price: 39.99,
-    originalPrice: 45.97,
-    badge: 'MADE IN LOVEWORLD BOX',
+    originalPrice: 55.97,
+    badge: '★ 3-PIECE COMBO · SAVE $15.98',
     volume: 'Full Size 3-Piece Set',
     rating: '5.0',
     reviewsCount: 88,
@@ -299,7 +299,7 @@ const PRODUCTS = [
     subtitle: 'All 5 Essentials in One Beautiful Collection',
     price: 59.00,
     originalPrice: 70.95,
-    badge: '★ 5-PIECE COMBO · £59',
+    badge: '★ 5-PIECE COMBO · SAVE $11.95',
     volume: 'Complete 5-Piece Full-Size Set (1,500g Total)',
     rating: '5.0',
     reviewsCount: 248,
@@ -343,7 +343,7 @@ const PRODUCTS = [
     benefits: [
       'All 5 signature essentials together in one beautiful collection',
       'Complete daily routine: Cleanse, Moisturise, Soften and Nourish',
-      'Individual Total: £70.95 — Special Bundle Price: £59.00 (Save £11.95)',
+      'Individual Total: $70.95 — Special Bundle Price: $59.00 (Save $11.95)',
       'Includes Pure Shea Butter (250g), Coconut Oil (200ml), Body Butter (250g), Black Liquid Soap (500ml) & Black Soap (300g)',
       '100% natural ingredients & deep moisturisation for healthy, glowing skin',
       'Handcrafted with love and from LOVEWORLD'
@@ -449,7 +449,7 @@ const API_BASE = (() => {
 
 const paypalInitialOptions = {
   'client-id': PAYPAL_CLIENT_ID,
-  currency: 'GBP',
+  currency: 'USD',
   intent: 'capture',
   'disable-funding': 'credit,card',
 };
@@ -649,7 +649,7 @@ function App() {
 
   // Settings Modal State & Store Preferences
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [activeCurrency, setActiveCurrency] = useState('GBP');
+  const [activeCurrency, setActiveCurrency] = useState('USD');
 
   // Synchronize browser history and path changes
   useEffect(() => {
@@ -728,10 +728,10 @@ function App() {
 
   // Cart Subtotal & Dynamic Delivery Calculations
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const freeShippingThreshold = 70; // Free delivery on orders over £70
+  const freeShippingThreshold = 70; // Free delivery on orders over $70
   const isFreeShippingEligible = cartSubtotal >= freeShippingThreshold;
-  const standardDeliveryPrice = isFreeShippingEligible ? 0 : 6.99; // Standard delivery: £6.99 or Free over £70
-  const expressDeliveryPrice = 10.99; // Express delivery: £10.99
+  const standardDeliveryPrice = isFreeShippingEligible ? 0 : 6.99; // Standard delivery: $6.99 or Free over $70
+  const expressDeliveryPrice = 10.99; // Express delivery: $10.99
   const deliveryFee = cart.length === 0 ? 0 : (deliveryOption === 'express' ? expressDeliveryPrice : standardDeliveryPrice);
   const cartTotal = cartSubtotal + deliveryFee;
   const progressToFreeShipping = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
@@ -839,7 +839,7 @@ function App() {
       courier: deliveryOption === 'express' ? 'Royal Mail Special Delivery Guaranteed' : 'Royal Mail Tracked 48',
       trackingNumber: `RM${Math.floor(100000000 + Math.random() * 900000000)}GB`,
       source: 'Online Storefront',
-      notes: shippingAddress.orderNotes || `Web checkout. ${deliveryOption === 'express' ? 'Express Delivery (£10.99)' : (deliveryFee === 0 ? 'Standard Delivery (FREE over £70)' : 'Standard Delivery (£6.99)')}`
+      notes: shippingAddress.orderNotes || `Web checkout. ${deliveryOption === 'express' ? 'Express Delivery ($10.99)' : (deliveryFee === 0 ? 'Standard Delivery (FREE over $70)' : 'Standard Delivery ($6.99)')}`
     };
 
     // Deduct inventory for matching items
@@ -1636,7 +1636,7 @@ function App() {
                                     {variantItem.formatLabel}
                                   </span>
                                   <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#6E5535' }}>
-                                    £{variantItem.price}
+                                    ${variantItem.price}
                                   </span>
                                 </div>
                                 <div style={{ fontSize: '0.75rem', color: '#5C635B', marginBottom: '0.25rem' }}>
@@ -1679,8 +1679,26 @@ function App() {
                     {activeProduct.subtitle}
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid #E5DFC5', paddingBottom: '1.25rem' }}>
-                    <span style={{ fontSize: '2.25rem', fontWeight: 700, color: '#6E5535' }}>£{activeProduct.price}</span>
+                  <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid #E5DFC5', paddingBottom: '1.25rem' }}>
+                    <span style={{ fontSize: '2.5rem', fontWeight: 700, color: '#6E5535' }}>${activeProduct.price.toFixed(2)}</span>
+                    {activeProduct.originalPrice && (
+                      <>
+                        <span style={{ fontSize: '1.35rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
+                          ${activeProduct.originalPrice.toFixed(2)}
+                        </span>
+                        <span style={{ 
+                          fontSize: '0.85rem', 
+                          fontWeight: 700, 
+                          color: '#2D3A29', 
+                          backgroundColor: 'rgba(197, 160, 89, 0.25)', 
+                          border: '1.5px solid #C5A059', 
+                          padding: '0.25rem 0.65rem', 
+                          borderRadius: '6px' 
+                        }}>
+                          Save ${(activeProduct.originalPrice - activeProduct.price).toFixed(2)} ({Math.round(((activeProduct.originalPrice - activeProduct.price) / activeProduct.originalPrice) * 100)}% OFF)
+                        </span>
+                      </>
+                    )}
                     <span style={{ fontSize: '1rem', color: '#5C635B' }}>({activeProduct.volume})</span>
                   </div>
 
@@ -1705,7 +1723,7 @@ function App() {
                         style={{ flexGrow: 1, justifyContent: 'center', padding: '1rem 2rem', fontSize: '0.95rem', fontWeight: 600 }}
                         onClick={() => addToCart(activeProduct, pdpQuantity)}
                       >
-                        <ShoppingBag size={18} /> ADD TO BAG · £{(activeProduct.price * pdpQuantity).toFixed(2)}
+                        <ShoppingBag size={18} /> ADD TO BAG · ${(activeProduct.price * pdpQuantity).toFixed(2)}
                       </button>
 
                       <a 
@@ -1727,7 +1745,7 @@ function App() {
                         </span>
                         {activeProduct.originalPrice && (
                           <span style={{ fontSize: '0.8rem', color: '#2D3A29', fontWeight: 600, backgroundColor: 'rgba(197, 160, 89, 0.25)', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                            Save £{(activeProduct.originalPrice - activeProduct.price).toFixed(2)}
+                            Save ${(activeProduct.originalPrice - activeProduct.price).toFixed(2)}
                           </span>
                         )}
                       </div>
@@ -1854,10 +1872,31 @@ function App() {
                       <button 
                         className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
-                        style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
+                        style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', zIndex: 3 }}
                       >
                         <Heart size={18} fill={wishlist.includes(product.id) ? '#C5A059' : 'none'} color={wishlist.includes(product.id) ? '#C5A059' : '#1E221D'} />
                       </button>
+                      {product.originalPrice && (
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            top: '1rem',
+                            left: '1rem',
+                            backgroundColor: '#C5A059',
+                            color: '#FFFFFF',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            textTransform: 'uppercase',
+                            padding: '0.35rem 0.75rem',
+                            borderRadius: '30px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                            zIndex: 2
+                          }}
+                        >
+                          ★ SAVE ${(product.originalPrice - product.price).toFixed(2)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                        </div>
+                      )}
                     </div>
 
                     <div className="card-body" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
@@ -1872,7 +1911,7 @@ function App() {
                         {product.name}
                       </h3>
                       <div className="card-price-row" style={{ fontSize: '1.15rem', fontWeight: 600, color: '#6E5535', marginBottom: '0.75rem' }}>
-                        £{product.price} <span className="card-volume" style={{ fontSize: '0.8rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
+                        ${product.price} <span className="card-volume" style={{ fontSize: '0.8rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
                       </div>
 
                       <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.5rem' }}>
@@ -1881,7 +1920,7 @@ function App() {
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.75rem', fontSize: '0.8rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={14} /> ADD · £{product.price}
+                          <ShoppingBag size={14} /> ADD · ${product.price}
                         </button>
                         <button 
                           className="btn-secondary card-btn-secondary" 
@@ -2132,10 +2171,31 @@ function App() {
                       <button 
                         className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
-                        style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
+                        style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', zIndex: 3 }}
                       >
                         <Heart size={18} fill={wishlist.includes(product.id) ? '#C5A059' : 'none'} color={wishlist.includes(product.id) ? '#C5A059' : '#1E221D'} />
                       </button>
+                      {product.originalPrice && (
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            top: '1rem',
+                            left: '1rem',
+                            backgroundColor: '#C5A059',
+                            color: '#FFFFFF',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            textTransform: 'uppercase',
+                            padding: '0.35rem 0.75rem',
+                            borderRadius: '30px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                            zIndex: 2
+                          }}
+                        >
+                          ★ SAVE ${(product.originalPrice - product.price).toFixed(2)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                        </div>
+                      )}
                     </div>
 
                     <div className="card-body" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
@@ -2149,8 +2209,31 @@ function App() {
                       >
                         {product.name}
                       </h3>
-                      <div className="card-price-row" style={{ fontSize: '1.25rem', fontWeight: 600, color: '#6E5535', marginBottom: '1rem' }}>
-                        £{product.price} <span className="card-volume" style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
+                      <div className="card-price-row" style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '1.35rem', fontWeight: 700, color: '#6E5535' }}>
+                          ${product.price.toFixed(2)}
+                        </span>
+                        {product.originalPrice && (
+                          <>
+                            <span style={{ fontSize: '0.95rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
+                              ${product.originalPrice.toFixed(2)}
+                            </span>
+                            <span style={{ 
+                              fontSize: '0.72rem', 
+                              fontWeight: 700, 
+                              color: '#2D3A29', 
+                              backgroundColor: 'rgba(197, 160, 89, 0.25)', 
+                              border: '1px solid #C5A059', 
+                              padding: '0.15rem 0.45rem', 
+                              borderRadius: '4px' 
+                            }}>
+                              Save ${(product.originalPrice - product.price).toFixed(2)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
+                            </span>
+                          </>
+                        )}
+                        <span className="card-volume" style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400, marginLeft: product.originalPrice ? '0' : '0.2rem' }}>
+                          ({product.volume})
+                        </span>
                       </div>
 
                       <p className="card-desc" style={{ fontSize: '0.9rem', color: '#5C635B', marginBottom: '1.25rem', lineHeight: 1.6 }}>
@@ -2163,7 +2246,7 @@ function App() {
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={16} /> ADD · £{product.price}
+                          <ShoppingBag size={16} /> ADD · ${product.price}
                         </button>
                         <button 
                           className="btn-secondary card-btn-secondary" 
@@ -2217,7 +2300,7 @@ function App() {
                 {/* 5-Piece Complete Collection Card */}
                 <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(197, 160, 89, 0.2)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                   <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#C5A059', color: '#FFFFFF', padding: '0.35rem 1.25rem', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(197, 160, 89, 0.4)', whiteSpace: 'nowrap' }}>
-                    ★ MASTER 5-PIECE COMBO · SAVE £11.95
+                    ★ MASTER 5-PIECE COMBO · SAVE $11.95
                   </div>
 
                   <div style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
@@ -2227,9 +2310,12 @@ function App() {
                     <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
                       The Complete Luxe Naturals
                     </h2>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
-                      <span style={{ fontSize: '1.75rem', fontWeight: 700, color: '#6E5535' }}>£59.00</span>
-                      <span style={{ fontSize: '1rem', color: '#8C948B', textDecoration: 'line-through' }}>£70.95</span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
+                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>$59.00</span>
+                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>$70.95</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
+                        Save $11.95 (17% OFF)
+                      </span>
                     </div>
                   </div>
 
@@ -2268,7 +2354,7 @@ function App() {
                       style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
                       onClick={() => addToCart(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
                     >
-                      Add to Bag · £59.00
+                      Add to Bag · $59.00
                     </button>
                     <button 
                       className="btn-secondary" 
@@ -2289,9 +2375,12 @@ function App() {
                     <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
                       The Complete Ritual Set
                     </h2>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
-                      <span style={{ fontSize: '1.75rem', fontWeight: 700, color: '#6E5535' }}>£39.99</span>
-                      <span style={{ fontSize: '1rem', color: '#8C948B', textDecoration: 'line-through' }}>£45.97</span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
+                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>$39.99</span>
+                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>$55.97</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
+                        Save $15.98 (29% OFF)
+                      </span>
                     </div>
                   </div>
 
@@ -2327,7 +2416,7 @@ function App() {
                       style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
                       onClick={() => addToCart(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
                     >
-                      Add to Bag · £39.99
+                      Add to Bag · $39.99
                     </button>
                     <button 
                       className="btn-secondary" 
@@ -2885,7 +2974,7 @@ function App() {
                   <div style={{ padding: '1.5rem' }}>
                     <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C5A059', fontWeight: 600 }}>100% COLD PRESSED</div>
                     <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#2D3A29', marginTop: '0.25rem' }}>Pure Coconut Oil</h3>
-                    <p style={{ fontSize: '0.85rem', color: '#5C635B', marginTop: '0.35rem' }}>Nature's versatile nourishing oil · £22.</p>
+                    <p style={{ fontSize: '0.85rem', color: '#5C635B', marginTop: '0.35rem' }}>Nature's versatile nourishing oil · $22.</p>
                   </div>
                 </div>
 
@@ -2963,10 +3052,31 @@ function App() {
                       <button 
                         className="card-wishlist-btn"
                         onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
-                        style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
+                        style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', zIndex: 3 }}
                       >
                         <Heart size={18} fill={wishlist.includes(product.id) ? '#C5A059' : 'none'} color={wishlist.includes(product.id) ? '#C5A059' : '#1E221D'} />
                       </button>
+                      {product.originalPrice && (
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            top: '1rem',
+                            left: '1rem',
+                            backgroundColor: '#C5A059',
+                            color: '#FFFFFF',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            textTransform: 'uppercase',
+                            padding: '0.35rem 0.75rem',
+                            borderRadius: '30px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                            zIndex: 2
+                          }}
+                        >
+                          ★ SAVE ${(product.originalPrice - product.price).toFixed(2)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                        </div>
+                      )}
                     </div>
 
                     <div className="card-body" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
@@ -2980,8 +3090,31 @@ function App() {
                       >
                         {product.name}
                       </h3>
-                      <div className="card-price-row" style={{ fontSize: '1.25rem', fontWeight: 600, color: '#6E5535', marginBottom: '1rem' }}>
-                        £{product.price} <span className="card-volume" style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
+                      <div className="card-price-row" style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '1.35rem', fontWeight: 700, color: '#6E5535' }}>
+                          ${product.price.toFixed(2)}
+                        </span>
+                        {product.originalPrice && (
+                          <>
+                            <span style={{ fontSize: '0.95rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
+                              ${product.originalPrice.toFixed(2)}
+                            </span>
+                            <span style={{ 
+                              fontSize: '0.72rem', 
+                              fontWeight: 700, 
+                              color: '#2D3A29', 
+                              backgroundColor: 'rgba(197, 160, 89, 0.25)', 
+                              border: '1px solid #C5A059', 
+                              padding: '0.15rem 0.45rem', 
+                              borderRadius: '4px' 
+                            }}>
+                              Save ${(product.originalPrice - product.price).toFixed(2)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
+                            </span>
+                          </>
+                        )}
+                        <span className="card-volume" style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400, marginLeft: product.originalPrice ? '0' : '0.2rem' }}>
+                          ({product.volume})
+                        </span>
                       </div>
 
                       <p className="card-desc" style={{ fontSize: '0.9rem', color: '#5C635B', marginBottom: '1.25rem', lineHeight: 1.6 }}>
@@ -2994,7 +3127,7 @@ function App() {
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={16} /> ADD · £{product.price}
+                          <ShoppingBag size={16} /> ADD · ${product.price}
                         </button>
                         <button 
                           className="btn-secondary card-btn-secondary" 
@@ -3225,7 +3358,7 @@ function App() {
             {/* Free Shipping Bar */}
             <div className="free-shipping-bar">
               {amountForFreeShipping > 0 ? (
-                <>Add <strong>£{amountForFreeShipping.toFixed(2)}</strong> more for <strong>FREE Delivery</strong> (Orders over £70)</>
+                <>Add <strong>${amountForFreeShipping.toFixed(2)}</strong> more for <strong>FREE Delivery</strong> (Orders over $70)</>
               ) : (
                 <>✨ You've unlocked <strong>FREE Standard Delivery</strong> on this order!</>
               )}
@@ -3258,7 +3391,7 @@ function App() {
                           <span className="qty-num">{item.quantity}</span>
                           <button className="qty-btn" onClick={() => updateCartQuantity(item.id, 1)}><Plus size={12} /></button>
                         </div>
-                        <div style={{ fontWeight: 600, color: '#6E5535' }}>£{(item.price * item.quantity).toFixed(2)}</div>
+                        <div style={{ fontWeight: 600, color: '#6E5535' }}>${(item.price * item.quantity).toFixed(2)}</div>
                       </div>
                     </div>
                   </div>
@@ -3273,7 +3406,7 @@ function App() {
                 <div style={{ backgroundColor: '#FAF7F2', borderRadius: '8px', border: '1px solid #E5DFC5', padding: '0.85rem', marginBottom: '1rem' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6E5535', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>DELIVERY METHOD</span>
-                    {isFreeShippingEligible && <span style={{ color: '#2D3A29', backgroundColor: '#EAF0E8', padding: '0.15rem 0.45rem', borderRadius: '3px', fontSize: '0.65rem', fontWeight: 700 }}>FREE OVER £70</span>}
+                    {isFreeShippingEligible && <span style={{ color: '#2D3A29', backgroundColor: '#EAF0E8', padding: '0.15rem 0.45rem', borderRadius: '3px', fontSize: '0.65rem', fontWeight: 700 }}>FREE OVER $70</span>}
                   </div>
                   
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
@@ -3293,7 +3426,7 @@ function App() {
                       <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2D3A29' }}>Standard</div>
                       <div style={{ fontSize: '0.68rem', color: '#5C635B' }}>3–5 days</div>
                       <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isFreeShippingEligible ? '#2D3A29' : '#6E5535', marginTop: '0.2rem' }}>
-                        {isFreeShippingEligible ? 'FREE' : '£6.99'}
+                        {isFreeShippingEligible ? 'FREE' : '$6.99'}
                       </div>
                     </button>
 
@@ -3313,7 +3446,7 @@ function App() {
                       <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2D3A29' }}>Express</div>
                       <div style={{ fontSize: '0.68rem', color: '#5C635B' }}>1–2 days</div>
                       <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6E5535', marginTop: '0.2rem' }}>
-                        £10.99
+                        $10.99
                       </div>
                     </button>
                   </div>
@@ -3321,23 +3454,23 @@ function App() {
 
                 <div className="cart-subtotal-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#5C635B', marginBottom: '0.35rem' }}>
                   <span>Subtotal</span>
-                  <span>£{cartSubtotal.toFixed(2)}</span>
+                  <span>${cartSubtotal.toFixed(2)}</span>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#5C635B', marginBottom: '0.5rem' }}>
                   <span>Delivery ({deliveryOption === 'express' ? 'Express 1–2 Days' : 'Standard 3–5 Days'})</span>
                   <span style={{ fontWeight: 600, color: deliveryFee === 0 ? '#2D3A29' : '#6E5535' }}>
-                    {deliveryFee === 0 ? 'FREE' : `£${deliveryFee.toFixed(2)}`}
+                    {deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}
                   </span>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 700, color: '#2D3A29', borderTop: '1px solid #E5DFC5', paddingTop: '0.5rem', marginBottom: '1rem' }}>
                   <span>Total</span>
-                  <span style={{ color: '#6E5535' }}>£{cartTotal.toFixed(2)}</span>
+                  <span style={{ color: '#6E5535' }}>${cartTotal.toFixed(2)}</span>
                 </div>
 
                 <button className="btn-primary checkout-btn" onClick={openCheckout} style={{ width: '100%', justifyContent: 'center' }}>
-                  Proceed to Checkout · £{cartTotal.toFixed(2)}
+                  Proceed to Checkout · ${cartTotal.toFixed(2)}
                 </button>
                 <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.8rem', color: '#5C635B' }}>
                   Or call <a href="tel:07831082965" style={{ color: '#2D3A29', fontWeight: 600 }}>07831082965</a> to order directly
@@ -3386,7 +3519,7 @@ function App() {
                     <img src={p.image} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
                     <div>
                       <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: '#2D3A29' }}>{p.name}</div>
-                      <div style={{ fontSize: '0.85rem', color: '#5C635B' }}>£{p.price} · {p.subtitle}</div>
+                      <div style={{ fontSize: '0.85rem', color: '#5C635B' }}>${p.price} · {p.subtitle}</div>
                     </div>
                   </div>
                 ))}
@@ -3421,7 +3554,7 @@ function App() {
                       <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>{item.volume}</div>
                     </div>
                     <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>
-                      £{(item.price * item.quantity).toFixed(2)}
+                      ${(item.price * item.quantity).toFixed(2)}
                     </div>
                   </div>
                 ))}
@@ -3430,12 +3563,12 @@ function App() {
               <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
                   <span>Subtotal</span>
-                  <span>£{cartSubtotal.toFixed(2)}</span>
+                  <span>${cartSubtotal.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
                   <span>Delivery ({deliveryOption === 'express' ? 'Express 1–2 Days' : 'Standard 3–5 Days'})</span>
                   <span style={{ color: deliveryFee === 0 ? '#2D3A29' : '#6E5535', fontWeight: 600 }}>
-                    {deliveryFee === 0 ? 'FREE (Orders over £70)' : `£${deliveryFee.toFixed(2)}`}
+                    {deliveryFee === 0 ? 'FREE (Orders over $70)' : `$${deliveryFee.toFixed(2)}`}
                   </span>
                 </div>
                 {shippingAddress.shippingCity && (
@@ -3446,7 +3579,7 @@ function App() {
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', color: '#2D3A29', fontWeight: 700, borderTop: '1px solid #ECE7D8', paddingTop: '0.75rem' }}>
                   <span>Total</span>
-                  <span style={{ color: '#6E5535' }}>£{cartTotal.toFixed(2)}</span>
+                  <span style={{ color: '#6E5535' }}>${cartTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -3626,16 +3759,16 @@ function App() {
                             <div>
                               <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>Standard Delivery (3–5 Business Days)</div>
                               <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>
-                                {isFreeShippingEligible ? 'Free on orders over £70' : 'Reliable UK Royal Mail Tracked Delivery'}
+                                {isFreeShippingEligible ? 'Free on orders over $70' : 'Reliable UK Royal Mail Tracked Delivery'}
                               </div>
                             </div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <span style={{ fontSize: '0.95rem', fontWeight: 700, color: isFreeShippingEligible ? '#2D3A29' : '#6E5535' }}>
-                              {isFreeShippingEligible ? 'FREE' : '£6.99'}
+                              {isFreeShippingEligible ? 'FREE' : '$6.99'}
                             </span>
                             {isFreeShippingEligible && (
-                              <div style={{ fontSize: '0.65rem', color: '#4A5D4E', fontWeight: 600 }}>OVER £70</div>
+                              <div style={{ fontSize: '0.65rem', color: '#4A5D4E', fontWeight: 600 }}>OVER $70</div>
                             )}
                           </div>
                         </div>
@@ -3665,7 +3798,7 @@ function App() {
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>
-                              £10.99
+                              $10.99
                             </span>
                             <div style={{ fontSize: '0.65rem', color: '#C5A059', fontWeight: 600 }}>FAST TRACK</div>
                           </div>
@@ -3737,7 +3870,7 @@ function App() {
                           processCompletedOrder('Credit / Debit Card');
                         }}
                       >
-                        Pay £{cartTotal.toFixed(2)} Securely <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        Pay ${cartTotal.toFixed(2)} Securely <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                       </button>
                       <div style={{ textAlign: 'center', marginTop: '0.65rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by Stripe
@@ -4176,20 +4309,20 @@ function App() {
               {orderConfirmation.subtotal && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
                   <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Subtotal</span>
-                  <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>£{orderConfirmation.subtotal}</span>
+                  <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>${orderConfirmation.subtotal}</span>
                 </div>
               )}
               {orderConfirmation.deliveryMethod && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
                   <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>{orderConfirmation.deliveryMethod}</span>
                   <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>
-                    {Number(orderConfirmation.deliveryFee) === 0 ? 'FREE (Over £70)' : `£${orderConfirmation.deliveryFee}`}
+                    {Number(orderConfirmation.deliveryFee) === 0 ? 'FREE (Over $70)' : `$${orderConfirmation.deliveryFee}`}
                   </span>
                 </div>
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5DFC5', paddingTop: '0.5rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
                 <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29' }}>Total Paid</span>
-                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>£{orderConfirmation.total}</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>${orderConfirmation.total}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Payment Method</span>
