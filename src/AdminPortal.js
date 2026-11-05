@@ -1816,14 +1816,14 @@ export default function AdminPortal({
           )}
 
           {/* ========================================================================= */}
-          {/* TAB 6: TEAM & ADMINISTRATOR ACCESS CONTROL                                 */}
+          {/* TAB 6: USER MANAGEMENT & EXECUTIVE ACCESS                                  */}
           {/* ========================================================================= */}
           {activeAdminTab === 'team' && (
             <div>
               <div className="admin-header-row">
                 <div>
-                  <h1 className="admin-page-title">Team & Executive Access</h1>
-                  <p className="admin-page-sub">Direct access management for staff administrators and boutique members in Supabase Cloud.</p>
+                  <h1 className="admin-page-title">User Management & Executive Privileges</h1>
+                  <p className="admin-page-sub">Monitor all registered customers, purchase histories, and grant or revoke administrator access.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                   <button 
@@ -1846,12 +1846,12 @@ export default function AdminPortal({
               <div className="admin-metrics-grid" style={{ marginBottom: '1.75rem' }}>
                 <div className="admin-metric-card">
                   <div className="admin-metric-top">
-                    <span className="admin-metric-label">Total Users</span>
+                    <span className="admin-metric-label">Total Registered Users</span>
                     <div className="admin-metric-icon"><Users size={18} /></div>
                   </div>
                   <div className="admin-metric-value">{users.length}</div>
                   <div className="admin-metric-trend">
-                    <CheckCircle2 size={13} color="#4AB97A" /> Supabase cloud verified
+                    <CheckCircle2 size={13} color="#4AB97A" /> Supabase PostgreSQL verified
                   </div>
                 </div>
 
@@ -1881,23 +1881,55 @@ export default function AdminPortal({
 
                 <div className="admin-metric-card">
                   <div className="admin-metric-top">
-                    <span className="admin-metric-label">Security & Database</span>
+                    <span className="admin-metric-label">Active vs Locked</span>
                     <div className="admin-metric-icon"><Lock size={18} /></div>
                   </div>
-                  <div className="admin-metric-value" style={{ fontSize: '1.25rem', color: '#4AB97A' }}>Online</div>
+                  <div className="admin-metric-value" style={{ color: '#4AB97A' }}>
+                    {users.filter(u => u.isActive !== false).length} <span style={{ fontSize: '0.85rem', color: '#A0A89F', fontWeight: 400 }}>Active</span>
+                  </div>
                   <div className="admin-metric-trend" style={{ color: '#B5BEB4' }}>
-                    BCrypt + JWT 24h Expiry
+                    {users.filter(u => u.isActive === false).length} Locked accounts
                   </div>
                 </div>
               </div>
 
-              {/* FILTER & SEARCH BAR */}
+              {/* FILTER PILLS & SEARCH BAR */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.8rem', color: '#A0A89F', marginRight: '0.25rem', fontWeight: 600 }}>Filter:</span>
+                {[
+                  { id: 'all', label: `All Users (${users.length})` },
+                  { id: 'admin', label: `Administrators (${adminCount})` },
+                  { id: 'customer', label: `Customers (${Math.max(0, users.length - adminCount)})` },
+                  { id: 'active', label: `Active (${users.filter(u => u.isActive !== false).length})` },
+                  { id: 'inactive', label: `Locked (${users.filter(u => u.isActive === false).length})` }
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setUserRoleFilter(f.id)}
+                    style={{
+                      padding: '0.35rem 0.75rem',
+                      borderRadius: '20px',
+                      fontSize: '0.775rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      border: userRoleFilter === f.id ? '1px solid #C5A059' : '1px solid rgba(255,255,255,0.1)',
+                      backgroundColor: userRoleFilter === f.id ? 'rgba(197, 160, 89, 0.2)' : 'rgba(255,255,255,0.04)',
+                      color: userRoleFilter === f.id ? '#EAD8BA' : '#A0A89F',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="admin-filters-bar" style={{ marginBottom: '1.25rem' }}>
                 <div className="admin-search-wrapper" style={{ flexGrow: 1 }}>
                   <Search size={16} className="admin-search-icon" />
                   <input 
                     type="text"
-                    placeholder="Search users by name, email, or role..."
+                    placeholder="Search users by name, email, phone, ID, or role..."
                     className="admin-search-input"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -1916,62 +1948,92 @@ export default function AdminPortal({
                   <thead>
                     <tr>
                       <th>User</th>
-                      <th>Email</th>
-                      <th>Phone</th>
+                      <th>Contact Details</th>
                       <th>System Role</th>
+                      <th>Purchases</th>
                       <th>Status</th>
-                      <th>Registered</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
+                      <th>Joined</th>
+                      <th style={{ textAlign: 'right' }}>Role & Account Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {users
                       .filter(u => {
                         const q = searchQuery.toLowerCase();
-                        return !q || 
+                        const matchesSearch = !q || 
                           (u.name && u.name.toLowerCase().includes(q)) ||
                           (u.email && u.email.toLowerCase().includes(q)) ||
-                          (u.role && u.role.toLowerCase().includes(q));
+                          (u.phone && u.phone.toLowerCase().includes(q)) ||
+                          (u.role && u.role.toLowerCase().includes(q)) ||
+                          String(u.id).includes(q);
+
+                        const isUserAdmin = u.role === 'ADMIN' || u.role === 'ROLE_ADMIN';
+                        const isUserActive = u.isActive !== false;
+
+                        let matchesRole = true;
+                        if (userRoleFilter === 'admin') matchesRole = isUserAdmin;
+                        else if (userRoleFilter === 'customer') matchesRole = !isUserAdmin;
+                        else if (userRoleFilter === 'active') matchesRole = isUserActive;
+                        else if (userRoleFilter === 'inactive') matchesRole = !isUserActive;
+
+                        return matchesSearch && matchesRole;
                       })
                       .map(u => {
                         const isUserAdmin = u.role === 'ADMIN' || u.role === 'ROLE_ADMIN';
+                        const isRootAdmin = u.email && (u.email.toLowerCase() === 'sharonshelke1@gmail.com' || u.email.toLowerCase() === 'sharon@lichtluxenaturals.org');
+                        const isKingsChat = u.email && u.email.toLowerCase().includes('kingschat');
+                        const isUserActive = u.isActive !== false;
+
                         return (
                           <tr key={u.id}>
                             <td>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                 <div style={{
-                                  width: '36px',
-                                  height: '36px',
+                                  width: '38px',
+                                  height: '38px',
                                   borderRadius: '50%',
                                   backgroundColor: isUserAdmin ? 'rgba(197, 160, 89, 0.2)' : 'rgba(255,255,255,0.08)',
                                   color: isUserAdmin ? '#C5A059' : '#FAF7F2',
-                                  border: isUserAdmin ? '1px solid rgba(197, 160, 89, 0.4)' : '1px solid rgba(255,255,255,0.1)',
+                                  border: isUserAdmin ? '1.5px solid rgba(197, 160, 89, 0.5)' : '1px solid rgba(255,255,255,0.1)',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   fontWeight: 700,
                                   fontSize: '0.85rem'
                                 }}>
-                                  {u.firstName ? u.firstName.charAt(0).toUpperCase() : 'U'}
+                                  {u.firstName ? u.firstName.charAt(0).toUpperCase() : (u.name ? u.name.charAt(0).toUpperCase() : 'U')}
                                 </div>
                                 <div>
-                                  <div style={{ fontWeight: 600, color: '#FAF7F2' }}>
-                                    {u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Luxe Member'}
+                                  <div style={{ fontWeight: 600, color: '#FAF7F2', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <span>{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Luxe Member'}</span>
+                                    {isRootAdmin && (
+                                      <span style={{ fontSize: '0.65rem', backgroundColor: '#C5A059', color: '#161D15', padding: '0.1rem 0.35rem', borderRadius: '3px', fontWeight: 800 }}>
+                                        OWNER
+                                      </span>
+                                    )}
+                                    {isKingsChat && (
+                                      <span style={{ fontSize: '0.65rem', backgroundColor: '#2D3A29', color: '#DFCAA7', padding: '0.1rem 0.35rem', borderRadius: '3px', fontWeight: 700, border: '1px solid #C5A059' }}>
+                                        KINGSCHAT
+                                      </span>
+                                    )}
                                   </div>
-                                  <div style={{ fontSize: '0.75rem', color: '#8A9488' }}>ID: #{u.id}</div>
+                                  <div style={{ fontSize: '0.72rem', color: '#8A9488' }}>User #{u.id}</div>
                                 </div>
                               </div>
                             </td>
 
                             <td>
-                              <a href={`mailto:${u.email}`} style={{ color: '#D6DDD3', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                <Mail size={13} color="#C5A059" />
-                                <span>{u.email}</span>
-                              </a>
-                            </td>
-
-                            <td style={{ color: '#A0A89F', fontSize: '0.85rem' }}>
-                              {u.phone || '—'}
+                              <div>
+                                <a href={`mailto:${u.email}`} style={{ color: '#D6DDD3', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
+                                  <Mail size={13} color="#C5A059" />
+                                  <span>{u.email}</span>
+                                </a>
+                                {u.phone && (
+                                  <div style={{ color: '#8A9488', fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                                    📞 {u.phone}
+                                  </div>
+                                )}
+                              </div>
                             </td>
 
                             <td>
@@ -1982,14 +2044,14 @@ export default function AdminPortal({
                                   gap: '0.35rem',
                                   backgroundColor: 'rgba(197, 160, 89, 0.15)',
                                   color: '#C5A059',
-                                  border: '1px solid rgba(197, 160, 89, 0.35)',
+                                  border: '1px solid rgba(197, 160, 89, 0.4)',
                                   borderRadius: '9999px',
-                                  padding: '0.2rem 0.65rem',
+                                  padding: '0.25rem 0.65rem',
                                   fontSize: '0.75rem',
                                   fontWeight: 700,
                                   letterSpacing: '0.05em'
                                 }}>
-                                  <ShieldCheck size={12} /> ADMINISTRATOR
+                                  <ShieldCheck size={13} /> ADMINISTRATOR
                                 </span>
                               ) : (
                                 <span style={{
@@ -2000,7 +2062,7 @@ export default function AdminPortal({
                                   color: '#B5BEB4',
                                   border: '1px solid rgba(255,255,255,0.1)',
                                   borderRadius: '9999px',
-                                  padding: '0.2rem 0.65rem',
+                                  padding: '0.25rem 0.65rem',
                                   fontSize: '0.75rem',
                                   fontWeight: 600
                                 }}>
@@ -2010,16 +2072,25 @@ export default function AdminPortal({
                             </td>
 
                             <td>
+                              <div style={{ fontSize: '0.85rem', color: '#FAF7F2', fontWeight: 600 }}>
+                                {u.ordersCount !== undefined ? u.ordersCount : (u.orders ? u.orders.length : 0)} orders
+                              </div>
+                              <div style={{ fontSize: '0.75rem', color: '#C5A059', fontWeight: 600 }}>
+                                ${Number(u.totalSpent || 0).toFixed(2)}
+                              </div>
+                            </td>
+
+                            <td>
                               <span style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '0.35rem',
-                                color: '#4AB97A',
+                                color: isUserActive ? '#4AB97A' : '#E06C75',
                                 fontSize: '0.775rem',
                                 fontWeight: 600
                               }}>
-                                <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#4AB97A' }}></span>
-                                Active
+                                <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: isUserActive ? '#4AB97A' : '#E06C75' }}></span>
+                                {isUserActive ? 'Active' : 'Locked'}
                               </span>
                             </td>
 
@@ -2028,20 +2099,58 @@ export default function AdminPortal({
                             </td>
 
                             <td style={{ textAlign: 'right' }}>
-                              {isUserAdmin ? (
-                                <span style={{ fontSize: '0.8rem', color: '#8A9488', fontStyle: 'italic' }}>
-                                  Executive Access
-                                </span>
-                              ) : (
-                                <button
-                                  className="admin-btn admin-btn-gold"
-                                  style={{ padding: '0.35rem 0.75rem', fontSize: '0.775rem', gap: '0.35rem' }}
-                                  onClick={() => handlePromoteUser(u.email)}
-                                  disabled={promoteLoading}
-                                >
-                                  <ShieldCheck size={13} /> Make Admin
-                                </button>
-                              )}
+                              <div style={{ display: 'inline-flex', gap: '0.45rem', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                {!isUserAdmin ? (
+                                  <button
+                                    className="admin-btn admin-btn-gold"
+                                    style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', gap: '0.35rem' }}
+                                    onClick={() => handlePromoteUser(u.email)}
+                                    disabled={promoteLoading}
+                                    title="Grant Administrator Privileges"
+                                  >
+                                    <ShieldCheck size={13} /> Make Admin
+                                  </button>
+                                ) : (
+                                  !isRootAdmin && (
+                                    <button
+                                      className="admin-btn admin-btn-secondary"
+                                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', gap: '0.35rem' }}
+                                      onClick={() => handleDemoteUser(u.email)}
+                                      disabled={promoteLoading}
+                                      title="Revoke Admin Access (Change to Customer)"
+                                    >
+                                      Demote
+                                    </button>
+                                  )
+                                )}
+
+                                {!isRootAdmin && (
+                                  <button
+                                    className="admin-btn admin-btn-secondary"
+                                    style={{
+                                      padding: '0.35rem 0.65rem',
+                                      fontSize: '0.75rem',
+                                      color: isUserActive ? '#E06C75' : '#4AB97A',
+                                      borderColor: isUserActive ? 'rgba(224, 108, 117, 0.3)' : 'rgba(74, 185, 122, 0.3)'
+                                    }}
+                                    onClick={() => handleToggleUserStatus(u.id, u.email)}
+                                    title={isUserActive ? 'Lock user account' : 'Unlock user account'}
+                                  >
+                                    {isUserActive ? 'Lock' : 'Unlock'}
+                                  </button>
+                                )}
+
+                                {!isRootAdmin && !isUserAdmin && (
+                                  <button
+                                    className="admin-btn admin-btn-secondary"
+                                    style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', color: '#E06C75' }}
+                                    onClick={() => handleDeleteUser(u.id, u.email)}
+                                    title="Delete User"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         );
