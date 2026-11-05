@@ -18,7 +18,7 @@ export default function SettingsModal({
   onNavigateToAdmin,
   activeCurrency = 'USD',
   onCurrencyChange,
-  espeesMerchantWallet = 'lichtluxenaturals',
+  espeesMerchantWallet = 'merchanttest01',
   onEspeesMerchantWalletChange,
   espeesApiKey = '',
   onEspeesApiKeyChange
@@ -110,12 +110,22 @@ export default function SettingsModal({
                   <div className="settings-field-desc">
                     Members send direct ESP transfers to this wallet username from the Espees App.
                   </div>
+                  <div style={{ marginTop: '0.4rem', fontSize: '0.72rem', color: '#6E5535' }}>
+                    Official Test Merchant: <strong style={{ color: '#2D3A29' }}>@merchanttest01</strong> (Code: <code>ESPMER01</code>)
+                    <button
+                      type="button"
+                      onClick={() => onEspeesMerchantWalletChange && onEspeesMerchantWalletChange('merchanttest01')}
+                      style={{ marginLeft: '0.5rem', fontSize: '0.68rem', padding: '0.15rem 0.45rem', border: '1px solid #C5A059', borderRadius: '3px', background: '#DFCAA7', color: '#2D3A29', cursor: 'pointer', fontWeight: 700 }}
+                    >
+                      Fill Test Merchant
+                    </button>
+                  </div>
                 </div>
                 <input 
                   type="text"
                   value={espeesMerchantWallet}
                   onChange={(e) => onEspeesMerchantWalletChange && onEspeesMerchantWalletChange(e.target.value)}
-                  placeholder="lichtluxenaturals"
+                  placeholder="merchanttest01"
                   style={{
                     padding: '0.5rem 0.75rem',
                     borderRadius: '4px',

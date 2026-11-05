@@ -622,7 +622,10 @@ function App() {
 
   // Espees (ESP) · Loveworld Pay Configuration & State
   const [espeesMerchantWallet, setEspeesMerchantWallet] = useState(() => {
-    return localStorage.getItem('espees_merchant_wallet') || 'lichtluxenaturals';
+    return localStorage.getItem('espees_merchant_wallet') || 'merchanttest01';
+  });
+  const [espeesMerchantAddress, setEspeesMerchantAddress] = useState(() => {
+    return localStorage.getItem('espees_merchant_address') || '0x49e99dd6ec7b413867513052053161c3682d5506';
   });
   const [espeesApiKey, setEspeesApiKey] = useState(() => {
     return localStorage.getItem('espees_api_key') || '';
@@ -634,6 +637,11 @@ function App() {
   const handleEspeesMerchantWalletChange = (val) => {
     setEspeesMerchantWallet(val);
     localStorage.setItem('espees_merchant_wallet', val);
+  };
+
+  const handleEspeesMerchantAddressChange = (val) => {
+    setEspeesMerchantAddress(val);
+    localStorage.setItem('espees_merchant_address', val);
   };
 
   const handleEspeesApiKeyChange = (val) => {
@@ -665,7 +673,8 @@ function App() {
         body: JSON.stringify({
           amount: cartTotal.toFixed(2),
           espeesUsernameRef: espeesUsernameRef.trim(),
-          merchantWallet: espeesMerchantWallet || 'lichtluxenaturals',
+          merchantWallet: espeesMerchantAddress || espeesMerchantWallet || '0x49e99dd6ec7b413867513052053161c3682d5506',
+          merchantUsername: espeesMerchantWallet || 'merchanttest01',
           items: cart.map(i => ({
             id: i.id,
             name: i.name,
@@ -702,7 +711,8 @@ function App() {
           amount: cartTotal.toFixed(2),
           sku: sku,
           narration: `LICHT LUXE NATURALS Order (${cart.length} items)`,
-          merchantWallet: espeesMerchantWallet || 'lichtluxenaturals',
+          merchantWallet: espeesMerchantAddress || espeesMerchantWallet || '0x49e99dd6ec7b413867513052053161c3682d5506',
+          merchantUsername: espeesMerchantWallet || 'merchanttest01',
           apiKey: espeesApiKey,
           items: cart,
           shippingInfo: shippingAddress
@@ -726,7 +736,7 @@ function App() {
         product_sku: sku,
         narration: `LICHT LUXE NATURALS - Order (${cart.length} items)`,
         price: Number(cartTotal.toFixed(2)),
-        merchant_wallet: espeesMerchantWallet || 'lichtluxenaturals',
+        merchant_wallet: espeesMerchantAddress || '0x49e99dd6ec7b413867513052053161c3682d5506',
         success_url: `${window.location.origin}/?espees=success&sku=${sku}`,
         fail_url: `${window.location.origin}/?espees=fail`,
         user_data: {
@@ -4198,9 +4208,12 @@ function App() {
                           </div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: '0.7rem', color: '#5C635B', fontWeight: 600, textTransform: 'uppercase' }}>Merchant Wallet</div>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29', fontFamily: 'monospace', backgroundColor: '#F5EFE3', padding: '0.2rem 0.55rem', borderRadius: '4px' }}>
-                            @{espeesMerchantWallet || 'lichtluxenaturals'}
+                          <div style={{ fontSize: '0.7rem', color: '#5C635B', fontWeight: 600, textTransform: 'uppercase' }}>Merchant Account</div>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29', fontFamily: 'monospace', backgroundColor: '#F5EFE3', padding: '0.2rem 0.55rem', borderRadius: '4px', display: 'inline-block' }}>
+                            @{espeesMerchantWallet || 'merchanttest01'}
+                          </div>
+                          <div style={{ fontSize: '0.68rem', color: '#6E5535', marginTop: '0.2rem' }}>
+                            Code: <strong>ESPMER01</strong>
                           </div>
                         </div>
                       </div>
@@ -4249,31 +4262,68 @@ function App() {
                             <strong style={{ color: '#2D3A29' }}>How to pay via Espees App:</strong>
                             <ol style={{ margin: '0.35rem 0 0 1.25rem', padding: 0 }}>
                               <li>Open your <strong>Espees App</strong> (iOS / Android) and tap <strong>Send / Transfer</strong></li>
-                              <li>
-                                Transfer <strong>{cartTotal.toFixed(2)} ESP</strong> to Merchant Wallet:{' '}
-                                <strong style={{ color: '#6E5535', fontFamily: 'monospace' }}>@{espeesMerchantWallet || 'lichtluxenaturals'}</strong>{' '}
+                              <li style={{ marginTop: '0.25rem' }}>
+                                Transfer <strong>{cartTotal.toFixed(2)} ESP</strong> to Merchant Username:{' '}
+                                <strong style={{ color: '#6E5535', fontFamily: 'monospace' }}>@{espeesMerchantWallet || 'merchanttest01'}</strong>{' '}
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    navigator.clipboard.writeText(espeesMerchantWallet || 'lichtluxenaturals');
-                                    showToast('Copied wallet handle to clipboard!');
+                                    navigator.clipboard.writeText(espeesMerchantWallet || 'merchanttest01');
+                                    showToast('Copied @' + (espeesMerchantWallet || 'merchanttest01') + ' to clipboard!');
                                   }}
                                   style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', backgroundColor: '#DFCAA7', border: 'none', borderRadius: '3px', cursor: 'pointer', fontWeight: 700, color: '#2D3A29' }}
                                 >
-                                  Copy
+                                  Copy Handle
                                 </button>
                               </li>
-                              <li>Enter your <strong>Espees Username</strong> or <strong>Payment Reference</strong> below</li>
+                              <li style={{ marginTop: '0.25rem' }}>
+                                Or to Wallet Address:{' '}
+                                <span style={{ fontFamily: 'monospace', fontSize: '0.72rem', backgroundColor: '#FFF', padding: '0.1rem 0.35rem', borderRadius: '3px', border: '1px solid #E5DFC5' }}>
+                                  {(espeesMerchantAddress || '0x49e99dd6ec7b413867513052053161c3682d5506').substring(0, 8)}...{(espeesMerchantAddress || '0x49e99dd6ec7b413867513052053161c3682d5506').substring(36)}
+                                </span>{' '}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(espeesMerchantAddress || '0x49e99dd6ec7b413867513052053161c3682d5506');
+                                    showToast('Copied full merchant wallet address!');
+                                  }}
+                                  style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', backgroundColor: '#DFCAA7', border: 'none', borderRadius: '3px', cursor: 'pointer', fontWeight: 700, color: '#2D3A29' }}
+                                >
+                                  Copy Address
+                                </button>
+                              </li>
+                              <li style={{ marginTop: '0.25rem' }}>Enter your <strong>Espees Username</strong> or <strong>Payment Reference</strong> below</li>
                             </ol>
                           </div>
 
                           <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.35rem' }}>
-                              Your Espees Username or Reference Code *
-                            </label>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                Your Espees Username or Reference Code *
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEspeesUsernameRef('usertest01');
+                                  showToast('⚡ Filled test buyer: @usertest01');
+                                }}
+                                style={{
+                                  fontSize: '0.72rem',
+                                  backgroundColor: '#EAE3D2',
+                                  border: '1px solid #C5A059',
+                                  color: '#6E5535',
+                                  borderRadius: '3px',
+                                  padding: '0.15rem 0.5rem',
+                                  cursor: 'pointer',
+                                  fontWeight: 700
+                                }}
+                              >
+                                ⚡ Fill Test User (@usertest01)
+                              </button>
+                            </div>
                             <input
                               type="text"
-                              placeholder="e.g. @pastorjohn or REF-ESP-8921"
+                              placeholder="e.g. usertest01 or 0xd15c259d11dfe0bb39383fd3270d74f6d124a13b"
                               value={espeesUsernameRef}
                               onChange={(e) => setEspeesUsernameRef(e.target.value)}
                               style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #C5A059', fontSize: '0.95rem', backgroundColor: '#FFFFFF' }}
@@ -4311,8 +4361,21 @@ function App() {
                         </div>
                       ) : (
                         <div>
-                          <div style={{ fontSize: '0.825rem', color: '#5C635B', lineHeight: 1.5, marginBottom: '0.85rem', backgroundColor: '#F5EFE3', padding: '0.75rem 1rem', borderRadius: '6px' }}>
-                            You will be redirected to the official <strong>Espees Online Checkout Portal (payment.espees.org)</strong> to authenticate and approve the payment with your Espees credentials.
+                          <div style={{ fontSize: '0.825rem', color: '#5C635B', lineHeight: 1.5, marginBottom: '0.85rem', backgroundColor: '#F5EFE3', padding: '0.85rem 1rem', borderRadius: '6px', border: '1px solid #E5DFC5' }}>
+                            <div>
+                              You will be redirected to the official <strong>Espees Online Checkout Portal (payment.espees.org)</strong> to authenticate and approve the payment with your Espees credentials.
+                            </div>
+                            <div style={{ marginTop: '0.65rem', paddingTop: '0.6rem', borderTop: '1px dashed #D6DDD3', fontSize: '0.75rem', color: '#2D3A29' }}>
+                              <strong style={{ color: '#6E5535' }}>🧪 Official Espees Test Credentials:</strong>
+                              <div style={{ marginTop: '0.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                <span style={{ backgroundColor: '#FFF', padding: '0.15rem 0.45rem', borderRadius: '3px', border: '1px solid #E5DFC5' }}>
+                                  Buyer: <strong>usertest01</strong> / <strong>user@1234</strong> (PIN: <strong>1234</strong>)
+                                </span>
+                                <span style={{ backgroundColor: '#FFF', padding: '0.15rem 0.45rem', borderRadius: '3px', border: '1px solid #E5DFC5' }}>
+                                  Merchant: <strong>merchanttest01</strong> (Code: <strong>ESPMER01</strong>)
+                                </span>
+                              </div>
+                            </div>
                           </div>
                           <button
                             type="button"
