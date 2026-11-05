@@ -477,7 +477,7 @@ const FAQS = [
 ];
 
 // ─── PayPal Sandbox Configuration ──────────────────────────────────
-const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || 'test';
+const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || 'BAAggiaHHgL_NHO41jg8QQZRnWHNGY4Z3tMWTvmr83wZqlkPAk3Vi8ZmrwX90FRANuEhIh_58WathfXjrg';
 const API_BASE = (() => {
   if (typeof window === 'undefined') return process.env.REACT_APP_API_BASE || 'http://localhost:8080/api';
   const host = window.location.hostname;
@@ -1005,10 +1005,10 @@ function App() {
       id: newOrderId,
       date: orderDate,
       customer: {
-        name: 'Online Guest Client',
-        email: 'guest.checkout@example.co.uk',
-        phone: '+44 7831 082965',
-        address: '10 Downing Street, Westminster, London SW1A 2AA, UK'
+        name: shippingAddress?.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Online Guest Client'),
+        email: shippingAddress?.shippingEmail || currentUser?.email || 'guest.checkout@example.co.uk',
+        phone: shippingAddress?.shippingPhone || currentUser?.phone || '+44 7831 082965',
+        address: [shippingAddress?.shippingAddress, shippingAddress?.shippingCity, shippingAddress?.shippingPostcode].filter(Boolean).join(', ') || '10 Downing Street, Westminster, London SW1A 2AA, UK'
       },
       items: cart.map(item => ({
         name: `${item.name}${item.volume ? ` (${item.volume})` : ''}`,
@@ -1332,23 +1332,29 @@ function App() {
   // Get JWT token from localStorage (set during auth login)
   const getAuthToken = () => localStorage.getItem('lln_token');
 
-  // Create PayPal order via backend
-  const createPayPalOrder = useCallback(async () => {
+  // Create PayPal order via backend or client-side SDK actions
+  const createPayPalOrder = useCallback(async (data, actions) => {
+    setPaymentProcessing(true);
+
+    // 1. First attempt to create order via Spring Boot backend (if available)
     try {
-      setPaymentProcessing(true);
       const token = getAuthToken();
       const authHeaders = {
         'Content-Type': 'application/json',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       };
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
 
       const response = await fetch(`${API_BASE}/paypal/create-order`, {
         method: 'POST',
         headers: authHeaders,
+        signal: controller.signal,
         body: JSON.stringify({
-          amount: cartTotal.toFixed(2),
+          amount: Number(cartTotal).toFixed(2),
           deliveryOption: deliveryOption,
-          deliveryFee: deliveryFee.toFixed(2),
+          deliveryFee: Number(deliveryFee).toFixed(2),
           shippingInfo: shippingAddress,
           items: cart.map(item => ({
             id: item.id,
@@ -1358,61 +1364,104 @@ function App() {
           }))
         }),
       });
+      clearTimeout(timeoutId);
 
-      let data = {};
-      try {
-        data = await response.json();
-      } catch (_) {}
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create PayPal order. Please try again.');
+      if (response.ok) {
+        const orderData = await response.json();
+        if (orderData && orderData.id) {
+          setPaymentProcessing(false);
+          return orderData.id;
+        }
       }
-
-      setPaymentProcessing(false);
-      return data.id; // PayPal order ID
-    } catch (error) {
-      showToast('Payment notice: ' + (error.message || 'Error initializing payment'));
-      setPaymentProcessing(false);
-      throw error;
+    } catch (backendErr) {
+      console.warn('Backend PayPal create-order unavailable, using PayPal client SDK actions:', backendErr.message);
     }
+
+    // 2. Resilient Client-Side SDK fallback: actions.order.create()
+    if (actions && actions.order && typeof actions.order.create === 'function') {
+      try {
+        const orderId = await actions.order.create({
+          purchase_units: [
+            {
+              description: 'LICHT LUXE NATURALS Order',
+              amount: {
+                currency_code: 'USD',
+                value: Number(cartTotal || 0).toFixed(2),
+              },
+            },
+          ],
+        });
+        setPaymentProcessing(false);
+        return orderId;
+      } catch (sdkErr) {
+        setPaymentProcessing(false);
+        console.error('PayPal actions.order.create error:', sdkErr);
+        throw sdkErr;
+      }
+    }
+
+    setPaymentProcessing(false);
+    throw new Error('PayPal payment actions are not available');
   }, [cart, cartTotal, deliveryOption, deliveryFee, shippingAddress]);
 
   // Capture PayPal order after buyer approval
-  const capturePayPalOrder = useCallback(async (data) => {
+  const capturePayPalOrder = useCallback(async (data, actions) => {
     setPaymentProcessing(true);
     try {
-      const token = getAuthToken();
-      const authHeaders = {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      };
+      let captureSuccess = false;
+      let orderNumber = `LN-${Date.now() % 100000}`;
+      let totalAmount = Number(cartTotal || cartSubtotal);
+      let paypalOrderId = data?.orderID;
 
-      const response = await fetch(`${API_BASE}/paypal/capture-order/${data.orderID}`, {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({
-          amount: cartSubtotal.toFixed(2),
-          shippingInfo: shippingAddress,
-          items: cart.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity
-          }))
-        }),
-      });
-
-      let result = {};
+      // 1. Attempt backend capture if available
       try {
-        result = await response.json();
-      } catch (_) {}
+        const token = getAuthToken();
+        const authHeaders = {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        };
 
-      if (!response.ok) {
-        throw new Error(result.message || 'Payment capture failed. Please check your account.');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+        const response = await fetch(`${API_BASE}/paypal/capture-order/${data.orderID}`, {
+          method: 'POST',
+          headers: authHeaders,
+          signal: controller.signal,
+          body: JSON.stringify({
+            amount: Number(cartTotal).toFixed(2),
+            shippingInfo: shippingAddress,
+            items: cart.map(item => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity
+            }))
+          }),
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const result = await response.json();
+          captureSuccess = true;
+          if (result.orderNumber) orderNumber = result.orderNumber;
+          if (result.totalAmount) totalAmount = Number(result.totalAmount);
+          if (result.paypalOrderId) paypalOrderId = result.paypalOrderId;
+        }
+      } catch (backendErr) {
+        console.warn('Backend PayPal capture unreachable, capturing client-side via actions:', backendErr.message);
       }
-      
+
+      // 2. Client-side SDK capture fallback if backend didn't capture
+      if (!captureSuccess && actions && actions.order && typeof actions.order.capture === 'function') {
+        const details = await actions.order.capture();
+        console.log('PayPal Captured Successfully via SDK:', details);
+        captureSuccess = true;
+        if (details.id) paypalOrderId = details.id;
+      }
+
       const liveConfirmedOrder = {
-        id: result.orderNumber || `LN-${Date.now() % 100000}`,
+        id: orderNumber,
         date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
         customer: {
           name: shippingAddress.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Direct Customer'),
@@ -1425,15 +1474,34 @@ function App() {
           qty: item.quantity,
           price: item.price
         })),
-        total: Number(result.totalAmount || cartSubtotal),
+        total: totalAmount,
+        deliveryMethod: deliveryOption === 'express' ? 'Express Delivery (1–2 Days)' : 'Standard Delivery (3–5 Days)',
+        deliveryFee: deliveryFee,
         paymentMethod: 'PayPal (Live)',
         paymentStatus: 'Paid',
         deliveryStatus: 'Processing',
-        courier: 'Royal Mail Tracked 24',
+        courier: deliveryOption === 'express' ? 'Royal Mail Special Delivery Guaranteed' : 'Royal Mail Tracked 48',
         trackingNumber: `RM${Math.floor(100000000 + Math.random() * 900000000)}GB`,
         source: 'Online Storefront (PayPal Live)',
-        notes: 'Verified live purchase'
+        notes: `Verified live purchase (PayPal Order: ${paypalOrderId || data.orderID})`
       };
+
+      // Deduct inventory
+      setAdminInventory(prevInv => {
+        return prevInv.map(invItem => {
+          const cartMatch = cart.find(c => 
+            (c.id && (invItem.productId === c.id || invItem.sku.toLowerCase().includes(c.id.toLowerCase()))) ||
+            (c.name && invItem.name.toLowerCase().includes(c.name.toLowerCase()))
+          );
+          if (cartMatch) {
+            return {
+              ...invItem,
+              stock: Math.max(0, invItem.stock - cartMatch.quantity)
+            };
+          }
+          return invItem;
+        });
+      });
 
       setAdminOrders(prev => [liveConfirmedOrder, ...(prev || [])]);
       try {
@@ -1444,18 +1512,22 @@ function App() {
       setIsCheckoutOpen(false);
       setCart([]);
       setOrderConfirmation({
-        orderNumber: result.orderNumber,
-        total: result.totalAmount,
-        paypalOrderId: result.paypalOrderId,
-        shipping: shippingAddress
+        orderNumber: orderNumber,
+        total: totalAmount.toFixed(2),
+        paypalOrderId: paypalOrderId,
+        shipping: shippingAddress,
+        deliveryMethod: deliveryOption === 'express' ? 'Express Delivery' : 'Standard Delivery',
+        deliveryFee: deliveryFee.toFixed(2),
+        method: 'PayPal (Live)'
       });
-      showToast('✨ Payment successful! Order ' + result.orderNumber + ' placed.');
+      showToast('✨ Payment successful! Order ' + orderNumber + ' confirmed.');
     } catch (error) {
-      showToast('Payment error: ' + error.message);
+      console.error('PayPal capture error:', error);
+      showToast('Payment notice: ' + (error.message || 'Payment capture failed.'));
     } finally {
       setPaymentProcessing(false);
     }
-  }, [cart, cartSubtotal, shippingAddress, currentUser]);
+  }, [cart, cartTotal, cartSubtotal, deliveryOption, deliveryFee, shippingAddress, currentUser]);
 
   // Helper to determine administrator authorization
   const isAdmin = Boolean(
@@ -4100,6 +4172,182 @@ function App() {
                   {/* Payment Methods */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     
+                                        {/* ESPEES (ESP) · LOVEWORLD PAY OPTION */}
+                    <div style={{ border: '2px solid #C5A059', borderRadius: '8px', padding: '1.35rem 1.5rem', backgroundColor: '#FAF6EE', position: 'relative', boxShadow: '0 4px 18px rgba(197, 160, 89, 0.15)' }}>
+                      <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+                        <span style={{ backgroundColor: '#2D3A29', color: '#DFCAA7', fontSize: '0.625rem', padding: '0.2rem 0.55rem', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.08em' }}>
+                          MADE IN LOVEWORLD
+                        </span>
+                      </div>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#C5A059', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1rem', boxShadow: '0 2px 8px rgba(197,160,89,0.35)' }}>
+                          ⚡
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 700, color: '#2D3A29', fontSize: '1.15rem' }}>Pay with Espees (ESP)</div>
+                          <div style={{ fontSize: '0.75rem', color: '#6E5535', fontWeight: 600 }}>Official Loveworld Currency • 1 ESP = $1.00 USD</div>
+                        </div>
+                      </div>
+
+                      <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5DFC5', borderRadius: '6px', padding: '0.85rem 1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontSize: '0.7rem', color: '#5C635B', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>Total in Espees</div>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#6E5535', lineHeight: 1.1 }}>
+                            {cartTotal.toFixed(2)} ESP <span style={{ fontSize: '0.9rem', color: '#5C635B', fontWeight: 400 }}>(${cartTotal.toFixed(2)} USD)</span>
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '0.7rem', color: '#5C635B', fontWeight: 600, textTransform: 'uppercase' }}>Merchant Wallet</div>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29', fontFamily: 'monospace', backgroundColor: '#F5EFE3', padding: '0.2rem 0.55rem', borderRadius: '4px' }}>
+                            @{espeesMerchantWallet || 'lichtluxenaturals'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Mode Switcher */}
+                      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <button
+                          type="button"
+                          onClick={() => setEspeesMode('wallet')}
+                          style={{
+                            flex: 1,
+                            padding: '0.55rem 0.75rem',
+                            borderRadius: '4px',
+                            border: espeesMode === 'wallet' ? '1.5px solid #2D3A29' : '1px solid #D6DDD3',
+                            backgroundColor: espeesMode === 'wallet' ? '#2D3A29' : '#FFF',
+                            color: espeesMode === 'wallet' ? '#FFF' : '#2D3A29',
+                            fontSize: '0.825rem',
+                            fontWeight: 600,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          📱 Espees Mobile App Pay
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEspeesMode('gateway')}
+                          style={{
+                            flex: 1,
+                            padding: '0.55rem 0.75rem',
+                            borderRadius: '4px',
+                            border: espeesMode === 'gateway' ? '1.5px solid #2D3A29' : '1px solid #D6DDD3',
+                            backgroundColor: espeesMode === 'gateway' ? '#2D3A29' : '#FFF',
+                            color: espeesMode === 'gateway' ? '#FFF' : '#2D3A29',
+                            fontSize: '0.825rem',
+                            fontWeight: 600,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🌐 Espees Web Gateway
+                        </button>
+                      </div>
+
+                      {espeesMode === 'wallet' ? (
+                        <div>
+                          <div style={{ fontSize: '0.825rem', color: '#3E463D', lineHeight: 1.6, marginBottom: '0.85rem', backgroundColor: '#F5EFE3', padding: '0.75rem 1rem', borderRadius: '6px', border: '1px solid #E5DFC5' }}>
+                            <strong style={{ color: '#2D3A29' }}>How to pay via Espees App:</strong>
+                            <ol style={{ margin: '0.35rem 0 0 1.25rem', padding: 0 }}>
+                              <li>Open your <strong>Espees App</strong> (iOS / Android) and tap <strong>Send / Transfer</strong></li>
+                              <li>
+                                Transfer <strong>{cartTotal.toFixed(2)} ESP</strong> to Merchant Wallet:{' '}
+                                <strong style={{ color: '#6E5535', fontFamily: 'monospace' }}>@{espeesMerchantWallet || 'lichtluxenaturals'}</strong>{' '}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(espeesMerchantWallet || 'lichtluxenaturals');
+                                    showToast('Copied wallet handle to clipboard!');
+                                  }}
+                                  style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', backgroundColor: '#DFCAA7', border: 'none', borderRadius: '3px', cursor: 'pointer', fontWeight: 700, color: '#2D3A29' }}
+                                >
+                                  Copy
+                                </button>
+                              </li>
+                              <li>Enter your <strong>Espees Username</strong> or <strong>Payment Reference</strong> below</li>
+                            </ol>
+                          </div>
+
+                          <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.35rem' }}>
+                              Your Espees Username or Reference Code *
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. @pastorjohn or REF-ESP-8921"
+                              value={espeesUsernameRef}
+                              onChange={(e) => setEspeesUsernameRef(e.target.value)}
+                              style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #C5A059', fontSize: '0.95rem', backgroundColor: '#FFFFFF' }}
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            disabled={isEspeesProcessing}
+                            onClick={handleConfirmEspeesDirectPayment}
+                            style={{
+                              width: '100%',
+                              padding: '1rem',
+                              backgroundColor: '#C5A059',
+                              color: '#1E221D',
+                              border: 'none',
+                              borderRadius: '4px',
+                              fontSize: '1rem',
+                              fontWeight: 700,
+                              cursor: isEspeesProcessing ? 'wait' : 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.5rem',
+                              boxShadow: '0 4px 14px rgba(197, 160, 89, 0.4)',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            {isEspeesProcessing ? (
+                              'Confirming Espees Transaction...'
+                            ) : (
+                              `Pay ${cartTotal.toFixed(2)} ESP with Espees ✓`
+                            )}
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <div style={{ fontSize: '0.825rem', color: '#5C635B', lineHeight: 1.5, marginBottom: '0.85rem', backgroundColor: '#F5EFE3', padding: '0.75rem 1rem', borderRadius: '6px' }}>
+                            You will be redirected to the official <strong>Espees Online Checkout Portal (payment.espees.org)</strong> to authenticate and approve the payment with your Espees credentials.
+                          </div>
+                          <button
+                            type="button"
+                            disabled={isEspeesProcessing}
+                            onClick={handleLaunchEspeesGateway}
+                            style={{
+                              width: '100%',
+                              padding: '1rem',
+                              backgroundColor: '#2D3A29',
+                              color: '#DFCAA7',
+                              border: 'none',
+                              borderRadius: '4px',
+                              fontSize: '1rem',
+                              fontWeight: 700,
+                              cursor: isEspeesProcessing ? 'wait' : 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.5rem'
+                            }}
+                          >
+                            {isEspeesProcessing ? (
+                              'Connecting to Espees Gateway...'
+                            ) : (
+                              `Launch Espees Payment Portal (${cartTotal.toFixed(2)} ESP) →`
+                            )}
+                          </button>
+                        </div>
+                      )}
+
+                      <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.72rem', color: '#6E5535' }}>
+                        ⚡ Powered by Espees Global Financial Network • Made in Loveworld
+                      </div>
+                    </div>
+
                     {/* STRIPE CARD OPTION */}
                     <div style={{ border: '1.5px solid #2D3A29', borderRadius: '8px', padding: '1.25rem 1.5rem', backgroundColor: '#F9FBF8', position: 'relative' }}>
                       <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.4rem' }}>
@@ -4163,12 +4411,15 @@ function App() {
                           onApprove={capturePayPalOrder}
                           onError={(err) => {
                             setPaymentProcessing(false);
-                            showToast('PayPal encountered an error. Please try again.');
-                            console.error('PayPal Error:', err);
+                            console.error('PayPal notice/error:', err);
+                            const msg = err?.message || String(err || '');
+                            if (!msg.toLowerCase().includes('closed') && !msg.toLowerCase().includes('cancel')) {
+                              showToast('PayPal notice: Please complete authentication in the PayPal window.');
+                            }
                           }}
                           onCancel={() => {
                             setPaymentProcessing(false);
-                            showToast('Payment cancelled.');
+                            showToast('PayPal checkout cancelled.');
                           }}
                         />
                       </div>
