@@ -20,7 +20,7 @@ export default function SettingsModal({
   onCurrencyChange,
   espeesMerchantWallet = 'merchanttest01',
   onEspeesMerchantWalletChange,
-  espeesApiKey = '',
+  espeesApiKey = 'esp_70312df6-72b9-42a7-a4e8-5addfaf12f1e',
   onEspeesApiKeyChange
 }) {
   if (!isOpen) return null;
