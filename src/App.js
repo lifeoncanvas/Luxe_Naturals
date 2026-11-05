@@ -695,7 +695,7 @@ function App() {
 
     // Call Spring Boot Backend API: POST /api/espees/direct-transfer
     try {
-      const response = await fetch('/api/espees/direct-transfer', {
+      const response = await fetch(`${API_BASE}/espees/direct-transfer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -732,7 +732,7 @@ function App() {
 
     // 1. Try Spring Boot Backend Gateway endpoint first: POST /api/espees/create-payment
     try {
-      const backendRes = await fetch('/api/espees/create-payment', {
+      const backendRes = await fetch(`${API_BASE}/espees/create-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1028,9 +1028,9 @@ function App() {
   };
 
   // Process and sync completed storefront checkout into Admin Orders & Inventory
-  const processCompletedOrder = (paymentMethod = 'Credit / Debit Card') => {
+  const processCompletedOrder = async (paymentMethod = 'Credit / Debit Card') => {
     if (cart.length === 0) return;
-    const newOrderId = `LN-${1083 + adminOrders.length}`;
+    let newOrderId = `LN-${1083 + adminOrders.length}`;
     const orderDate = new Date().toLocaleDateString('en-GB', { 
       day: '2-digit', 
       month: 'short', 
@@ -1038,6 +1038,55 @@ function App() {
       hour: '2-digit', 
       minute: '2-digit' 
     });
+
+    const customerDetails = {
+      name: shippingAddress?.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Online Guest Client'),
+      email: shippingAddress?.shippingEmail || currentUser?.email || 'guest.checkout@example.co.uk',
+      phone: shippingAddress?.shippingPhone || currentUser?.phone || '+44 7831 082965',
+      address: [shippingAddress?.shippingAddress, shippingAddress?.shippingCity, shippingAddress?.shippingPostcode].filter(Boolean).join(', ') || '10 Downing Street, Westminster, London SW1A 2AA, UK'
+    };
+
+    // Save order permanently to Spring Boot Database (PostgreSQL / MySQL / JPA)
+    try {
+      const token = getAuthToken();
+      const authHeaders = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
+
+      const response = await fetch(`${API_BASE}/orders/checkout`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({
+          orderNumber: newOrderId,
+          customer: customerDetails,
+          shippingInfo: shippingAddress,
+          items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            qty: item.quantity
+          })),
+          subtotal: cartSubtotal.toFixed(2),
+          deliveryFee: deliveryFee.toFixed(2),
+          deliveryMethod: deliveryOption === 'express' ? 'Express Delivery' : 'Standard Delivery',
+          total: cartTotal.toFixed(2),
+          paymentMethod: paymentMethod,
+          courier: deliveryOption === 'express' ? 'Royal Mail Special Delivery Guaranteed' : 'Royal Mail Tracked 48'
+        })
+      });
+
+      if (response.ok) {
+        const savedDbOrder = await response.json();
+        if (savedDbOrder && savedDbOrder.orderNumber) {
+          newOrderId = savedDbOrder.orderNumber;
+        }
+        console.log('✅ Order successfully saved to database:', savedDbOrder);
+      }
+    } catch (dbErr) {
+      console.warn('Backend order persistence notice:', dbErr.message);
+    }
     
     const newOrder = {
       id: newOrderId,
@@ -1590,6 +1639,48 @@ function App() {
         console.log('PayPal Captured Successfully via SDK:', details);
         captureSuccess = true;
         if (details.id) paypalOrderId = details.id;
+
+        // Persist SDK-captured order directly into Spring Boot database
+        try {
+          const token = getAuthToken();
+          const authHeaders = {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          };
+          const dbRes = await fetch(`${API_BASE}/orders/checkout`, {
+            method: 'POST',
+            headers: authHeaders,
+            body: JSON.stringify({
+              orderNumber: orderNumber,
+              paypalOrderId: paypalOrderId,
+              customer: {
+                name: shippingAddress.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Direct Customer'),
+                email: shippingAddress.shippingEmail || currentUser?.email || 'customer@lichtluxenaturals.org',
+                phone: shippingAddress.shippingPhone || currentUser?.phone || '',
+                address: [shippingAddress.shippingAddress, shippingAddress.shippingCity, shippingAddress.shippingPostcode].filter(Boolean).join(', ') || 'United Kingdom'
+              },
+              shippingInfo: shippingAddress,
+              items: cart.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                qty: item.quantity
+              })),
+              total: totalAmount.toFixed(2),
+              deliveryFee: deliveryFee.toFixed(2),
+              paymentMethod: 'PayPal (Live)',
+              courier: deliveryOption === 'express' ? 'Royal Mail Special Delivery Guaranteed' : 'Royal Mail Tracked 48'
+            })
+          });
+          if (dbRes.ok) {
+            const dbData = await dbRes.json();
+            if (dbData.orderNumber) orderNumber = dbData.orderNumber;
+            console.log('✅ PayPal order saved to database:', dbData);
+          }
+        } catch (dbErr) {
+          console.warn('Backend PayPal save notice:', dbErr.message);
+        }
       }
 
       const liveConfirmedOrder = {
