@@ -366,7 +366,50 @@ const PRODUCTS = [
       '/combo_soap_liquid.png',
       '/combo_soap_jar.png'
     ]
-  }
+  },
+  {
+    id: 'african-black-soap-clarifying-duo',
+    category: 'combos',
+    isCombo: true,
+    name: 'African Black Soap Clarifying Duo',
+    tagline: 'Deep Cleansing & Purifying Clarifying Ritual',
+    subtitle: 'African Black Liquid Soap (500ml) + Traditional Soap Jar (300g)',
+    price: 21.99,
+    originalPrice: 24.98,
+    badge: '★ PURIFYING DUO COMBO · SAVE $2.99',
+    volume: '500ml Liquid + 300g Jar Duo Set',
+    rating: '5.0',
+    reviewsCount: 112,
+    image: '/african_black_soap_duo_combo.jpg',
+    shortDescription: 'The ultimate clarifying duo: our 500ml liquid dispenser for daily gentle body cleansing and our 300g traditional jar for deep face & blemish purifying.',
+    description: 'Experience the complete clarifying ritual with both liquid and traditional forms of authentic African Black Soap. The 500ml liquid soap pump offers convenient, gentle daily cleansing for shower and bath, while the 300g traditional hand-packed jar provides an intensive weekly detoxifying treatment for acne, blemishes, and congested pores.\n\nHandcrafted with natural plantain skin ash, cocoa pod ash, and pure shea butter.',
+    includedItems: [
+      { name: 'African Black Liquid Soap', size: '500 ml / 16.9 fl oz', price: 12.99, desc: 'Convenient pump dispenser for gentle daily clarifying body wash.' },
+      { name: 'African Black Soap Traditional Jar', size: '300 g / 10.5 oz', price: 11.99, desc: 'Traditional hand-packed soap jar for targeted blemish clearing & weekly detox.' }
+    ],
+    benefits: [
+      'Complete duo ritual: daily liquid cleanser + deep clarifying jar',
+      'Individual Total: $24.98 — Duo Bundle Price: $21.99 (Save $2.99 · 12% OFF)',
+      '100% natural, chemical-free & rich in natural plant ashes & shea butter',
+      'Perfect for acne-prone skin, blemishes, uneven tone & deep cleansing',
+      'Handcrafted with love and from LOVEWORLD'
+    ],
+    perfectFor: [
+      'Acne-prone skin, blemishes & blackheads',
+      'Daily shower cleansing & targeted weekly clarifying',
+      'Balancing oily and congested skin',
+      'Natural glow & healthy texture'
+    ],
+    howToUse: 'Daily: Use 1-2 pumps of African Black Liquid Soap on wet washcloth or sponge for all-over body cleansing. 2-3 Times a Week: Scoop a small pinch of Traditional African Black Soap from the jar, lather between wet palms, and gently massage onto face or problem areas for 30 seconds before rinsing thoroughly.',
+    storage: 'Store in a cool, dry place. Keep jar lid tightly closed after use. Keep liquid pump bottle upright.',
+    ingredients: 'Plantain Skin Ash, Cocoa Pod Ash, Palm Kernel Oil, Pure Unrefined Shea Butter, Purified Water.',
+    gallery: [
+      '/african_black_soap_duo_combo.jpg',
+      '/african_black_soap_dual.jpg',
+      '/combo_soap_liquid.png',
+      '/combo_soap_jar.png'
+    ]
+  },
 ];
 
 // Customer Reviews Dataset
@@ -576,6 +619,93 @@ function App() {
     shippingPostcode: '',
     orderNotes: ''
   });
+
+  // Espees (ESP) · Loveworld Pay Configuration & State
+  const [espeesMerchantWallet, setEspeesMerchantWallet] = useState(() => {
+    return localStorage.getItem('espees_merchant_wallet') || 'lichtluxenaturals';
+  });
+  const [espeesApiKey, setEspeesApiKey] = useState(() => {
+    return localStorage.getItem('espees_api_key') || '';
+  });
+  const [espeesMode, setEspeesMode] = useState('wallet'); // 'wallet' (Direct App Pay) | 'gateway' (API Web Portal)
+  const [espeesUsernameRef, setEspeesUsernameRef] = useState('');
+  const [isEspeesProcessing, setIsEspeesProcessing] = useState(false);
+
+  const handleEspeesMerchantWalletChange = (val) => {
+    setEspeesMerchantWallet(val);
+    localStorage.setItem('espees_merchant_wallet', val);
+  };
+
+  const handleEspeesApiKeyChange = (val) => {
+    setEspeesApiKey(val);
+    localStorage.setItem('espees_api_key', val);
+  };
+
+  // Check URL return from Espees payment gateway on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('espees') === 'success' || params.get('payment_status') === 'success') {
+      showToast('✨ Espees payment confirmed! Your order is being prepared.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  const handleConfirmEspeesDirectPayment = () => {
+    if (!espeesUsernameRef.trim()) {
+      showToast('Please enter your Espees username or transfer reference ID.');
+      return;
+    }
+    setIsEspeesProcessing(true);
+    setTimeout(() => {
+      setIsEspeesProcessing(false);
+      processCompletedOrder('Espees (ESP)');
+    }, 700);
+  };
+
+  const handleLaunchEspeesGateway = async () => {
+    setIsEspeesProcessing(true);
+    try {
+      const sku = `LUXE-${Date.now().toString(36).toUpperCase()}`;
+      const payload = {
+        product_sku: sku,
+        narration: `LICHT LUXE NATURALS - Order (${cart.length} items)`,
+        price: Number(cartTotal.toFixed(2)),
+        merchant_wallet: espeesMerchantWallet || 'lichtluxenaturals',
+        success_url: `${window.location.origin}/?espees=success&sku=${sku}`,
+        fail_url: `${window.location.origin}/?espees=fail`,
+        user_data: {
+          customer_name: shippingAddress.shippingName,
+          customer_email: shippingAddress.shippingEmail,
+          cart_total_usd: cartTotal.toFixed(2)
+        }
+      };
+
+      const res = await fetch('https://api.espees.org/v2/payment/product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': espeesApiKey || 'YOUR_ESPEES_API_KEY'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.payment_ref) {
+          window.location.href = `https://payment.espees.org/pay/${data.payment_ref}`;
+          return;
+        }
+      }
+      showToast('Switched to Espees App Mobile Pay (direct transfer to wallet)');
+      setEspeesMode('wallet');
+    } catch (err) {
+      console.warn('Espees gateway connection notice:', err);
+      showToast('Switched to Espees App Mobile Pay (direct transfer to wallet)');
+      setEspeesMode('wallet');
+    } finally {
+      setIsEspeesProcessing(false);
+    }
+  };
   const [authLoading, setAuthLoading] = useState(false);
   const [authForm, setAuthForm] = useState({
     firstName: '',
@@ -2312,6 +2442,9 @@ function App() {
                     </h2>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
                       <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>$59.00</span>
+                      <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                        ⚡ 59.00 ESP
+                      </span>
                       <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>$70.95</span>
                       <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
                         Save $11.95 (17% OFF)
@@ -2377,6 +2510,9 @@ function App() {
                     </h2>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
                       <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>$39.99</span>
+                      <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                        ⚡ 39.99 ESP
+                      </span>
                       <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>$55.97</span>
                       <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
                         Save $15.98 (29% OFF)
@@ -2422,6 +2558,72 @@ function App() {
                       className="btn-secondary" 
                       style={{ padding: '0.95rem 1.25rem' }}
                       onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2-Piece African Black Soap Clarifying Duo Card */}
+                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '1.5px solid #C5A059', boxShadow: '0 15px 40px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#4A5D4E', color: '#DFCAA7', padding: '0.35rem 1.25rem', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(45, 58, 41, 0.25)', whiteSpace: 'nowrap' }}>
+                    ★ PURIFYING DUO · SAVE $2.99
+                  </div>
+
+                  <div style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C5A059', fontWeight: 700 }}>
+                      PURIFYING DUO COMBO
+                    </div>
+                    <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
+                      Clarifying Duo Set
+                    </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
+                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>$21.99</span>
+                      <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                        ⚡ 21.99 ESP
+                      </span>
+                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>$24.98</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
+                        Save $2.99 (12% OFF)
+                      </span>
+                    </div>
+                  </div>
+
+                  <div 
+                    style={{ borderRadius: '10px', overflow: 'hidden', height: '260px', marginBottom: '1.5rem', cursor: 'pointer', backgroundColor: '#DFCAA7' }}
+                    onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-clarifying-duo'))}
+                  >
+                    <img 
+                      src="/african_black_soap_duo_combo.jpg" 
+                      alt="African Black Soap Clarifying Duo" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.75rem', flexGrow: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                      <Check size={16} color="#C5A059" /> <strong>African Black Liquid Soap</strong> (500ml / 16.9 fl oz)
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                      <Check size={16} color="#C5A059" /> <strong>African Black Soap Jar</strong> (300g / 10.5 oz)
+                    </div>
+                    <div style={{ padding: '0.5rem 0.75rem', backgroundColor: '#DFCAA7', borderRadius: '6px', fontSize: '0.8rem', color: '#2D3A29', marginTop: 'auto' }}>
+                      ✨ Complete duo ritual: daily wash dispenser + deep clarifying jar
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.85rem' }}>
+                    <button 
+                      className="btn-primary" 
+                      style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
+                      onClick={() => addToCart(PRODUCTS.find(p => p.id === 'african-black-soap-clarifying-duo'))}
+                    >
+                      Add to Bag · $21.99
+                    </button>
+                    <button 
+                      className="btn-secondary" 
+                      style={{ padding: '0.95rem 1.25rem' }}
+                      onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-clarifying-duo'))}
                     >
                       View Details
                     </button>
@@ -4287,6 +4489,10 @@ function App() {
           setActiveCurrency(curr);
           showToast(`Currency updated to ${curr}`);
         }}
+        espeesMerchantWallet={espeesMerchantWallet}
+        onEspeesMerchantWalletChange={handleEspeesMerchantWalletChange}
+        espeesApiKey={espeesApiKey}
+        onEspeesApiKeyChange={handleEspeesApiKeyChange}
       />
 
       {/* ORDER CONFIRMATION MODAL */}
@@ -4324,10 +4530,30 @@ function App() {
                 <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29' }}>Total Paid</span>
                 <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>${orderConfirmation.total}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: orderConfirmation.espeesRef ? '0.35rem' : '0' }}>
                 <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Payment Method</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#003087' }}>{orderConfirmation.method || 'PayPal ✓'}</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: orderConfirmation.method === 'Espees (ESP)' ? '#6E5535' : '#003087' }}>
+                  {orderConfirmation.method === 'Espees (ESP)' ? '⚡ Espees (ESP) · Loveworld Pay ✓' : (orderConfirmation.method || 'PayPal ✓')}
+                </span>
               </div>
+              {orderConfirmation.method === 'Espees (ESP)' && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Amount in Espees</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6E5535' }}>{orderConfirmation.totalEsp || orderConfirmation.total} ESP</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Merchant Wallet</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2D3A29', fontFamily: 'monospace' }}>@{orderConfirmation.espeesWallet || 'lichtluxenaturals'}</span>
+                  </div>
+                  {orderConfirmation.espeesRef && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Member Ref / Username</span>
+                      <span style={{ fontSize: '0.85rem', color: '#2D3A29', fontWeight: 600 }}>{orderConfirmation.espeesRef}</span>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
             
             <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', fontSize: '0.8rem', color: '#5C635B', marginBottom: '1.5rem' }}>

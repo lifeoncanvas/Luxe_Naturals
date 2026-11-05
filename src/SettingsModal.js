@@ -6,7 +6,9 @@ import {
   ArrowRight, 
   Globe, 
   Bell, 
-  Lock
+  Lock,
+  Zap,
+  Wallet
 } from 'lucide-react';
 import './AdminPortal.css';
 
@@ -14,8 +16,12 @@ export default function SettingsModal({
   isOpen, 
   onClose, 
   onNavigateToAdmin,
-  activeCurrency = 'GBP',
-  onCurrencyChange
+  activeCurrency = 'USD',
+  onCurrencyChange,
+  espeesMerchantWallet = 'lichtluxenaturals',
+  onEspeesMerchantWalletChange,
+  espeesApiKey = '',
+  onEspeesApiKeyChange
 }) {
   if (!isOpen) return null;
 
@@ -33,7 +39,7 @@ export default function SettingsModal({
             </div>
             <div>
               <h2 className="settings-modal-title">Preferences & Settings</h2>
-              <p className="settings-modal-subtitle">Configure store experience and system access</p>
+              <p className="settings-modal-subtitle">Configure store experience, Espees gateway and staff access</p>
             </div>
           </div>
           <button 
@@ -62,14 +68,14 @@ export default function SettingsModal({
                   <div className="settings-field-desc">Prices throughout the shop update dynamically</div>
                 </div>
                 <div className="settings-currency-pills">
-                  {['GBP', 'USD', 'EUR'].map((curr) => (
+                  {['USD', 'GBP', 'EUR'].map((curr) => (
                     <button
                       key={curr}
                       type="button"
                       className={`settings-pill-btn ${activeCurrency === curr ? 'active' : ''}`}
                       onClick={() => onCurrencyChange && onCurrencyChange(curr)}
                     >
-                      {curr === 'GBP' ? '£ GBP' : curr === 'USD' ? '$ USD' : '€ EUR'}
+                      {curr === 'USD' ? '$ USD' : curr === 'GBP' ? '£ GBP' : '€ EUR'}
                     </button>
                   ))}
                 </div>
@@ -87,7 +93,83 @@ export default function SettingsModal({
             </div>
           </div>
 
-          {/* SECTION 2: NOTIFICATIONS */}
+          {/* SECTION 2: ESPEES (ESP) LOVEWORLD PAYMENT GATEWAY */}
+          <div className="settings-section">
+            <h3 className="settings-section-title" style={{ color: '#6E5535' }}>
+              <Zap size={15} color="#C5A059" />
+              <span>Espees (ESP) · Loveworld Pay Settings</span>
+            </h3>
+
+            <div className="settings-card" style={{ border: '1.5px solid #C5A059', backgroundColor: '#FAF6EE' }}>
+              <div className="settings-field-row" style={{ alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, paddingRight: '1rem' }}>
+                  <div className="settings-field-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Wallet size={14} color="#6E5535" />
+                    <span>Espees Merchant Wallet Handle</span>
+                  </div>
+                  <div className="settings-field-desc">
+                    Members send direct ESP transfers to this wallet username from the Espees App.
+                  </div>
+                </div>
+                <input 
+                  type="text"
+                  value={espeesMerchantWallet}
+                  onChange={(e) => onEspeesMerchantWalletChange && onEspeesMerchantWalletChange(e.target.value)}
+                  placeholder="lichtluxenaturals"
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '4px',
+                    border: '1px solid #C5A059',
+                    fontSize: '0.875rem',
+                    width: '180px',
+                    fontFamily: 'monospace',
+                    fontWeight: 700,
+                    color: '#2D3A29',
+                    backgroundColor: '#FFFFFF'
+                  }}
+                />
+              </div>
+
+              <div className="settings-divider" />
+
+              <div className="settings-field-row" style={{ alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, paddingRight: '1rem' }}>
+                  <div className="settings-field-label">Espees Developer API Key (x-api-key)</div>
+                  <div className="settings-field-desc">
+                    Optional: developer token from <a href="https://developers.espees.org" target="_blank" rel="noreferrer" style={{ color: '#C5A059', textDecoration: 'underline' }}>developers.espees.org</a> to activate the hosted web redirect portal.
+                  </div>
+                </div>
+                <input 
+                  type="password"
+                  value={espeesApiKey}
+                  onChange={(e) => onEspeesApiKeyChange && onEspeesApiKeyChange(e.target.value)}
+                  placeholder="Paste x-api-key..."
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '4px',
+                    border: '1px solid #D6DDD3',
+                    fontSize: '0.85rem',
+                    width: '180px',
+                    backgroundColor: '#FFFFFF'
+                  }}
+                />
+              </div>
+
+              <div className="settings-divider" />
+
+              <div className="settings-field-row">
+                <div>
+                  <div className="settings-field-label">Official Exchange Rate Peg</div>
+                  <div className="settings-field-desc">Loveworld financial ecosystem standard</div>
+                </div>
+                <span className="settings-static-badge" style={{ backgroundColor: '#2D3A29', color: '#DFCAA7', fontWeight: 700 }}>
+                  1 ESP = $1.00 USD
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 3: NOTIFICATIONS */}
           <div className="settings-section">
             <h3 className="settings-section-title">
               <Bell size={15} color="#6E5535" />
@@ -105,7 +187,7 @@ export default function SettingsModal({
             </div>
           </div>
 
-          {/* SECTION 3: STAFF & OPERATIONS ACCESS (KEY FEATURE) */}
+          {/* SECTION 4: STAFF & OPERATIONS ACCESS */}
           <div className="settings-section">
             <h3 className="settings-section-title staff-highlight">
               <Lock size={15} color="#C5A059" />
@@ -165,7 +247,7 @@ export default function SettingsModal({
             className="settings-modal-done-btn"
             onClick={onClose}
           >
-            Close Settings
+            Save & Close
           </button>
         </div>
       </div>

@@ -2498,6 +2498,7 @@ export default function AdminPortal({
                   >
                     <option value="Phone Order (Card on Phone)">Phone Order (Card Terminal)</option>
                     <option value="Bank Transfer (BACS)">Bank Transfer (BACS)</option>
+                    <option value="Espees (ESP) · Loveworld Pay">Espees (ESP) · Loveworld Pay</option>
                     <option value="Cash on Delivery">Cash on Delivery</option>
                   </select>
                 </div>
