@@ -138,7 +138,22 @@ export const DEFAULT_INVENTORY = [
     unitCost: 21.00,
     price: 39.99,
     image: '/luxe_trio_primary.jpg'
-  }
+  },
+  {
+    sku: 'LN-SKU-ALL05',
+    productId: 'complete-luxe-collection',
+    name: 'The Complete Luxe Naturals Collection',
+    variant: 'Complete 5-Piece Full Size Set',
+    category: 'Luxury Gift Sets',
+    batchNo: 'LN-ALL5-2026A',
+    mfgDate: '10/2026',
+    expDate: '10/2028',
+    stock: 22,
+    minThreshold: 10,
+    unitCost: 32.00,
+    price: 59.00,
+    image: '/licht_luxe_all_five_products_water.png'
+  },
 ];
 
 // Initial Orders (Clean real data only — no fake/mock data)

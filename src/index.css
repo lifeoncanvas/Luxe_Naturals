@@ -1754,14 +1754,18 @@ h1, h2, h3, h4, .font-serif {
   transform: scale(1.2);
 }
 
+.responsive-product-card[data-is-combo="true"] .card-media-wrap img,
+.responsive-product-card[data-is-combo="true"] .card-media-img,
 .responsive-product-card[data-product-id="luxe-trio-gift-set"] .card-media-wrap img,
-.responsive-product-card[data-product-id="luxe-trio-gift-set"] .card-media-img {
+.responsive-product-card[data-product-id="complete-luxe-collection"] .card-media-wrap img {
   object-position: center center !important;
   transform: none !important;
 }
 
+.responsive-product-card[data-is-combo="true"]:hover .card-media-wrap img,
+.responsive-product-card[data-is-combo="true"]:hover .card-media-img,
 .responsive-product-card[data-product-id="luxe-trio-gift-set"]:hover .card-media-wrap img,
-.responsive-product-card[data-product-id="luxe-trio-gift-set"]:hover .card-media-img {
+.responsive-product-card[data-product-id="complete-luxe-collection"]:hover .card-media-wrap img {
   transform: scale(1.04) !important;
 }
 
@@ -1994,8 +1998,10 @@ h1, h2, h3, h4, .font-serif {
     object-position: center 60% !important;
     transform: scale(1.14) !important;
   }
+  .responsive-product-card[data-is-combo="true"] .card-media-wrap img,
+  .responsive-product-card[data-is-combo="true"] .card-media-img,
   .responsive-product-card[data-product-id="luxe-trio-gift-set"] .card-media-wrap img,
-  .responsive-product-card[data-product-id="luxe-trio-gift-set"] .card-media-img {
+    .responsive-product-card[data-product-id="complete-luxe-collection"] .card-media-wrap img {
     object-position: center center !important;
     transform: none !important;
   }
@@ -2219,7 +2225,10 @@ h1, h2, h3, h4, .font-serif {
     gap: 2.25rem !important;
   }
   .responsive-story-grid img {
-    height: 340px !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
+    object-fit: cover !important;
+    object-position: center center !important;
   }
 
   /* Modals on Mobile */
@@ -2295,3 +2304,27 @@ h1, h2, h3, h4, .font-serif {
   }
 }
 
+
+
+.card-badge-pill {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  z-index: 2;
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .card-badge-pill {
+    font-size: 0.6rem !important;
+    padding: 0.25rem 0.55rem !important;
+    top: 0.5rem !important;
+    left: 0.5rem !important;
+  }
+}

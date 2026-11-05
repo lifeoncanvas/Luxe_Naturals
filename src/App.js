@@ -97,6 +97,7 @@ const MadeInLoveworldEmblem = ({ size = 'medium', variant = 'light' }) => {
 const PRODUCTS = [
   {
     id: 'pure-shea-butter',
+    category: 'moisturizers',
     name: 'Pure Shea Butter',
     tagline: 'Pure nourishment from nature.',
     subtitle: 'Pure • Rich • Nourishing',
@@ -125,6 +126,7 @@ const PRODUCTS = [
   },
   {
     id: 'pure-coconut-oil',
+    category: 'moisturizers',
     name: 'Pure Coconut Oil',
     tagline: 'Nature\'s nourishing oil.',
     subtitle: 'Natural • Versatile • Nourishing',
@@ -152,6 +154,7 @@ const PRODUCTS = [
   },
   {
     id: 'luxe-body-butter',
+    category: 'moisturizers',
     name: 'Luxe Body Butter',
     tagline: 'Deep nourishment. Luxurious feel.',
     subtitle: 'Rich • Creamy • Luxurious',
@@ -179,6 +182,7 @@ const PRODUCTS = [
   },
   {
     id: 'african-black-liquid-soap',
+    category: 'cleansers',
     name: 'African Black Liquid Soap',
     tagline: 'Deep cleansing. Skin & body.',
     subtitle: 'Deep Cleansing • Clarifying • 100% Botanical',
@@ -215,6 +219,7 @@ const PRODUCTS = [
   },
   {
     id: 'african-black-soap-jar',
+    category: 'cleansers',
     name: 'African Black Soap',
     tagline: 'Deep cleansing • Purifying • Natural glow.',
     subtitle: 'Deep Cleansing • Purifying • Natural Glow (Face & Body)',
@@ -252,6 +257,13 @@ const PRODUCTS = [
   },
   {
     id: 'luxe-trio-gift-set',
+    category: 'combos',
+    isCombo: true,
+    includedItems: [
+      { name: 'Pure Shea Butter', size: '250 g', desc: 'Deeply moisturises and helps keep skin soft and nourished.' },
+      { name: 'Pure Coconut Oil', size: '200 ml', desc: 'A versatile natural oil that helps soften and moisturise the skin.' },
+      { name: 'Luxe Body Butter', size: '250 g', desc: 'A rich, creamy formula for beautifully soft and moisturised skin.' }
+    ],
     name: 'The Luxe Trio Gift Set',
     tagline: 'The complete natural luxury collection.',
     subtitle: 'Pure Shea Butter + Pure Coconut Oil + Luxe Body Butter',
@@ -278,6 +290,81 @@ const PRODUCTS = [
       '/body_butter_primary.jpg',
       '/coconut_oil_primary.jpg',
       '/shea_butter_primary.jpg'
+    ]
+  },
+  {
+    id: 'complete-luxe-collection',
+    name: 'The Complete Luxe Naturals Collection',
+    tagline: 'Pure • Nourishing • Clarifying • 5-Piece Master Set',
+    subtitle: 'All 5 Essentials in One Beautiful Collection',
+    price: 59.00,
+    originalPrice: 70.95,
+    badge: '★ 5-PIECE COMBO · £59',
+    volume: 'Complete 5-Piece Full-Size Set (1,500g Total)',
+    rating: '5.0',
+    reviewsCount: 248,
+    isCombo: true,
+    category: 'combos',
+    image: '/licht_luxe_all_five_products_water.png',
+    shortDescription: 'Experience the complete head-to-toe botanical luxury collection featuring all 5 essentials: Pure Shea Butter (250g), Pure Coconut Oil (200ml), Luxe Body Butter (250g), African Black Liquid Soap (500ml), and African Black Soap (300g).',
+    description: 'Experience the goodness of nature with our complete skincare collection. This exclusive bundle brings together five carefully selected skincare essentials to cleanse, moisturise, soften and nourish your skin.\n\nFrom rich shea butter to luxurious body butter and traditional African black soap, everything you need for your daily skincare routine is in one bundle.\n\nGive your skin the natural care it deserves. Handcrafted with love and from LOVEWORLD.',
+    includedItems: [
+      {
+        name: 'Pure Shea Butter',
+        size: '250 g / 8.8 oz',
+        price: 14.99,
+        desc: 'Deeply moisturises and helps keep skin soft and nourished.'
+      },
+      {
+        name: 'Pure Coconut Oil',
+        size: '200 ml / 7.0 fl oz',
+        price: 11.99,
+        desc: 'A versatile natural oil that helps soften and moisturise the skin.'
+      },
+      {
+        name: 'Luxe Body Butter',
+        size: '250 g / 8.8 oz',
+        price: 18.99,
+        desc: 'A rich, creamy formula for beautifully soft and moisturised skin.'
+      },
+      {
+        name: 'African Black Liquid Soap',
+        size: '500 ml / 16.9 fl oz',
+        price: 12.99,
+        desc: 'A botanical cleanser that gently cleanses and leaves skin feeling fresh.'
+      },
+      {
+        name: 'African Black Soap',
+        size: '300 g / 10.5 oz',
+        price: 11.99,
+        desc: 'A traditional cleansing bar for face and body.'
+      }
+    ],
+    benefits: [
+      'All 5 signature essentials together in one beautiful collection',
+      'Complete daily routine: Cleanse, Moisturise, Soften and Nourish',
+      'Individual Total: £70.95 — Special Bundle Price: £59.00 (Save £11.95)',
+      'Includes Pure Shea Butter (250g), Coconut Oil (200ml), Body Butter (250g), Black Liquid Soap (500ml) & Black Soap (300g)',
+      '100% natural ingredients & deep moisturisation for healthy, glowing skin',
+      'Handcrafted with love and from LOVEWORLD'
+    ],
+    perfectFor: [
+      'Complete head-to-toe daily skincare ritual',
+      'Ultimate luxury all-in-one gift collection',
+      'Daily cleansing, blemish defense & deep moisturisation',
+      'Dry skin, rough textures & all-day velvet moisture',
+      'Full self-care botanical sanctuary'
+    ],
+    howToUse: 'Step 1 (Cleanse): Wash daily with African Black Liquid Soap or clarify with traditional African Black Soap. Step 2 (Hydrate): Smooth Pure Coconut Oil onto clean, damp skin or hair. Step 3 (Moisturise): Warm Pure Shea Butter between palms and apply to dry areas. Step 4 (Luxe Glow): Massage Luxe Body Butter for velvet softness and lasting radiant glow.',
+    storage: 'Store in a cool, dry place away from direct sunlight. Keep lids closed tightly after each use.',
+    ingredients: 'Pure Unrefined Shea Butter, Cold-Pressed Coconut Oil, Whipped Botanical Body Butter, African Black Liquid Soap & Traditional African Black Soap.',
+    gallery: [
+      '/licht_luxe_all_five_products_water.png',
+      '/licht_luxe_all_five_products_floating.jpg',
+      '/luxe_complete_skincare_bundle_banner.jpg',
+      '/combo_trio_floating.png',
+      '/combo_soap_liquid.png',
+      '/combo_soap_jar.png'
     ]
   }
 ];
@@ -378,6 +465,7 @@ const checkIsAdminPath = () => {
 function App() {
   // Navigation active tab: 'home' | 'shop' | 'story' | 'gifting' | 'contact' | 'product'
   const [activeTab, setActiveTab] = useState(() => checkIsAdminPath() ? 'admin' : 'home');
+  const [shopCategory, setShopCategory] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0]);
   const [selectedVariant, setSelectedVariant] = useState(
     PRODUCTS[0].variants && PRODUCTS[0].variants.length > 0 ? PRODUCTS[0].variants[0] : null
@@ -1465,7 +1553,7 @@ function App() {
                     <img 
                       src={pdpPrimaryImage} 
                       alt={activeProduct.name} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: selectedProduct.id === 'luxe-trio-gift-set' ? 'center center' : 'center 58%', transform: selectedProduct.id === 'luxe-trio-gift-set' ? 'none' : 'scale(1.10)', transition: 'all 0.35s ease' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: (selectedProduct.isCombo || selectedProduct.id === 'luxe-trio-gift-set' || selectedProduct.id === 'complete-luxe-collection') ? 'center center' : 'center 58%', transform: (selectedProduct.isCombo || selectedProduct.id === 'luxe-trio-gift-set' || selectedProduct.id === 'complete-luxe-collection') ? 'none' : 'scale(1.10)', transition: 'all 0.35s ease' }}
                     />
                     
 
@@ -1616,6 +1704,40 @@ function App() {
                     </div>
                   </div>
 
+                  {/* Included Items for Combos & Gift Sets */}
+                  {activeProduct.includedItems && activeProduct.includedItems.length > 0 && (
+                    <div style={{ backgroundColor: '#FDFBF7', borderRadius: '12px', border: '2px solid #C5A059', padding: '1.5rem', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(197, 160, 89, 0.12)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid #E5DFC5', paddingBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6E5535' }}>
+                          ★ WHAT'S INCLUDED ({activeProduct.includedItems.length} FULL-SIZE ESSENTIALS)
+                        </span>
+                        {activeProduct.originalPrice && (
+                          <span style={{ fontSize: '0.8rem', color: '#2D3A29', fontWeight: 600, backgroundColor: 'rgba(197, 160, 89, 0.25)', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                            Save £{(activeProduct.originalPrice - activeProduct.price).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {activeProduct.includedItems.map((item, idx) => (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.65rem 0.85rem', backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid #E5DFC5' }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#C5A059', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0, marginTop: '2px' }}>
+                              {idx + 1}
+                            </div>
+                            <div style={{ flexGrow: 1 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.25rem' }}>
+                                <strong style={{ color: '#1E221D', fontSize: '0.95rem' }}>{item.name}</strong>
+                                <span style={{ color: '#6E5535', fontSize: '0.85rem', fontWeight: 600 }}>{item.size}</span>
+                              </div>
+                              {item.desc && (
+                                <p style={{ margin: '0.2rem 0 0', fontSize: '0.825rem', color: '#5C635B', lineHeight: 1.4 }}>{item.desc}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Perfect For & How to Use Accordion Boxes */}
                   <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.75rem', boxShadow: 'var(--shadow-soft)', marginBottom: '1.5rem' }}>
                     <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2D3A29', marginBottom: '0.75rem' }}>
@@ -1686,7 +1808,7 @@ function App() {
                 {PRODUCTS.filter(p => p.id !== selectedProduct.id).map(product => (
                   <div 
                     key={product.id}
-                    className="responsive-product-card" data-product-id={product.id}
+                    className="responsive-product-card" data-product-id={product.id} data-is-combo={product.isCombo ? 'true' : 'false'}
                     style={{ 
                       backgroundColor: '#F4EFE6', 
                       borderRadius: '12px', 
@@ -1710,8 +1832,8 @@ function App() {
                           width: '100%', 
                           height: '100%', 
                           objectFit: 'cover', 
-                          objectPosition: product.id === 'luxe-trio-gift-set' ? 'center center' : 'center 60%', 
-                          transform: product.id === 'luxe-trio-gift-set' ? 'none' : 'scale(1.14)', 
+                          objectPosition: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'center center' : 'center 60%', 
+                          transform: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'none' : 'scale(1.14)', 
                           transition: 'transform 0.4s ease' 
                         }}
                       />
@@ -1803,11 +1925,11 @@ function App() {
               <div className="responsive-story-grid">
                 
                 <div style={{ position: 'relative' }}>
-                  <div style={{ borderRadius: '12px', overflow: 'hidden', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(74, 93, 78, 0.1)' }}>
+                  <div style={{ borderRadius: '12px', overflow: 'hidden', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(74, 93, 78, 0.12)', backgroundColor: '#DFCAA7' }}>
                     <img 
-                      src="/floating_trio_showcase.jpg" 
-                      alt="LICHT LUXE NATURALS Floating Trio Collection Artwork" 
-                      style={{ width: '100%', height: '560px', objectFit: 'cover', objectPosition: 'center center' }}
+                      src="/licht_luxe_all_five_products_water.png" 
+                      alt="LICHT LUXE NATURALS Complete 5-Product Botanical Master Collection" 
+                      style={{ width: '100%', height: 'auto', display: 'block', aspectRatio: '16 / 9', objectFit: 'cover', objectPosition: 'center center' }}
                     />
                   </div>
                   <div style={{ position: 'absolute', bottom: '-25px', right: '-20px' }}>
@@ -1830,7 +1952,7 @@ function App() {
                       We create natural body-care products inspired by the richness of nature and the desire to give your skin the care it deserves.
                     </p>
                     <p>
-                      From our pure shea butter to our nourishing coconut oil and luxurious body butter, every product is created with care and attention to quality.
+                      From our pure raw shea butter and cold-pressed coconut oil to our nourishing body butter and traditional African black soap (both liquid and traditional jar), every product is created with care, integrity and authentic botanical quality.
                     </p>
                     <p>
                       We believe that taking care of your skin isn't just a routine. It's a moment of self-care. And every moment of self-care deserves a little luxury.
@@ -1964,12 +2086,12 @@ function App() {
                 {PRODUCTS.map(product => (
                   <div 
                     key={product.id}
-                    className="responsive-product-card" data-product-id={product.id}
+                    className="responsive-product-card" data-product-id={product.id} data-is-combo={product.isCombo ? 'true' : 'false'}
                     style={{ 
                       backgroundColor: '#F4EFE6', 
                       borderRadius: '12px', 
                       overflow: 'hidden', 
-                      border: product.id === 'luxe-trio-gift-set' ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                      border: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? '2px solid #C5A059' : '1px solid #E5DFC5',
                       boxShadow: 'var(--shadow-soft)',
                       display: 'flex',
                       flexDirection: 'column'
@@ -1988,8 +2110,8 @@ function App() {
                           width: '100%', 
                           height: '100%', 
                           objectFit: 'cover', 
-                          objectPosition: product.id === 'luxe-trio-gift-set' ? 'center center' : 'center 60%', 
-                          transform: product.id === 'luxe-trio-gift-set' ? 'none' : 'scale(1.14)', 
+                          objectPosition: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'center center' : 'center 60%', 
+                          transform: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'none' : 'scale(1.14)', 
                           transition: 'transform 0.4s ease' 
                         }}
                       />
@@ -2076,19 +2198,91 @@ function App() {
                 </p>
               </div>
 
-              <div className="responsive-gifting-grid">
-                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(197, 160, 89, 0.15)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem', marginBottom: '4rem' }}>
+                
+                {/* 5-Piece Complete Collection Card */}
+                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(197, 160, 89, 0.2)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#C5A059', color: '#FFFFFF', padding: '0.35rem 1.25rem', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(197, 160, 89, 0.4)', whiteSpace: 'nowrap' }}>
+                    ★ MASTER 5-PIECE COMBO · SAVE £11.95
+                  </div>
+
+                  <div style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C5A059', fontWeight: 700 }}>
+                      THE ULTIMATE COLLECTION
+                    </div>
+                    <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
+                      The Complete Luxe Naturals
+                    </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 700, color: '#6E5535' }}>£59.00</span>
+                      <span style={{ fontSize: '1rem', color: '#8C948B', textDecoration: 'line-through' }}>£70.95</span>
+                    </div>
+                  </div>
+
+                  <div 
+                    style={{ borderRadius: '10px', overflow: 'hidden', height: '260px', marginBottom: '1.5rem', cursor: 'pointer', backgroundColor: '#DFCAA7' }}
+                    onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
+                  >
+                    <img 
+                      src="/licht_luxe_all_five_products_water.png" 
+                      alt="The Complete Luxe Naturals Collection 5-Piece Combo" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.75rem', flexGrow: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                      <Check size={16} color="#C5A059" /> <strong>Pure Shea Butter</strong> (250g / 8.8 oz)
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                      <Check size={16} color="#C5A059" /> <strong>Pure Coconut Oil</strong> (200ml / 7.0 fl oz)
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                      <Check size={16} color="#C5A059" /> <strong>Luxe Body Butter</strong> (250g / 8.8 oz)
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                      <Check size={16} color="#C5A059" /> <strong>African Black Liquid Soap</strong> (500ml / 16.9 fl oz)
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                      <Check size={16} color="#C5A059" /> <strong>African Black Soap Jar</strong> (300g / 10.5 oz)
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.85rem' }}>
+                    <button 
+                      className="btn-primary" 
+                      style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
+                      onClick={() => addToCart(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
+                    >
+                      Add to Bag · £59.00
+                    </button>
+                    <button 
+                      className="btn-secondary" 
+                      style={{ padding: '0.95rem 1.25rem' }}
+                      onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3-Piece Trio Box Card */}
+                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '1.5px solid #E5DFC5', boxShadow: '0 15px 40px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                     <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C5A059', fontWeight: 700 }}>
                       THE LUXE TRIO BOX
                     </div>
-                    <h2 className="font-display" style={{ fontSize: '2.75rem', color: '#2D3A29' }}>
+                    <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
                       The Complete Ritual Set
                     </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 700, color: '#6E5535' }}>£39.99</span>
+                      <span style={{ fontSize: '1rem', color: '#8C948B', textDecoration: 'line-through' }}>£45.97</span>
+                    </div>
                   </div>
 
                   <div 
-                    style={{ borderRadius: '8px', overflow: 'hidden', height: '280px', marginBottom: '1.5rem', cursor: 'pointer' }}
+                    style={{ borderRadius: '10px', overflow: 'hidden', height: '260px', marginBottom: '1.5rem', cursor: 'pointer', backgroundColor: '#DFCAA7' }}
                     onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
                   >
                     <img 
@@ -2098,25 +2292,28 @@ function App() {
                     />
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.75rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', color: '#2D3A29' }}>
-                      <Check size={18} color="#C5A059" /> <strong>Pure Shea Butter</strong> (250g)
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.75rem', flexGrow: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                      <Check size={16} color="#C5A059" /> <strong>Pure Shea Butter</strong> (250g / 8.8 oz)
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', color: '#2D3A29' }}>
-                      <Check size={18} color="#C5A059" /> <strong>Pure Coconut Oil</strong> (200ml)
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                      <Check size={16} color="#C5A059" /> <strong>Pure Coconut Oil</strong> (200ml / 7.0 fl oz)
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', color: '#2D3A29' }}>
-                      <Check size={18} color="#C5A059" /> <strong>Luxe Body Butter</strong> (250g)
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                      <Check size={16} color="#C5A059" /> <strong>Luxe Body Butter</strong> (250g / 8.8 oz)
+                    </div>
+                    <div style={{ padding: '0.5rem 0.75rem', backgroundColor: '#DFCAA7', borderRadius: '6px', fontSize: '0.8rem', color: '#2D3A29', marginTop: 'auto' }}>
+                      ✨ Presented in a luxury gift box with gold ribbon
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '0.85rem' }}>
                     <button 
                       className="btn-primary" 
                       style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
                       onClick={() => addToCart(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
                     >
-                      Add to Bag · £68
+                      Add to Bag · £39.99
                     </button>
                     <button 
                       className="btn-secondary" 
@@ -2128,30 +2325,34 @@ function App() {
                   </div>
                 </div>
 
-                <div>
-                  <h2 className="font-display" style={{ fontSize: '2.75rem', color: '#2D3A29', marginBottom: '1rem' }}>
-                    Perfect For Every Occasion
+              </div>
+
+              {/* Occasions & Concierge Section */}
+              <div style={{ backgroundColor: '#F4EFE6', padding: '3rem', borderRadius: '16px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
+                <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 2.5rem' }}>
+                  <h2 className="font-display" style={{ fontSize: '2.75rem', color: '#2D3A29', marginBottom: '0.75rem' }}>
+                    Thoughtful Gifting for Every Occasion
                   </h2>
-                  <p style={{ color: '#5C635B', marginBottom: '1.5rem', lineHeight: 1.7 }}>
-                    Each gift box is lovingly packaged with our signature gold ribbon and MADE IN LOVEWORLD emblem seal.
+                  <p style={{ color: '#5C635B', fontSize: '1.05rem', lineHeight: 1.7 }}>
+                    Each gift set is lovingly packaged with our signature gold ribbon and MADE IN LOVEWORLD emblem seal.
                   </p>
+                </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '1rem', color: '#2D3A29', backgroundColor: '#DFCAA7', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E5DFC5', marginBottom: '2rem' }}>
-                    <div>🎁 Birthdays</div>
-                    <div>🎁 Mother's Day</div>
-                    <div>🎁 Valentine's Day</div>
-                    <div>🎁 Christmas</div>
-                    <div>🎁 Bridesmaids</div>
-                    <div>🎁 Baby showers</div>
-                    <div>🎁 Self-care gifts</div>
-                    <div>🎁 Corporate gifts</div>
-                  </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', fontSize: '1rem', color: '#2D3A29', backgroundColor: '#DFCAA7', padding: '1.75rem', borderRadius: '12px', border: '1px solid #E5DFC5', marginBottom: '2.5rem', textAlign: 'center' }}>
+                  <div>🎁 Birthdays</div>
+                  <div>🎁 Mother's Day</div>
+                  <div>🎁 Valentine's Day</div>
+                  <div>🎁 Christmas</div>
+                  <div>🎁 Bridesmaids</div>
+                  <div>🎁 Baby Showers</div>
+                  <div>🎁 Self-Care Gifts</div>
+                  <div>🎁 Corporate Gifts</div>
+                </div>
 
-                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                    <a href="tel:07831082965" className="btn-secondary" style={{ padding: '0.95rem 1.5rem' }}>
-                      <Phone size={16} /> Order by Call: 07831082965
-                    </a>
-                  </div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                  <a href="tel:07831082965" className="btn-secondary" style={{ padding: '0.95rem 2rem', fontSize: '0.95rem' }}>
+                    <Phone size={17} /> Bespoke Gifting Concierge: 07831082965
+                  </a>
                 </div>
               </div>
             </div>
@@ -2209,7 +2410,7 @@ function App() {
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                       <div style={{ backgroundColor: '#F4EBD9', padding: '0.75rem', borderRadius: '50%', color: '#C5A059' }}><Camera size={20} /></div>
                       <div>
-                        <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6E5535', fontWeight: 600 }}>INSTAGRAM & TIKTOK</div>
+                        <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6E5535', fontWeight: 600 }}>INSTAGRAM</div>
                         <div style={{ fontSize: '1.05rem', fontWeight: 600, color: '#2D3A29' }}>@lichtluxenaturals</div>
                       </div>
                     </div>
@@ -2612,20 +2813,20 @@ function App() {
                   </p>
                 </div>
 
-                {/* Column 4: Vitamin E & Botanical Oils */}
+                {/* Column 4: Pure Skin Nourishment */}
                 <div>
                   <div style={{ height: '240px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.25rem', backgroundColor: '#DFCAA7' }}>
                     <img 
                       src="https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=600&q=80" 
-                      alt="Botanical Oils & Vitamin E" 
+                      alt="Pure Skin Nourishment" 
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   </div>
                   <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#1E221D', marginBottom: '0.25rem', fontWeight: 400 }}>
-                    Botanical Vitamin E
+                    Pure Skin Nourishment
                   </h3>
                   <p style={{ color: '#5C635B', fontSize: '0.875rem', lineHeight: 1.5 }}>
-                    Antioxidant-rich natural oils that nourish & soothe the skin.
+                    Thoughtfully crafted skincare that nourishes, hydrates and enhances your skin's natural glow.
                   </p>
                 </div>
 
@@ -2716,12 +2917,12 @@ function App() {
                 {PRODUCTS.map(product => (
                   <div 
                     key={product.id}
-                    className="responsive-product-card" data-product-id={product.id}
+                    className="responsive-product-card" data-product-id={product.id} data-is-combo={product.isCombo ? 'true' : 'false'}
                     style={{ 
                       backgroundColor: '#F4EFE6', 
                       borderRadius: '12px', 
                       overflow: 'hidden', 
-                      border: product.id === 'luxe-trio-gift-set' ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                      border: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? '2px solid #C5A059' : '1px solid #E5DFC5',
                       boxShadow: 'var(--shadow-soft)',
                       display: 'flex',
                       flexDirection: 'column'
@@ -2740,8 +2941,8 @@ function App() {
                           width: '100%', 
                           height: '100%', 
                           objectFit: 'cover', 
-                          objectPosition: product.id === 'luxe-trio-gift-set' ? 'center center' : 'center 60%', 
-                          transform: product.id === 'luxe-trio-gift-set' ? 'none' : 'scale(1.14)', 
+                          objectPosition: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'center center' : 'center 60%', 
+                          transform: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'none' : 'scale(1.14)', 
                           transition: 'transform 0.4s ease' 
                         }}
                       />
@@ -2949,7 +3150,8 @@ function App() {
                 <li><button onClick={() => openProductDetail(PRODUCTS[2])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Body Butter</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-liquid-soap'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Liquid Soap</button></li>
                 <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-jar'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Soap (Jar)</button></li>
-                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Gift Sets</button></li>
+                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>The Luxe Trio Gift Set</button></li>
+                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))} style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', textAlign: 'left', padding: 0, fontWeight: 600 }}>★ The Complete 5-Piece Combo</button></li>
               </ul>
             </div>
 
@@ -2990,7 +3192,6 @@ function App() {
             <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
               <a href="https://instagram.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Instagram</a>
               <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Facebook</a>
-              <a href="https://tiktok.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>TikTok</a>
             </div>
           </div>
         </div>
