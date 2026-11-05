@@ -68,14 +68,14 @@ export default function SettingsModal({
                   <div className="settings-field-desc">Prices throughout the shop update dynamically</div>
                 </div>
                 <div className="settings-currency-pills">
-                  {['USD', 'GBP', 'EUR'].map((curr) => (
+                  {['USD', 'ESP', 'GBP', 'EUR'].map((curr) => (
                     <button
                       key={curr}
                       type="button"
                       className={`settings-pill-btn ${activeCurrency === curr ? 'active' : ''}`}
                       onClick={() => onCurrencyChange && onCurrencyChange(curr)}
                     >
-                      {curr === 'USD' ? '$ USD' : curr === 'GBP' ? '£ GBP' : '€ EUR'}
+                      {curr === 'USD' ? '$ USD' : curr === 'ESP' ? '⚡ ESP (Espees)' : curr === 'GBP' ? '£ GBP' : '€ EUR'}
                     </button>
                   ))}
                 </div>

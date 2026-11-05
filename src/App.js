@@ -650,22 +650,78 @@ function App() {
     }
   }, []);
 
-  const handleConfirmEspeesDirectPayment = () => {
+  const handleConfirmEspeesDirectPayment = async () => {
     if (!espeesUsernameRef.trim()) {
       showToast('Please enter your Espees username or transfer reference ID.');
       return;
     }
     setIsEspeesProcessing(true);
-    setTimeout(() => {
+
+    // Call Spring Boot Backend API: POST /api/espees/direct-transfer
+    try {
+      const response = await fetch('/api/espees/direct-transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: cartTotal.toFixed(2),
+          espeesUsernameRef: espeesUsernameRef.trim(),
+          merchantWallet: espeesMerchantWallet || 'lichtluxenaturals',
+          items: cart.map(i => ({
+            id: i.id,
+            name: i.name,
+            price: i.price,
+            quantity: i.quantity
+          })),
+          deliveryFee: deliveryFee.toFixed(2),
+          shippingInfo: shippingAddress
+        })
+      });
+
+      if (response.ok) {
+        const backendResult = await response.json();
+        console.log('✅ Spring Boot backend recorded Espees order:', backendResult);
+      }
+    } catch (err) {
+      console.warn('Backend sync notice (offline or local execution):', err.message);
+    } finally {
       setIsEspeesProcessing(false);
       processCompletedOrder('Espees (ESP)');
-    }, 700);
+    }
   };
 
   const handleLaunchEspeesGateway = async () => {
     setIsEspeesProcessing(true);
+    const sku = `LUXE-${Date.now().toString(36).toUpperCase()}`;
+
+    // 1. Try Spring Boot Backend Gateway endpoint first: POST /api/espees/create-payment
     try {
-      const sku = `LUXE-${Date.now().toString(36).toUpperCase()}`;
+      const backendRes = await fetch('/api/espees/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: cartTotal.toFixed(2),
+          sku: sku,
+          narration: `LICHT LUXE NATURALS Order (${cart.length} items)`,
+          merchantWallet: espeesMerchantWallet || 'lichtluxenaturals',
+          apiKey: espeesApiKey,
+          items: cart,
+          shippingInfo: shippingAddress
+        })
+      });
+
+      if (backendRes.ok) {
+        const bData = await backendRes.json();
+        if (bData.paymentUrl) {
+          window.location.href = bData.paymentUrl;
+          return;
+        }
+      }
+    } catch (bErr) {
+      console.warn('Backend gateway attempt notice, proceeding with direct gateway:', bErr.message);
+    }
+
+    // 2. Direct Espees Gateway Web API call
+    try {
       const payload = {
         product_sku: sku,
         narration: `LICHT LUXE NATURALS - Order (${cart.length} items)`,
@@ -1853,7 +1909,7 @@ function App() {
                         style={{ flexGrow: 1, justifyContent: 'center', padding: '1rem 2rem', fontSize: '0.95rem', fontWeight: 600 }}
                         onClick={() => addToCart(activeProduct, pdpQuantity)}
                       >
-                        <ShoppingBag size={18} /> ADD TO BAG · ${(activeProduct.price * pdpQuantity).toFixed(2)}
+                        <ShoppingBag size={18} /> ADD TO BAG · ${(activeProduct.price * pdpQuantity).toFixed(2)} (${(activeProduct.price * pdpQuantity).toFixed(2)} ESP)
                       </button>
 
                       <a 
@@ -2050,7 +2106,7 @@ function App() {
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.75rem', fontSize: '0.8rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={14} /> ADD · ${product.price}
+                          <ShoppingBag size={14} /> ADD · ${product.price} (${product.price} ESP)
                         </button>
                         <button 
                           className="btn-secondary card-btn-secondary" 
@@ -2376,7 +2432,7 @@ function App() {
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={16} /> ADD · ${product.price}
+                          <ShoppingBag size={16} /> ADD · ${product.price} (${product.price} ESP)
                         </button>
                         <button 
                           className="btn-secondary card-btn-secondary" 
@@ -2487,7 +2543,7 @@ function App() {
                       style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
                       onClick={() => addToCart(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
                     >
-                      Add to Bag · $59.00
+                      Add to Bag · $59.00 (59.00 ESP)
                     </button>
                     <button 
                       className="btn-secondary" 
@@ -2552,7 +2608,7 @@ function App() {
                       style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
                       onClick={() => addToCart(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
                     >
-                      Add to Bag · $39.99
+                      Add to Bag · $39.99 (39.99 ESP)
                     </button>
                     <button 
                       className="btn-secondary" 
@@ -2618,7 +2674,7 @@ function App() {
                       style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
                       onClick={() => addToCart(PRODUCTS.find(p => p.id === 'african-black-soap-clarifying-duo'))}
                     >
-                      Add to Bag · $21.99
+                      Add to Bag · $21.99 (21.99 ESP)
                     </button>
                     <button 
                       className="btn-secondary" 
@@ -3329,7 +3385,7 @@ function App() {
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={16} /> ADD · ${product.price}
+                          <ShoppingBag size={16} /> ADD · ${product.price} (${product.price} ESP)
                         </button>
                         <button 
                           className="btn-secondary card-btn-secondary" 
