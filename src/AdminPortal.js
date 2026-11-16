@@ -1183,7 +1183,7 @@ export default function AdminPortal({
                     <span className="admin-metric-label">Total Revenue</span>
                     <div className="admin-metric-icon"><DollarSign size={18} /></div>
                   </div>
-                  <div className="admin-metric-value">${totalRevenue.toFixed(2)}</div>
+                  <div className="admin-metric-value">£{totalRevenue.toFixed(2)}</div>
                   <div className="admin-metric-trend">
                     <ArrowUpRight size={13} /> +18.4% vs last period
                   </div>
@@ -1276,7 +1276,7 @@ export default function AdminPortal({
                                 <div style={{ fontWeight: 600, color: '#FAF7F2' }}>{ord.customer.name}</div>
                                 <div style={{ fontSize: '0.72rem', color: '#A0A89F' }}>{ord.customer.phone}</div>
                               </td>
-                              <td style={{ fontWeight: 700, color: '#FAF7F2' }}>${ord.total.toFixed(2)}</td>
+                              <td style={{ fontWeight: 700, color: '#FAF7F2' }}>£{ord.total.toFixed(2)}</td>
                               <td>
                                 <span className={`status-badge ${ord.deliveryStatus.toLowerCase()}`}>
                                   {ord.deliveryStatus}
@@ -1451,7 +1451,7 @@ export default function AdminPortal({
                               </div>
                             </td>
                             <td style={{ fontWeight: 700, color: '#FAF7F2' }}>
-                              ${ord.total.toFixed(2)}
+                              £{ord.total.toFixed(2)}
                             </td>
                             <td>
                               <span style={{ fontSize: '0.75rem', color: '#4AB97A', fontWeight: 600 }}>
@@ -1528,7 +1528,7 @@ export default function AdminPortal({
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                   <div style={{ backgroundColor: '#20281E', border: '1px solid rgba(197, 160, 89, 0.3)', padding: '0.5rem 1rem', borderRadius: '8px', fontSize: '0.825rem' }}>
-                    Asset Value: <strong style={{ color: '#C5A059' }}>${totalInventoryAssetValue.toFixed(2)}</strong>
+                    Asset Value: <strong style={{ color: '#C5A059' }}>£{totalInventoryAssetValue.toFixed(2)}</strong>
                   </div>
                   <button 
                     className="admin-btn admin-btn-gold"
@@ -1612,8 +1612,8 @@ export default function AdminPortal({
                             <td style={{ color: '#A0A89F', fontSize: '0.85rem' }}>
                               {item.minThreshold} units
                             </td>
-                            <td style={{ color: '#D6DDD3' }}>${item.unitCost.toFixed(2)}</td>
-                            <td style={{ fontWeight: 700, color: '#FAF7F2' }}>${item.price.toFixed(2)}</td>
+                            <td style={{ color: '#D6DDD3' }}>£{item.unitCost.toFixed(2)}</td>
+                            <td style={{ fontWeight: 700, color: '#FAF7F2' }}>£{item.price.toFixed(2)}</td>
                             <td>
                               <span style={{ color: '#4AB97A', fontWeight: 700, fontSize: '0.8rem' }}>
                                 {marginPct}%
@@ -1840,10 +1840,10 @@ export default function AdminPortal({
                     Average Order Value (AOV)
                   </h3>
                   <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#FAF7F2', marginBottom: '0.5rem' }}>
-                    ${(totalRevenue / (totalOrdersCount || 1)).toFixed(2)}
+                    £{(totalRevenue / (totalOrdersCount || 1)).toFixed(2)}
                   </div>
                   <p style={{ fontSize: '0.825rem', color: '#A0A89F', lineHeight: 1.6 }}>
-                    Boosted by The Complete 5-Piece Luxe Collection ($59.00) and The Luxe Trio Gift Set ($39.99). Free UK shipping threshold active at $70.
+                    Boosted by The Complete 5-Piece Luxe Collection (£59.00) and The Luxe Trio Gift Set (£39.99). Free UK shipping threshold active at £70.
                   </p>
                 </div>
               </div>
@@ -2111,7 +2111,7 @@ export default function AdminPortal({
                                 {u.ordersCount !== undefined ? u.ordersCount : (u.orders ? u.orders.length : 0)} orders
                               </div>
                               <div style={{ fontSize: '0.75rem', color: '#C5A059', fontWeight: 600 }}>
-                                ${Number(u.totalSpent || 0).toFixed(2)}
+                                £{Number(u.totalSpent || 0).toFixed(2)}
                               </div>
                             </td>
 
@@ -2555,13 +2555,13 @@ export default function AdminPortal({
                       <span style={{ fontWeight: 600, color: '#FAF7F2' }}>{item.name}</span>
                       <span style={{ color: '#C5A059', marginLeft: '0.5rem' }}>x{item.qty}</span>
                     </div>
-                    <span style={{ fontWeight: 700, color: '#FAF7F2' }}>${(item.price * item.qty).toFixed(2)}</span>
+                    <span style={{ fontWeight: 700, color: '#FAF7F2' }}>£{(item.price * item.qty).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '2px solid rgba(197, 160, 89, 0.3)', fontSize: '1.15rem', fontWeight: 700 }}>
                 <span>Total Amount</span>
-                <span style={{ color: '#C5A059' }}>${selectedOrder.total.toFixed(2)}</span>
+                <span style={{ color: '#C5A059' }}>£{selectedOrder.total.toFixed(2)}</span>
               </div>
             </div>
 
@@ -2753,7 +2753,7 @@ export default function AdminPortal({
                   >
                     {inventory.map(item => (
                       <option key={item.sku} value={item.sku}>
-                        {item.name} ({item.variant}) — ${item.price.toFixed(2)}
+                        {item.name} ({item.variant}) — £{item.price.toFixed(2)}
                       </option>
                     ))}
                   </select>

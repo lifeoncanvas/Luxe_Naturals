@@ -58,26 +58,19 @@ export default function SettingsModal({
           <div className="settings-section">
             <h3 className="settings-section-title">
               <Globe size={15} color="#6E5535" />
-              <span>Regional & Currency Display</span>
+              <span>Store Currency & Regional Fulfillment</span>
             </h3>
             
             <div className="settings-card">
               <div className="settings-field-row">
                 <div>
-                  <div className="settings-field-label">Active Currency</div>
-                  <div className="settings-field-desc">Prices throughout the shop update dynamically</div>
+                  <div className="settings-field-label">Official Store Currency</div>
+                  <div className="settings-field-desc">All boutique pricing and checkout orders settle in British Pounds</div>
                 </div>
-                <div className="settings-currency-pills">
-                  {['USD', 'ESP', 'GBP', 'EUR'].map((curr) => (
-                    <button
-                      key={curr}
-                      type="button"
-                      className={`settings-pill-btn ${activeCurrency === curr ? 'active' : ''}`}
-                      onClick={() => onCurrencyChange && onCurrencyChange(curr)}
-                    >
-                      {curr === 'USD' ? '$ USD' : curr === 'ESP' ? '⚡ ESP (Espees)' : curr === 'GBP' ? '£ GBP' : '€ EUR'}
-                    </button>
-                  ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="settings-static-badge" style={{ backgroundColor: '#2D3A29', color: '#DFCAA7', fontWeight: 700, padding: '0.35rem 0.75rem', borderRadius: '4px', fontSize: '0.8rem' }}>
+                    £ GBP (Official UK Storefront Currency)
+                  </span>
                 </div>
               </div>
 
@@ -86,9 +79,9 @@ export default function SettingsModal({
               <div className="settings-field-row">
                 <div>
                   <div className="settings-field-label">Delivery Region</div>
-                  <div className="settings-field-desc">Default shipping calculations</div>
+                  <div className="settings-field-desc">Royal Mail UK Tracked 48 & Special Delivery</div>
                 </div>
-                <span className="settings-static-badge">United Kingdom & Global</span>
+                <span className="settings-static-badge">United Kingdom & Global Fulfillment</span>
               </div>
             </div>
           </div>

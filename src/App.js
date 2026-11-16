@@ -22,12 +22,15 @@ import {
   User,
   Menu,
   ShieldCheck,
-  Settings
+  Settings,
+  AlertCircle,
+  CreditCard
 } from 'lucide-react';
 import './App.css';
 import AdminPortal, { DEFAULT_INVENTORY } from './AdminPortal';
 import AdminLogin from './AdminLogin';
 import SettingsModal from './SettingsModal';
+import LegalModal from './LegalModal';
 import './AdminPortal.css';
 
 // Horizontal Side-by-Side Logo Component (Icon on Left, Bold Company Typography on Right)
@@ -269,7 +272,7 @@ const PRODUCTS = [
     subtitle: 'Pure Shea Butter + Pure Coconut Oil + Luxe Body Butter',
     price: 39.99,
     originalPrice: 55.97,
-    badge: '★ 3-PIECE COMBO · SAVE $15.98',
+    badge: '★ 3-PIECE COMBO · SAVE £15.98',
     volume: 'Full Size 3-Piece Set',
     rating: '5.0',
     reviewsCount: 88,
@@ -299,7 +302,7 @@ const PRODUCTS = [
     subtitle: 'All 5 Essentials in One Beautiful Collection',
     price: 59.00,
     originalPrice: 70.95,
-    badge: '★ 5-PIECE COMBO · SAVE $11.95',
+    badge: '★ 5-PIECE COMBO · SAVE £11.95',
     volume: 'Complete 5-Piece Full-Size Set (1,500g Total)',
     rating: '5.0',
     reviewsCount: 248,
@@ -343,7 +346,7 @@ const PRODUCTS = [
     benefits: [
       'All 5 signature essentials together in one beautiful collection',
       'Complete daily routine: Cleanse, Moisturise, Soften and Nourish',
-      'Individual Total: $70.95 — Special Bundle Price: $59.00 (Save $11.95)',
+      'Individual Total: £70.95 — Special Bundle Price: £59.00 (Save £11.95)',
       'Includes Pure Shea Butter (250g), Coconut Oil (200ml), Body Butter (250g), Black Liquid Soap (500ml) & Black Soap (300g)',
       '100% natural ingredients & deep moisturisation for healthy, glowing skin',
       'Handcrafted with love and from LOVEWORLD'
@@ -376,7 +379,7 @@ const PRODUCTS = [
     subtitle: 'African Black Liquid Soap (500ml) + Traditional Soap Jar (300g)',
     price: 21.99,
     originalPrice: 24.98,
-    badge: '★ PURIFYING DUO COMBO · SAVE $2.99',
+    badge: '★ PURIFYING DUO COMBO · SAVE £2.99',
     volume: '500ml Liquid + 300g Jar Duo Set',
     rating: '5.0',
     reviewsCount: 112,
@@ -389,7 +392,7 @@ const PRODUCTS = [
     ],
     benefits: [
       'Complete duo ritual: daily liquid cleanser + deep clarifying jar',
-      'Individual Total: $24.98 — Duo Bundle Price: $21.99 (Save $2.99 · 12% OFF)',
+      'Individual Total: £24.98 — Duo Bundle Price: £21.99 (Save £2.99 · 12% OFF)',
       '100% natural, chemical-free & rich in natural plant ashes & shea butter',
       'Perfect for acne-prone skin, blemishes, uneven tone & deep cleansing',
       'Handcrafted with love and from LOVEWORLD'
@@ -495,9 +498,21 @@ const API_BASE = (() => {
   return '/api';
 })();
 
+// Central UK Currency Formatter (GBP £)
+export const currencyFormatter = new Intl.NumberFormat('en-GB', {
+  style: 'currency',
+  currency: 'GBP',
+});
+
+export const formatCurrency = (amount) => {
+  const num = Number(amount);
+  if (isNaN(num)) return currencyFormatter.format(0);
+  return currencyFormatter.format(num);
+};
+
 const paypalInitialOptions = {
   'client-id': PAYPAL_CLIENT_ID,
-  currency: 'USD',
+  currency: 'GBP',
   intent: 'capture',
   'disable-funding': 'credit,card',
 };
@@ -624,6 +639,9 @@ function App() {
     shippingPostcode: '',
     orderNotes: ''
   });
+  const [checkoutErrors, setCheckoutErrors] = useState({});
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [legalModalTab, setLegalModalTab] = useState('privacy');
 
   // Espees (ESP) · Loveworld Pay Configuration & State
   const [espeesMerchantWallet, setEspeesMerchantWallet] = useState(() => {
@@ -877,7 +895,7 @@ function App() {
 
   // Settings Modal State & Store Preferences
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [activeCurrency, setActiveCurrency] = useState('USD');
+  const [activeCurrency, setActiveCurrency] = useState('GBP');
 
   // Synchronize browser history and path changes
   useEffect(() => {
@@ -956,10 +974,10 @@ function App() {
 
   // Cart Subtotal & Dynamic Delivery Calculations
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const freeShippingThreshold = 70; // Free delivery on orders over $70
+  const freeShippingThreshold = 70; // Free delivery on orders over £70
   const isFreeShippingEligible = cartSubtotal >= freeShippingThreshold;
-  const standardDeliveryPrice = isFreeShippingEligible ? 0 : 6.99; // Standard delivery: $6.99 or Free over $70
-  const expressDeliveryPrice = 10.99; // Express delivery: $10.99
+  const standardDeliveryPrice = isFreeShippingEligible ? 0 : 6.99; // Standard delivery: £6.99 or Free over £70
+  const expressDeliveryPrice = 10.99; // Express delivery: £10.99
   const deliveryFee = cart.length === 0 ? 0 : (deliveryOption === 'express' ? expressDeliveryPrice : standardDeliveryPrice);
   const cartTotal = cartSubtotal + deliveryFee;
   const progressToFreeShipping = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
@@ -1057,9 +1075,17 @@ function App() {
   };
 
   // Process and sync completed storefront checkout into Admin Orders & Inventory
-  const processCompletedOrder = async (paymentMethod = 'Credit / Debit Card') => {
+  const processCompletedOrder = async (paymentMethod = 'PayPal') => {
     if (cart.length === 0) return;
+    if (paymentMethod === 'Credit / Debit Card') {
+      showToast('Credit card payment is currently disabled pending gateway setup.');
+      return;
+    }
+
     let newOrderId = `LN-${1083 + adminOrders.length}`;
+    let confirmedTotal = cartTotal;
+    let confirmedSubtotal = cartSubtotal;
+    let confirmedFee = deliveryFee;
     const orderDate = new Date().toLocaleDateString('en-GB', { 
       day: '2-digit', 
       month: 'short', 
@@ -1069,10 +1095,10 @@ function App() {
     });
 
     const customerDetails = {
-      name: shippingAddress?.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Online Guest Client'),
-      email: shippingAddress?.shippingEmail || currentUser?.email || 'guest.checkout@example.co.uk',
-      phone: shippingAddress?.shippingPhone || currentUser?.phone || '+44 7831 082965',
-      address: [shippingAddress?.shippingAddress, shippingAddress?.shippingCity, shippingAddress?.shippingPostcode].filter(Boolean).join(', ') || '10 Downing Street, Westminster, London SW1A 2AA, UK'
+      name: shippingAddress?.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Online Customer'),
+      email: shippingAddress?.shippingEmail || currentUser?.email || '',
+      phone: shippingAddress?.shippingPhone || currentUser?.phone || '',
+      address: [shippingAddress?.shippingAddress, shippingAddress?.shippingCity, shippingAddress?.shippingPostcode].filter(Boolean).join(', ') || 'United Kingdom'
     };
 
     // Save order permanently to Spring Boot Database (PostgreSQL / MySQL / JPA)
@@ -1092,17 +1118,10 @@ function App() {
           shippingInfo: shippingAddress,
           items: cart.map(item => ({
             id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            qty: item.quantity
+            quantity: item.quantity
           })),
-          subtotal: cartSubtotal.toFixed(2),
-          deliveryFee: deliveryFee.toFixed(2),
-          deliveryMethod: deliveryOption === 'express' ? 'Express Delivery' : 'Standard Delivery',
-          total: cartTotal.toFixed(2),
-          paymentMethod: paymentMethod,
-          courier: deliveryOption === 'express' ? 'Royal Mail Special Delivery Guaranteed' : 'Royal Mail Tracked 48'
+          deliveryOption: deliveryOption,
+          paymentMethod: paymentMethod
         })
       });
 
@@ -1110,6 +1129,15 @@ function App() {
         const savedDbOrder = await response.json();
         if (savedDbOrder && savedDbOrder.orderNumber) {
           newOrderId = savedDbOrder.orderNumber;
+        }
+        if (savedDbOrder && savedDbOrder.total) {
+          confirmedTotal = Number(savedDbOrder.total);
+        }
+        if (savedDbOrder && savedDbOrder.subtotal) {
+          confirmedSubtotal = Number(savedDbOrder.subtotal);
+        }
+        if (savedDbOrder && savedDbOrder.deliveryFee) {
+          confirmedFee = Number(savedDbOrder.deliveryFee);
         }
         console.log('✅ Order successfully saved to database:', savedDbOrder);
       }
@@ -1121,27 +1149,27 @@ function App() {
       id: newOrderId,
       date: orderDate,
       customer: {
-        name: shippingAddress?.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Online Guest Client'),
-        email: shippingAddress?.shippingEmail || currentUser?.email || 'guest.checkout@example.co.uk',
-        phone: shippingAddress?.shippingPhone || currentUser?.phone || '+44 7831 082965',
-        address: [shippingAddress?.shippingAddress, shippingAddress?.shippingCity, shippingAddress?.shippingPostcode].filter(Boolean).join(', ') || '10 Downing Street, Westminster, London SW1A 2AA, UK'
+        name: shippingAddress?.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Online Customer'),
+        email: shippingAddress?.shippingEmail || currentUser?.email || '',
+        phone: shippingAddress?.shippingPhone || currentUser?.phone || '',
+        address: [shippingAddress?.shippingAddress, shippingAddress?.shippingCity, shippingAddress?.shippingPostcode].filter(Boolean).join(', ') || 'United Kingdom'
       },
       items: cart.map(item => ({
         name: `${item.name}${item.volume ? ` (${item.volume})` : ''}`,
         qty: item.quantity,
         price: item.price
       })),
-      subtotal: cartSubtotal,
+      subtotal: confirmedSubtotal,
       deliveryMethod: deliveryOption === 'express' ? 'Express Delivery (1–2 Days)' : 'Standard Delivery (3–5 Days)',
-      deliveryFee: deliveryFee,
-      total: cartTotal,
+      deliveryFee: confirmedFee,
+      total: confirmedTotal,
       paymentMethod: paymentMethod,
       paymentStatus: 'Paid',
       deliveryStatus: 'Processing',
       courier: deliveryOption === 'express' ? 'Royal Mail Special Delivery Guaranteed' : 'Royal Mail Tracked 48',
       trackingNumber: `RM${Math.floor(100000000 + Math.random() * 900000000)}GB`,
       source: 'Online Storefront',
-      notes: shippingAddress.orderNotes || `Web checkout. ${deliveryOption === 'express' ? 'Express Delivery ($10.99)' : (deliveryFee === 0 ? 'Standard Delivery (FREE over $70)' : 'Standard Delivery ($6.99)')}`
+      notes: shippingAddress.orderNotes || `Web checkout. ${deliveryOption === 'express' ? 'Express Delivery (£10.99)' : (deliveryFee === 0 ? 'Standard Delivery (FREE over £70)' : 'Standard Delivery (£6.99)')}`
     };
 
     // Deduct inventory for matching items
@@ -1214,6 +1242,51 @@ function App() {
       }));
     }
     setIsCheckoutOpen(true);
+  };
+
+  // Validate Checkout Step 1 (UK Delivery Details)
+  const validateCheckoutStep1 = () => {
+    const errors = {};
+    if (!shippingAddress.shippingName || !shippingAddress.shippingName.trim()) {
+      errors.shippingName = 'Please enter your full name';
+    }
+
+    if (!shippingAddress.shippingEmail || !shippingAddress.shippingEmail.trim()) {
+      errors.shippingEmail = 'Please enter your email address for order confirmation';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(shippingAddress.shippingEmail.trim())) {
+        errors.shippingEmail = 'Please enter a valid email address (e.g. name@example.co.uk)';
+      }
+    }
+
+    if (!shippingAddress.shippingPhone || !shippingAddress.shippingPhone.trim()) {
+      errors.shippingPhone = 'Please enter a contact phone number';
+    } else {
+      const cleanedPhone = (shippingAddress.shippingPhone || '').replace(/[\s\-()]/g, '');
+      const ukPhoneRegex = /^(?:(?:\+44|0044|0)(?:7\d{9}|[12389]\d{9}))$/;
+      if (!ukPhoneRegex.test(cleanedPhone)) {
+        errors.shippingPhone = 'Please enter a valid UK phone number (e.g. 07831 082965 or +44 7831 082965)';
+      }
+    }
+
+    const ukPostcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
+    if (!shippingAddress.shippingPostcode || !shippingAddress.shippingPostcode.trim()) {
+      errors.shippingPostcode = 'Please enter a valid UK postcode (e.g. SW1A 1AA)';
+    } else if (!ukPostcodeRegex.test(shippingAddress.shippingPostcode.trim())) {
+      errors.shippingPostcode = 'Please enter a valid UK postcode (e.g. SW1A 1AA)';
+    }
+
+    if (!shippingAddress.shippingAddress || !shippingAddress.shippingAddress.trim()) {
+      errors.shippingAddress = 'Please enter your street delivery address';
+    }
+
+    if (!shippingAddress.shippingCity || !shippingAddress.shippingCity.trim()) {
+      errors.shippingCity = 'Please enter your town or city';
+    }
+
+    setCheckoutErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   // ─── Authentication & Password Recovery Handlers ─────────────────
@@ -1574,7 +1647,7 @@ function App() {
   const createPayPalOrder = useCallback(async (data, actions) => {
     setPaymentProcessing(true);
 
-    // 1. Primary: Direct Client-Side SDK creation with guaranteed USD currency match
+    // 1. Primary: Direct Client-Side SDK creation with guaranteed GBP currency match
     if (actions && actions.order && typeof actions.order.create === 'function') {
       try {
         const orderId = await actions.order.create({
@@ -1583,7 +1656,7 @@ function App() {
             {
               description: 'LICHT LUXE NATURALS Order — Made in LOVEWORLD',
               amount: {
-                currency_code: 'USD',
+                currency_code: 'GBP',
                 value: Number(cartTotal || 0).toFixed(2),
               },
             },
@@ -1596,7 +1669,7 @@ function App() {
       }
     }
 
-    // 2. Fallback: Spring Boot backend create-order (with explicit USD currency)
+    // 2. Fallback: Spring Boot backend create-order (with explicit GBP currency)
     try {
       const token = getAuthToken();
       const authHeaders = {
@@ -1612,15 +1685,11 @@ function App() {
         headers: authHeaders,
         signal: controller.signal,
         body: JSON.stringify({
-          amount: Number(cartTotal).toFixed(2),
-          currency: 'USD',
+          currency: 'GBP',
           deliveryOption: deliveryOption,
-          deliveryFee: Number(deliveryFee).toFixed(2),
           shippingInfo: shippingAddress,
           items: cart.map(item => ({
             id: item.id,
-            name: item.name,
-            price: item.price,
             quantity: item.quantity
           }))
         }),
@@ -1640,7 +1709,7 @@ function App() {
 
     setPaymentProcessing(false);
     throw new Error('PayPal payment actions are not available');
-  }, [cart, cartTotal, deliveryOption, deliveryFee, shippingAddress]);
+  }, [cart, cartTotal, deliveryOption, shippingAddress]);
 
   // Capture PayPal order after buyer approval
   const capturePayPalOrder = useCallback(async (data, actions) => {
@@ -1649,6 +1718,8 @@ function App() {
       let captureSuccess = false;
       let orderNumber = `LN-${Date.now() % 100000}`;
       let totalAmount = Number(cartTotal || cartSubtotal);
+      let confirmedSubtotal = cartSubtotal;
+      let confirmedFee = deliveryFee;
       let paypalOrderId = data?.orderID;
 
       // 1. Attempt backend capture if available
@@ -1667,13 +1738,10 @@ function App() {
           headers: authHeaders,
           signal: controller.signal,
           body: JSON.stringify({
-            amount: Number(cartTotal).toFixed(2),
-            currency: 'USD',
+            currency: 'GBP',
             shippingInfo: shippingAddress,
             items: cart.map(item => ({
               id: item.id,
-              name: item.name,
-              price: item.price,
               quantity: item.quantity
             }))
           }),
@@ -1720,20 +1788,18 @@ function App() {
               shippingInfo: shippingAddress,
               items: cart.map(item => ({
                 id: item.id,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                qty: item.quantity
+                quantity: item.quantity
               })),
-              total: totalAmount.toFixed(2),
-              deliveryFee: deliveryFee.toFixed(2),
-              paymentMethod: 'PayPal (Live)',
-              courier: deliveryOption === 'express' ? 'Royal Mail Special Delivery Guaranteed' : 'Royal Mail Tracked 48'
+              deliveryOption: deliveryOption,
+              paymentMethod: 'PayPal (Live)'
             })
           });
           if (dbRes.ok) {
             const dbData = await dbRes.json();
             if (dbData.orderNumber) orderNumber = dbData.orderNumber;
+            if (dbData.total) totalAmount = Number(dbData.total);
+            if (dbData.subtotal) confirmedSubtotal = Number(dbData.subtotal);
+            if (dbData.deliveryFee) confirmedFee = Number(dbData.deliveryFee);
             console.log('✅ PayPal order saved to database:', dbData);
           }
         } catch (dbErr) {
@@ -1795,10 +1861,11 @@ function App() {
       setOrderConfirmation({
         orderNumber: orderNumber,
         total: totalAmount.toFixed(2),
+        subtotal: confirmedSubtotal ? Number(confirmedSubtotal).toFixed(2) : undefined,
         paypalOrderId: paypalOrderId,
         shipping: shippingAddress,
         deliveryMethod: deliveryOption === 'express' ? 'Express Delivery' : 'Standard Delivery',
-        deliveryFee: deliveryFee.toFixed(2),
+        deliveryFee: confirmedFee ? Number(confirmedFee).toFixed(2) : deliveryFee.toFixed(2),
         method: 'PayPal (Live)'
       });
       showToast('✨ Payment successful! Order ' + orderNumber + ' confirmed.');
@@ -2221,23 +2288,23 @@ function App() {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid #E5DFC5', paddingBottom: '1.25rem' }}>
-                    <span style={{ fontSize: '2.5rem', fontWeight: 700, color: '#6E5535' }}>${activeProduct.price.toFixed(2)}</span>
+                    <span style={{ fontSize: '2.5rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(activeProduct.price)}</span>
                     {activeProduct.originalPrice && (
                       <>
                         <span style={{ fontSize: '1.35rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
-                          ${activeProduct.originalPrice.toFixed(2)}
+                          {formatCurrency(activeProduct.originalPrice)}
                         </span>
                         <span style={{ 
-                          fontSize: '0.85rem', 
-                          fontWeight: 700, 
-                          color: '#2D3A29', 
-                          backgroundColor: 'rgba(197, 160, 89, 0.25)', 
-                          border: '1.5px solid #C5A059', 
-                          padding: '0.25rem 0.65rem', 
-                          borderRadius: '6px' 
-                        }}>
-                          Save ${(activeProduct.originalPrice - activeProduct.price).toFixed(2)} ({Math.round(((activeProduct.originalPrice - activeProduct.price) / activeProduct.originalPrice) * 100)}% OFF)
-                        </span>
+                              fontSize: '0.85rem', 
+                              fontWeight: 700, 
+                              color: '#2D3A29', 
+                              backgroundColor: 'rgba(197, 160, 89, 0.25)', 
+                              border: '1.5px solid #C5A059', 
+                              padding: '0.25rem 0.65rem', 
+                              borderRadius: '6px' 
+                            }}>
+                              Save {formatCurrency(activeProduct.originalPrice - activeProduct.price)} ({Math.round(((activeProduct.originalPrice - activeProduct.price) / activeProduct.originalPrice) * 100)}% OFF)
+                            </span>
                       </>
                     )}
                     <span style={{ fontSize: '1rem', color: '#5C635B' }}>({activeProduct.volume})</span>
@@ -2264,7 +2331,7 @@ function App() {
                         style={{ flexGrow: 1, justifyContent: 'center', padding: '1rem 2rem', fontSize: '0.95rem', fontWeight: 600 }}
                         onClick={() => addToCart(activeProduct, pdpQuantity)}
                       >
-                        <ShoppingBag size={18} /> ADD TO BAG · ${(activeProduct.price * pdpQuantity).toFixed(2)} (${(activeProduct.price * pdpQuantity).toFixed(2)} ESP)
+                        <ShoppingBag size={18} /> ADD TO BAG · {formatCurrency(activeProduct.price * pdpQuantity)} ({(activeProduct.price * pdpQuantity).toFixed(2)} ESP)
                       </button>
 
                       <a 
@@ -2286,7 +2353,7 @@ function App() {
                         </span>
                         {activeProduct.originalPrice && (
                           <span style={{ fontSize: '0.8rem', color: '#2D3A29', fontWeight: 600, backgroundColor: 'rgba(197, 160, 89, 0.25)', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                            Save ${(activeProduct.originalPrice - activeProduct.price).toFixed(2)}
+                            Save {formatCurrency(activeProduct.originalPrice - activeProduct.price)}
                           </span>
                         )}
                       </div>
@@ -2435,7 +2502,7 @@ function App() {
                             zIndex: 2
                           }}
                         >
-                          ★ SAVE ${(product.originalPrice - product.price).toFixed(2)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                          ★ SAVE {formatCurrency(product.originalPrice - product.price)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                         </div>
                       )}
                     </div>
@@ -2452,7 +2519,7 @@ function App() {
                         {product.name}
                       </h3>
                       <div className="card-price-row" style={{ fontSize: '1.15rem', fontWeight: 600, color: '#6E5535', marginBottom: '0.75rem' }}>
-                        ${product.price} <span className="card-volume" style={{ fontSize: '0.8rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
+                        {formatCurrency(product.price)} <span className="card-volume" style={{ fontSize: '0.8rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
                       </div>
 
                       <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.5rem' }}>
@@ -2461,7 +2528,7 @@ function App() {
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.75rem', fontSize: '0.8rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={14} /> ADD · ${product.price} (${product.price} ESP)
+                          <ShoppingBag size={14} /> ADD · {formatCurrency(product.price)} ({product.price} ESP)
                         </button>
                         <button 
                           className="btn-secondary card-btn-secondary" 
@@ -2734,7 +2801,7 @@ function App() {
                             zIndex: 2
                           }}
                         >
-                          ★ SAVE ${(product.originalPrice - product.price).toFixed(2)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                          ★ SAVE {formatCurrency(product.originalPrice - product.price)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                         </div>
                       )}
                     </div>
@@ -2752,12 +2819,12 @@ function App() {
                       </h3>
                       <div className="card-price-row" style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
                         <span style={{ fontSize: '1.35rem', fontWeight: 700, color: '#6E5535' }}>
-                          ${product.price.toFixed(2)}
+                          {formatCurrency(product.price)}
                         </span>
                         {product.originalPrice && (
                           <>
                             <span style={{ fontSize: '0.95rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
-                              ${product.originalPrice.toFixed(2)}
+                              {formatCurrency(product.originalPrice)}
                             </span>
                             <span style={{ 
                               fontSize: '0.72rem', 
@@ -2768,7 +2835,7 @@ function App() {
                               padding: '0.15rem 0.45rem', 
                               borderRadius: '4px' 
                             }}>
-                              Save ${(product.originalPrice - product.price).toFixed(2)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
+                              Save {formatCurrency(product.originalPrice - product.price)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
                             </span>
                           </>
                         )}
@@ -2787,7 +2854,7 @@ function App() {
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={16} /> ADD · ${product.price} (${product.price} ESP)
+                          <ShoppingBag size={16} /> ADD · {formatCurrency(product.price)} ({product.price} ESP)
                         </button>
                         <button 
                           className="btn-secondary card-btn-secondary" 
@@ -2841,7 +2908,7 @@ function App() {
                 {/* 5-Piece Complete Collection Card */}
                 <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(197, 160, 89, 0.2)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                   <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#C5A059', color: '#FFFFFF', padding: '0.35rem 1.25rem', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(197, 160, 89, 0.4)', whiteSpace: 'nowrap' }}>
-                    ★ MASTER 5-PIECE COMBO · SAVE $11.95
+                    ★ MASTER 5-PIECE COMBO · SAVE £11.95
                   </div>
 
                   <div style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
@@ -2852,13 +2919,13 @@ function App() {
                       The Complete Luxe Naturals
                     </h2>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
-                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>$59.00</span>
+                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(59.00)}</span>
                       <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
                         ⚡ 59.00 ESP
                       </span>
-                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>$70.95</span>
+                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>{formatCurrency(70.95)}</span>
                       <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
-                        Save $11.95 (17% OFF)
+                        Save £11.95 (17% OFF)
                       </span>
                     </div>
                   </div>
@@ -2898,7 +2965,7 @@ function App() {
                       style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
                       onClick={() => addToCart(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
                     >
-                      Add to Bag · $59.00 (59.00 ESP)
+                      Add to Bag · {formatCurrency(59.00)} (59.00 ESP)
                     </button>
                     <button 
                       className="btn-secondary" 
@@ -2920,13 +2987,13 @@ function App() {
                       The Complete Ritual Set
                     </h2>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
-                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>$39.99</span>
+                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(39.99)}</span>
                       <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
                         ⚡ 39.99 ESP
                       </span>
-                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>$55.97</span>
+                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>{formatCurrency(55.97)}</span>
                       <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
-                        Save $15.98 (29% OFF)
+                        Save £15.98 (29% OFF)
                       </span>
                     </div>
                   </div>
@@ -2963,7 +3030,7 @@ function App() {
                       style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
                       onClick={() => addToCart(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
                     >
-                      Add to Bag · $39.99 (39.99 ESP)
+                      Add to Bag · {formatCurrency(39.99)} (39.99 ESP)
                     </button>
                     <button 
                       className="btn-secondary" 
@@ -2978,7 +3045,7 @@ function App() {
                 {/* 2-Piece African Black Soap Clarifying Duo Card */}
                 <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '1.5px solid #C5A059', boxShadow: '0 15px 40px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                   <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#4A5D4E', color: '#DFCAA7', padding: '0.35rem 1.25rem', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(45, 58, 41, 0.25)', whiteSpace: 'nowrap' }}>
-                    ★ PURIFYING DUO · SAVE $2.99
+                    ★ PURIFYING DUO · SAVE £2.99
                   </div>
 
                   <div style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
@@ -2989,13 +3056,13 @@ function App() {
                       Clarifying Duo Set
                     </h2>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
-                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>$21.99</span>
+                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(21.99)}</span>
                       <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
                         ⚡ 21.99 ESP
                       </span>
-                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>$24.98</span>
+                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>{formatCurrency(24.98)}</span>
                       <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
-                        Save $2.99 (12% OFF)
+                        Save £2.99 (12% OFF)
                       </span>
                     </div>
                   </div>
@@ -3029,7 +3096,7 @@ function App() {
                       style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
                       onClick={() => addToCart(PRODUCTS.find(p => p.id === 'african-black-soap-clarifying-duo'))}
                     >
-                      Add to Bag · $21.99 (21.99 ESP)
+                      Add to Bag · {formatCurrency(21.99)} (21.99 ESP)
                     </button>
                     <button 
                       className="btn-secondary" 
@@ -3587,7 +3654,7 @@ function App() {
                   <div style={{ padding: '1.5rem' }}>
                     <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C5A059', fontWeight: 600 }}>100% COLD PRESSED</div>
                     <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#2D3A29', marginTop: '0.25rem' }}>Pure Coconut Oil</h3>
-                    <p style={{ fontSize: '0.85rem', color: '#5C635B', marginTop: '0.35rem' }}>Nature's versatile nourishing oil · $22.</p>
+                    <p style={{ fontSize: '0.85rem', color: '#5C635B', marginTop: '0.35rem' }}>Nature's versatile nourishing oil · {formatCurrency(22.00)}</p>
                   </div>
                 </div>
 
@@ -3687,7 +3754,7 @@ function App() {
                             zIndex: 2
                           }}
                         >
-                          ★ SAVE ${(product.originalPrice - product.price).toFixed(2)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                          ★ SAVE {formatCurrency(product.originalPrice - product.price)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                         </div>
                       )}
                     </div>
@@ -3705,12 +3772,12 @@ function App() {
                       </h3>
                       <div className="card-price-row" style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
                         <span style={{ fontSize: '1.35rem', fontWeight: 700, color: '#6E5535' }}>
-                          ${product.price.toFixed(2)}
+                          {formatCurrency(product.price)}
                         </span>
                         {product.originalPrice && (
                           <>
                             <span style={{ fontSize: '0.95rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
-                              ${product.originalPrice.toFixed(2)}
+                              {formatCurrency(product.originalPrice)}
                             </span>
                             <span style={{ 
                               fontSize: '0.72rem', 
@@ -3721,7 +3788,7 @@ function App() {
                               padding: '0.15rem 0.45rem', 
                               borderRadius: '4px' 
                             }}>
-                              Save ${(product.originalPrice - product.price).toFixed(2)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
+                              Save {formatCurrency(product.originalPrice - product.price)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
                             </span>
                           </>
                         )}
@@ -3740,7 +3807,7 @@ function App() {
                           style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag size={16} /> ADD · ${product.price} (${product.price} ESP)
+                          <ShoppingBag size={16} /> ADD · {formatCurrency(product.price)} ({product.price} ESP)
                         </button>
                         <button 
                           className="btn-secondary card-btn-secondary" 
@@ -3936,7 +4003,9 @@ function App() {
                 <li><button onClick={() => navigateToTab('contact')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Contact Us</button></li>
                 <li><button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>FAQs</button></li>
                 <li><a href="tel:07831082965" style={{ color: '#D6DDD3', textDecoration: 'none' }}>Phone: 07831082965</a></li>
-                <li><button onClick={() => navigateToTab('contact')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Privacy Policy</button></li>
+                <li><button onClick={() => { setLegalModalTab('privacy'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Privacy Policy (UK GDPR)</button></li>
+                <li><button onClick={() => { setLegalModalTab('terms'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Terms of Service</button></li>
+                <li><button onClick={() => { setLegalModalTab('shipping'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Shipping & Returns Policy</button></li>
                 <li><button onClick={() => setIsSettingsOpen(true)} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Settings size={13} /> Preferences & Settings</button></li>
               </ul>
             </div>
@@ -3949,7 +4018,10 @@ function App() {
               © 2026 LICHT LUXE NATURALS. All Rights Reserved. Pure. Natural. Made with Love.
             </div>
 
-            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button onClick={() => { setLegalModalTab('privacy'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#A0A89F', cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}>Privacy Policy</button>
+              <button onClick={() => { setLegalModalTab('terms'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#A0A89F', cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}>Terms of Service</button>
+              <button onClick={() => { setLegalModalTab('shipping'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#A0A89F', cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}>Shipping & Returns</button>
               <a href="https://instagram.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Instagram</a>
               <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Facebook</a>
             </div>
@@ -3971,7 +4043,7 @@ function App() {
             {/* Free Shipping Bar */}
             <div className="free-shipping-bar">
               {amountForFreeShipping > 0 ? (
-                <>Add <strong>${amountForFreeShipping.toFixed(2)}</strong> more for <strong>FREE Delivery</strong> (Orders over $70)</>
+                <>Add <strong>{formatCurrency(amountForFreeShipping)}</strong> more for <strong>FREE Delivery</strong> (Orders over £70)</>
               ) : (
                 <>✨ You've unlocked <strong>FREE Standard Delivery</strong> on this order!</>
               )}
@@ -4004,7 +4076,7 @@ function App() {
                           <span className="qty-num">{item.quantity}</span>
                           <button className="qty-btn" onClick={() => updateCartQuantity(item.id, 1)}><Plus size={12} /></button>
                         </div>
-                        <div style={{ fontWeight: 600, color: '#6E5535' }}>${(item.price * item.quantity).toFixed(2)}</div>
+                        <div style={{ fontWeight: 600, color: '#6E5535' }}>{formatCurrency(item.price * item.quantity)}</div>
                       </div>
                     </div>
                   </div>
@@ -4019,7 +4091,7 @@ function App() {
                 <div style={{ backgroundColor: '#FAF7F2', borderRadius: '8px', border: '1px solid #E5DFC5', padding: '0.85rem', marginBottom: '1rem' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6E5535', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>DELIVERY METHOD</span>
-                    {isFreeShippingEligible && <span style={{ color: '#2D3A29', backgroundColor: '#EAF0E8', padding: '0.15rem 0.45rem', borderRadius: '3px', fontSize: '0.65rem', fontWeight: 700 }}>FREE OVER $70</span>}
+                    {isFreeShippingEligible && <span style={{ color: '#2D3A29', backgroundColor: '#EAF0E8', padding: '0.15rem 0.45rem', borderRadius: '3px', fontSize: '0.65rem', fontWeight: 700 }}>FREE OVER £70</span>}
                   </div>
                   
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
@@ -4039,7 +4111,7 @@ function App() {
                       <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2D3A29' }}>Standard</div>
                       <div style={{ fontSize: '0.68rem', color: '#5C635B' }}>3–5 days</div>
                       <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isFreeShippingEligible ? '#2D3A29' : '#6E5535', marginTop: '0.2rem' }}>
-                        {isFreeShippingEligible ? 'FREE' : '$6.99'}
+                        {isFreeShippingEligible ? 'FREE' : formatCurrency(standardDeliveryPrice)}
                       </div>
                     </button>
 
@@ -4059,7 +4131,7 @@ function App() {
                       <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2D3A29' }}>Express</div>
                       <div style={{ fontSize: '0.68rem', color: '#5C635B' }}>1–2 days</div>
                       <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6E5535', marginTop: '0.2rem' }}>
-                        $10.99
+                        {formatCurrency(expressDeliveryPrice)}
                       </div>
                     </button>
                   </div>
@@ -4067,23 +4139,23 @@ function App() {
 
                 <div className="cart-subtotal-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#5C635B', marginBottom: '0.35rem' }}>
                   <span>Subtotal</span>
-                  <span>${cartSubtotal.toFixed(2)}</span>
+                  <span>{formatCurrency(cartSubtotal)}</span>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#5C635B', marginBottom: '0.5rem' }}>
                   <span>Delivery ({deliveryOption === 'express' ? 'Express 1–2 Days' : 'Standard 3–5 Days'})</span>
                   <span style={{ fontWeight: 600, color: deliveryFee === 0 ? '#2D3A29' : '#6E5535' }}>
-                    {deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}
+                    {deliveryFee === 0 ? 'FREE' : formatCurrency(deliveryFee)}
                   </span>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 700, color: '#2D3A29', borderTop: '1px solid #E5DFC5', paddingTop: '0.5rem', marginBottom: '1rem' }}>
                   <span>Total</span>
-                  <span style={{ color: '#6E5535' }}>${cartTotal.toFixed(2)}</span>
+                  <span style={{ color: '#6E5535' }}>{formatCurrency(cartTotal)}</span>
                 </div>
 
                 <button className="btn-primary checkout-btn" onClick={openCheckout} style={{ width: '100%', justifyContent: 'center' }}>
-                  Proceed to Checkout · ${cartTotal.toFixed(2)}
+                  Proceed to Checkout · {formatCurrency(cartTotal)}
                 </button>
                 <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.8rem', color: '#5C635B' }}>
                   Or call <a href="tel:07831082965" style={{ color: '#2D3A29', fontWeight: 600 }}>07831082965</a> to order directly
@@ -4132,7 +4204,7 @@ function App() {
                     <img src={p.image} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
                     <div>
                       <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: '#2D3A29' }}>{p.name}</div>
-                      <div style={{ fontSize: '0.85rem', color: '#5C635B' }}>${p.price} · {p.subtitle}</div>
+                      <div style={{ fontSize: '0.85rem', color: '#5C635B' }}>{formatCurrency(p.price)} · {p.subtitle}</div>
                     </div>
                   </div>
                 ))}
@@ -4167,7 +4239,7 @@ function App() {
                       <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>{item.volume}</div>
                     </div>
                     <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {formatCurrency(item.price * item.quantity)}
                     </div>
                   </div>
                 ))}
@@ -4176,12 +4248,12 @@ function App() {
               <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
                   <span>Subtotal</span>
-                  <span>${cartSubtotal.toFixed(2)}</span>
+                  <span>{formatCurrency(cartSubtotal)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
                   <span>Delivery ({deliveryOption === 'express' ? 'Express 1–2 Days' : 'Standard 3–5 Days'})</span>
                   <span style={{ color: deliveryFee === 0 ? '#2D3A29' : '#6E5535', fontWeight: 600 }}>
-                    {deliveryFee === 0 ? 'FREE (Orders over $70)' : `$${deliveryFee.toFixed(2)}`}
+                    {deliveryFee === 0 ? 'FREE (Orders over £70)' : formatCurrency(deliveryFee)}
                   </span>
                 </div>
                 {shippingAddress.shippingCity && (
@@ -4192,7 +4264,7 @@ function App() {
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', color: '#2D3A29', fontWeight: 700, borderTop: '1px solid #ECE7D8', paddingTop: '0.75rem' }}>
                   <span>Total</span>
-                  <span style={{ color: '#6E5535' }}>${cartTotal.toFixed(2)}</span>
+                  <span style={{ color: '#6E5535' }}>{formatCurrency(cartTotal)}</span>
                 </div>
               </div>
             </div>
@@ -4217,10 +4289,10 @@ function App() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (shippingAddress.shippingName && shippingAddress.shippingAddress && shippingAddress.shippingCity && shippingAddress.shippingPostcode) {
+                    if (validateCheckoutStep1()) {
                       setCheckoutStep('payment');
                     } else {
-                      showToast('Please enter your delivery address first');
+                      showToast('Please correct the errors in the delivery form.');
                     }
                   }}
                   style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: checkoutStep === 'payment' ? '#2D3A29' : '#9CA3AF', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}
@@ -4241,10 +4313,11 @@ function App() {
 
                   <form onSubmit={(e) => {
                     e.preventDefault();
-                    if (!shippingAddress.shippingName.trim() || !shippingAddress.shippingAddress.trim() || !shippingAddress.shippingCity.trim() || !shippingAddress.shippingPostcode.trim()) {
-                      showToast('Please fill in all required delivery fields.');
+                    if (!validateCheckoutStep1()) {
+                      showToast('Please correct the errors in the delivery form.');
                       return;
                     }
+                    setCheckoutErrors({});
                     setCheckoutStep('payment');
                   }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     
@@ -4257,9 +4330,18 @@ function App() {
                         required 
                         placeholder="e.g. Eleanor Vance" 
                         value={shippingAddress.shippingName}
-                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingName: e.target.value }))}
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setShippingAddress(prev => ({ ...prev, shippingName: val }));
+                          if (checkoutErrors.shippingName) setCheckoutErrors(prev => ({ ...prev, shippingName: undefined }));
+                        }}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingName ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
                       />
+                      {checkoutErrors.shippingName && (
+                        <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <AlertCircle size={12} /> {checkoutErrors.shippingName}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -4269,14 +4351,23 @@ function App() {
                       <input 
                         type="email" 
                         required 
-                        placeholder="e.g. eleanor@example.com" 
+                        placeholder="e.g. eleanor@example.co.uk" 
                         value={shippingAddress.shippingEmail}
-                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingEmail: e.target.value }))}
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setShippingAddress(prev => ({ ...prev, shippingEmail: val }));
+                          if (checkoutErrors.shippingEmail) setCheckoutErrors(prev => ({ ...prev, shippingEmail: undefined }));
+                        }}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingEmail ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
                       />
+                      {checkoutErrors.shippingEmail && (
+                        <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <AlertCircle size={12} /> {checkoutErrors.shippingEmail}
+                        </div>
+                      )}
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div className="checkout-grid-duo">
                       <div>
                         <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
                           Contact Phone *
@@ -4284,11 +4375,20 @@ function App() {
                         <input 
                           type="tel" 
                           required 
-                          placeholder="e.g. 07831082965" 
+                          placeholder="e.g. 07831 082965" 
                           value={shippingAddress.shippingPhone}
-                          onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingPhone: e.target.value }))}
-                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setShippingAddress(prev => ({ ...prev, shippingPhone: val }));
+                            if (checkoutErrors.shippingPhone) setCheckoutErrors(prev => ({ ...prev, shippingPhone: undefined }));
+                          }}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingPhone ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
                         />
+                        {checkoutErrors.shippingPhone && (
+                          <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <AlertCircle size={12} /> {checkoutErrors.shippingPhone}
+                          </div>
+                        )}
                       </div>
                       <div>
                         <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
@@ -4297,11 +4397,20 @@ function App() {
                         <input 
                           type="text" 
                           required 
-                          placeholder="e.g. W8 4PT" 
+                          placeholder="e.g. SW1A 1AA" 
                           value={shippingAddress.shippingPostcode}
-                          onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingPostcode: e.target.value.toUpperCase() }))}
-                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                          onChange={(e) => {
+                            const val = e.target.value.toUpperCase();
+                            setShippingAddress(prev => ({ ...prev, shippingPostcode: val }));
+                            if (checkoutErrors.shippingPostcode) setCheckoutErrors(prev => ({ ...prev, shippingPostcode: undefined }));
+                          }}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingPostcode ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
                         />
+                        {checkoutErrors.shippingPostcode && (
+                          <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <AlertCircle size={12} /> {checkoutErrors.shippingPostcode}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -4314,9 +4423,18 @@ function App() {
                         required 
                         placeholder="House number, Street name, Flat or Suite" 
                         value={shippingAddress.shippingAddress}
-                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingAddress: e.target.value }))}
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setShippingAddress(prev => ({ ...prev, shippingAddress: val }));
+                          if (checkoutErrors.shippingAddress) setCheckoutErrors(prev => ({ ...prev, shippingAddress: undefined }));
+                        }}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingAddress ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
                       />
+                      {checkoutErrors.shippingAddress && (
+                        <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <AlertCircle size={12} /> {checkoutErrors.shippingAddress}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -4328,9 +4446,18 @@ function App() {
                         required 
                         placeholder="e.g. London" 
                         value={shippingAddress.shippingCity}
-                        onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingCity: e.target.value }))}
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setShippingAddress(prev => ({ ...prev, shippingCity: val }));
+                          if (checkoutErrors.shippingCity) setCheckoutErrors(prev => ({ ...prev, shippingCity: undefined }));
+                        }}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingCity ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
                       />
+                      {checkoutErrors.shippingCity && (
+                        <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <AlertCircle size={12} /> {checkoutErrors.shippingCity}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -4372,16 +4499,16 @@ function App() {
                             <div>
                               <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>Standard Delivery (3–5 Business Days)</div>
                               <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>
-                                {isFreeShippingEligible ? 'Free on orders over $70' : 'Reliable UK Royal Mail Tracked Delivery'}
+                                {isFreeShippingEligible ? 'Free on orders over £70' : 'Reliable UK Royal Mail Tracked Delivery'}
                               </div>
                             </div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <span style={{ fontSize: '0.95rem', fontWeight: 700, color: isFreeShippingEligible ? '#2D3A29' : '#6E5535' }}>
-                              {isFreeShippingEligible ? 'FREE' : '$6.99'}
+                              {isFreeShippingEligible ? 'FREE' : formatCurrency(standardDeliveryPrice)}
                             </span>
                             {isFreeShippingEligible && (
-                              <div style={{ fontSize: '0.65rem', color: '#4A5D4E', fontWeight: 600 }}>OVER $70</div>
+                              <div style={{ fontSize: '0.65rem', color: '#4A5D4E', fontWeight: 600 }}>OVER £70</div>
                             )}
                           </div>
                         </div>
@@ -4411,7 +4538,7 @@ function App() {
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>
-                              $10.99
+                              {formatCurrency(expressDeliveryPrice)}
                             </span>
                             <div style={{ fontSize: '0.65rem', color: '#C5A059', fontWeight: 600 }}>FAST TRACK</div>
                           </div>
@@ -4469,7 +4596,7 @@ function App() {
                         </div>
                         <div>
                           <div style={{ fontWeight: 700, color: '#2D3A29', fontSize: '1.15rem' }}>Pay with Espees (ESP)</div>
-                          <div style={{ fontSize: '0.75rem', color: '#6E5535', fontWeight: 600 }}>Official Loveworld Currency • 1 ESP = $1.00 USD</div>
+                          <div style={{ fontSize: '0.75rem', color: '#6E5535', fontWeight: 600 }}>Official Loveworld Currency • 1 ESP = £1.00 GBP</div>
                         </div>
                       </div>
 
@@ -4477,7 +4604,7 @@ function App() {
                         <div>
                           <div style={{ fontSize: '0.7rem', color: '#5C635B', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>Total in Espees</div>
                           <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#6E5535', lineHeight: 1.1 }}>
-                            {cartTotal.toFixed(2)} ESP <span style={{ fontSize: '0.9rem', color: '#5C635B', fontWeight: 400 }}>(${cartTotal.toFixed(2)} USD)</span>
+                            {cartTotal.toFixed(2)} ESP <span style={{ fontSize: '0.9rem', color: '#5C635B', fontWeight: 400 }}>({formatCurrency(cartTotal)})</span>
                           </div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
@@ -4684,39 +4811,18 @@ function App() {
                       </div>
                     </div>
 
-                    {/* STRIPE CARD OPTION */}
-                    <div style={{ border: '1.5px solid #2D3A29', borderRadius: '8px', padding: '1.25rem 1.5rem', backgroundColor: '#F9FBF8', position: 'relative' }}>
-                      <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.4rem' }}>
-                        <div style={{ backgroundColor: '#1A1F71', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>VISA</div>
-                        <div style={{ backgroundColor: '#EB001B', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>MC</div>
-                        <div style={{ backgroundColor: '#006FCF', color: '#FFF', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '2px', fontWeight: 600 }}>AMEX</div>
-                      </div>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: '5px solid #2D3A29', display: 'inline-block' }}></div>
-                        <span style={{ fontWeight: 600, color: '#2D3A29', fontSize: '1.05rem' }}>Credit / Debit Card</span>
-                      </div>
-                      
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                        <input type="text" placeholder="Card number" style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
-                        <div style={{ display: 'flex', gap: '0.75rem' }}>
-                          <input type="text" placeholder="MM / YY" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
-                          <input type="text" placeholder="CVC" style={{ width: '50%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
+                    {/* DIRECT CARD PAYMENT (STRIPE - COMING SOON) */}
+                    <div style={{ border: '1px dashed #D6DDD3', borderRadius: '8px', padding: '1.15rem 1.35rem', backgroundColor: '#FAF7F2' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <CreditCard size={18} color="#6E5535" />
+                          <span style={{ fontWeight: 600, color: '#2D3A29', fontSize: '0.95rem' }}>Credit / Debit Card (Direct Stripe)</span>
                         </div>
-                        <input type="text" placeholder="Name on card" defaultValue={shippingAddress.shippingName} style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem' }} />
+                        <span style={{ fontSize: '0.68rem', backgroundColor: '#E5DFC5', color: '#6E5535', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>COMING SOON</span>
                       </div>
-                      
-                      <button 
-                        style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', marginTop: '1.25rem', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-                        onClick={() => {
-                          processCompletedOrder('Credit / Debit Card');
-                        }}
-                      >
-                        Pay ${cartTotal.toFixed(2)} Securely <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                      </button>
-                      <div style={{ textAlign: 'center', marginTop: '0.65rem', fontSize: '0.7rem', color: '#5C635B', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Payments processed securely by Stripe
-                      </div>
+                      <p style={{ margin: 0, fontSize: '0.825rem', color: '#5C635B', lineHeight: 1.45 }}>
+                        Direct on-site card checkout is currently being integrated with Stripe UK. To pay now using any <strong>Debit or Credit Card</strong> (Visa, Mastercard, Maestro, Amex), please use the <strong>PayPal button below</strong> and select <em>"Pay with Credit or Debit Card"</em> — no PayPal account required.
+                      </p>
                     </div>
 
                     {/* PAYPAL SMART BUTTONS */}
@@ -5211,20 +5317,20 @@ function App() {
               {orderConfirmation.subtotal && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
                   <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Subtotal</span>
-                  <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>${orderConfirmation.subtotal}</span>
+                  <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>{formatCurrency(orderConfirmation.subtotal)}</span>
                 </div>
               )}
               {orderConfirmation.deliveryMethod && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
                   <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>{orderConfirmation.deliveryMethod}</span>
                   <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>
-                    {Number(orderConfirmation.deliveryFee) === 0 ? 'FREE (Over $70)' : `$${orderConfirmation.deliveryFee}`}
+                    {Number(orderConfirmation.deliveryFee) === 0 ? 'FREE (Over £70)' : formatCurrency(orderConfirmation.deliveryFee)}
                   </span>
                 </div>
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5DFC5', paddingTop: '0.5rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
                 <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29' }}>Total Paid</span>
-                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>${orderConfirmation.total}</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(orderConfirmation.total)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: orderConfirmation.espeesRef ? '0.35rem' : '0' }}>
                 <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Payment Method</span>
@@ -5265,6 +5371,13 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* UK LEGAL POLICIES & CONSUMER RIGHTS MODAL */}
+      <LegalModal
+        isOpen={isLegalModalOpen}
+        onClose={() => setIsLegalModalOpen(false)}
+        initialTab={legalModalTab}
+      />
 
     </div>
     </PayPalScriptProvider>
