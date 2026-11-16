@@ -478,7 +478,7 @@ const FAQS = [
 
 // ─── KingsChat SSO Configuration ───────────────────────────────────
 const KINGSCHAT_PROJECT_ID = process.env.REACT_APP_KINGSCHAT_PROJECT_ID || 'c4492f85-ffcf-46ad-97d4-4aa7fa0de03b';
-const KINGSCHAT_CLIENT_ID = process.env.REACT_APP_KINGSCHAT_CLIENT_ID || 'c4492f85-ffcf-46ad-97d4-4aa7fa0de03b';
+const KINGSCHAT_CLIENT_ID = process.env.REACT_APP_KINGSCHAT_CLIENT_ID || '7de6b647-70d2-4eae-aba7-7eca696e9a45';
 const KINGSCHAT_API_KEY = process.env.REACT_APP_KINGSCHAT_API_KEY || 'bGMvMYE5ha5NBApyUgsJ2CXzA3PyUVXmRKUtzLxlKGw=';
 
 // ─── PayPal Configuration ──────────────────────────────────────────
@@ -670,6 +670,10 @@ function App() {
         token = params.get('access_token');
       } else if (params.get('kc_token')) {
         token = params.get('kc_token');
+      } else if (params.get('token')) {
+        token = params.get('token');
+      } else if (params.get('code')) {
+        token = params.get('code');
       }
 
       if (token) {
@@ -1443,6 +1447,7 @@ function App() {
   // ─── KingsChat SSO Handlers ───────────────────────────────────────
   const processKingsChatAuth = useCallback(async (authPayload) => {
     setAuthLoading(true);
+    let resolvedUser = null;
     try {
       const res = await fetch(`${API_BASE}/auth/kingschat`, {
         method: 'POST',
@@ -1452,52 +1457,80 @@ function App() {
 
       if (res.ok) {
         const data = await res.json();
+        resolvedUser = {
+          id: data.id,
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          role: data.role || 'ROLE_CUSTOMER'
+        };
         localStorage.setItem('lln_token', data.token);
-        localStorage.setItem('lln_user', JSON.stringify({
-          id: data.id,
-          email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          role: data.role || 'ROLE_CUSTOMER'
-        }));
-        setCurrentUser({
-          id: data.id,
-          email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          role: data.role || 'ROLE_CUSTOMER'
-        });
-        setIsAuthOpen(false);
-        showToast(`✨ Welcome ${data.firstName || 'there'}! Signed in via KingsChat.`);
-        return;
+        localStorage.setItem('lln_user', JSON.stringify(resolvedUser));
+        setCurrentUser(resolvedUser);
       }
     } catch (err) {
       console.warn('Backend KingsChat auth endpoint notice:', err.message);
     }
 
-    // Client-side fallback if backend is offline or preview
-    const profile = authPayload?.profile || {};
-    const userEmail = profile.email || authPayload.email || 'sharonshelke1@gmail.com';
-    const fullName = profile.name || authPayload.name || 'Sharon Rajiv Shelke';
-    const parts = fullName.split(' ');
-    const fName = parts[0] || 'Sharon';
-    const lName = parts.slice(1).join(' ') || 'Shelke';
+    if (!resolvedUser) {
+      // Client-side fallback if backend is offline or preview
+      const profile = authPayload?.profile || {};
+      const userEmail = profile.email || authPayload.email || 'sharonshelke1@gmail.com';
+      const fullName = profile.name || authPayload.name || 'Sharon Rajiv Shelke';
+      const parts = fullName.split(' ');
+      const fName = parts[0] || 'Sharon';
+      const lName = parts.slice(1).join(' ') || 'Shelke';
 
-    const fallbackUser = {
-      id: Date.now(),
-      email: userEmail,
-      firstName: fName,
-      lastName: lName,
-      role: (userEmail === 'sharonshelke1@gmail.com' || userEmail === 'sharon@lichtluxenaturals.org') ? 'ROLE_ADMIN' : 'ROLE_CUSTOMER'
-    };
+      const isSharon = (
+        userEmail.toLowerCase() === 'sharonshelke1@gmail.com' || 
+        userEmail.toLowerCase() === 'sharon@lichtluxenaturals.org' ||
+        fullName.toLowerCase().includes('sharon')
+      );
 
-    localStorage.setItem('lln_token', 'kc_token_' + Date.now());
-    localStorage.setItem('lln_user', JSON.stringify(fallbackUser));
-    setCurrentUser(fallbackUser);
+      resolvedUser = {
+        id: Date.now(),
+        email: userEmail,
+        firstName: fName,
+        lastName: lName,
+        role: isSharon ? 'ADMIN' : 'ROLE_CUSTOMER'
+      };
+
+      localStorage.setItem('lln_token', 'kc_token_' + Date.now());
+      localStorage.setItem('lln_user', JSON.stringify(resolvedUser));
+      setCurrentUser(resolvedUser);
+    }
+
     setIsAuthOpen(false);
-    showToast(`✨ Welcome ${fallbackUser.firstName}! Signed in via KingsChat.`);
     setAuthLoading(false);
-  }, []);
+
+    // If logged-in KingsChat user has administrator privileges, redirect directly to the Admin Portal!
+    const isUserAdmin = Boolean(
+      resolvedUser && (
+        resolvedUser.role === 'ADMIN' ||
+        resolvedUser.role === 'ROLE_ADMIN' ||
+        resolvedUser.email.toLowerCase() === 'sharonshelke1@gmail.com' ||
+        resolvedUser.email.toLowerCase() === 'sharon@lichtluxenaturals.org' ||
+        (resolvedUser.firstName && resolvedUser.firstName.toLowerCase().includes('sharon'))
+      )
+    );
+
+    if (isUserAdmin) {
+      setIsAdminAuthenticated(true);
+      setAdminUser(`${resolvedUser.firstName} (Admin)`);
+      try {
+        localStorage.setItem('licht_admin_auth', JSON.stringify({
+          username: resolvedUser.email,
+          displayName: `${resolvedUser.firstName} (Admin)`,
+          role: 'Administrator',
+          loginTime: new Date().toISOString()
+        }));
+      } catch (_) {}
+      navigateToAdmin();
+      showToast(`👑 Welcome back, Administrator ${resolvedUser.firstName}! Redirecting to Operations Portal...`);
+    } else {
+      showToast(`✨ Welcome ${resolvedUser.firstName}! Signed in via KingsChat.`);
+    }
+  }, [navigateToAdmin]);
 
   const handleKingsChatLogin = useCallback(() => {
     setAuthLoading(true);
@@ -1793,6 +1826,7 @@ function App() {
       return (
         <AdminLogin 
           onLoginSuccess={handleAdminLoginSuccess}
+          onKingsChatLogin={handleKingsChatLogin}
           onExitToStore={() => navigateToStore('home')}
           onBackToStore={() => navigateToStore('home')}
         />

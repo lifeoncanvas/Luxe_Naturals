@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import './AdminPortal.css';
 
-export default function AdminLogin({ onLoginSuccess, onExitToStore, onBackToStore }) {
+export default function AdminLogin({ onLoginSuccess, onKingsChatLogin, onExitToStore, onBackToStore }) {
   const exitStore = onExitToStore || onBackToStore;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -137,6 +137,53 @@ export default function AdminLogin({ onLoginSuccess, onExitToStore, onBackToStor
           <div className="admin-login-error">
             <AlertCircle size={18} />
             <span>{error}</span>
+          </div>
+        )}
+
+        {/* KingsChat Connect Admin SSO Button */}
+        {onKingsChatLogin && (
+          <div style={{ marginBottom: '1.25rem' }}>
+            <button
+              type="button"
+              onClick={onKingsChatLogin}
+              style={{
+                width: '100%',
+                padding: '0.85rem 1rem',
+                backgroundColor: '#0054A6',
+                color: '#FFFFFF',
+                border: '1px solid #1E70BF',
+                borderRadius: '4px',
+                fontWeight: 700,
+                fontSize: '0.92rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.65rem',
+                boxShadow: '0 4px 16px rgba(0, 84, 166, 0.35)',
+                transition: 'all 0.2s ease',
+                letterSpacing: '0.02em'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#004385'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#0054A6'}
+              title="Authenticate with KingsChat and enter the Operations Portal"
+            >
+              <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>👑</span>
+              <span>Log In with KingsChat Connect</span>
+            </button>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              margin: '1.15rem 0 0.25rem 0', 
+              color: '#7A8478', 
+              fontSize: '0.72rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em'
+            }}>
+              <span style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.1)' }}></span>
+              <span style={{ padding: '0 0.75rem' }}>or sign in with credentials</span>
+              <span style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.1)' }}></span>
+            </div>
           </div>
         )}
 
