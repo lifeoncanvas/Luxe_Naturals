@@ -559,7 +559,7 @@ function App() {
     }
   });
 
-  // E-commerce cart state with localStorage refresh persistence (linked to logged-in user)
+  // E-commerce cart state with user-session isolation (guests start empty; logged-in users keep saved bag)
   const [cart, setCart] = useState(() => {
     try {
       const savedUser = localStorage.getItem('lln_user');
@@ -571,28 +571,36 @@ function App() {
           const parsed = JSON.parse(userCart);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         }
+      } else {
+        // For unauthenticated visitors, only restore items they explicitly added during this tab session
+        const guestCart = sessionStorage.getItem('lln_guest_cart');
+        if (guestCart) {
+          const parsed = JSON.parse(guestCart);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
       }
-      const genericCart = localStorage.getItem('lln_cart');
-      if (genericCart) {
-        const parsed = JSON.parse(genericCart);
-        if (Array.isArray(parsed)) return parsed;
-      }
+      // Purge any legacy generic lln_cart so leftover items from previous sessions never bleed in
+      localStorage.removeItem('lln_cart');
     } catch (e) {
-      console.warn('Could not read cart from localStorage', e);
+      console.warn('Could not read cart from storage', e);
     }
     return [];
   });
 
-  // Save cart to localStorage on any change (keeps cart upon page refresh)
+  // Save cart to isolated storage on any change
   useEffect(() => {
     try {
       if (currentUser && (currentUser.email || currentUser.id)) {
         const userKey = `lln_cart_${(currentUser.email || currentUser.id).toLowerCase()}`;
         localStorage.setItem(userKey, JSON.stringify(cart));
+      } else {
+        // Save guest additions strictly to sessionStorage (never polluting persistent localStorage)
+        sessionStorage.setItem('lln_guest_cart', JSON.stringify(cart));
       }
-      localStorage.setItem('lln_cart', JSON.stringify(cart));
+      // Guarantee legacy lln_cart is purged
+      localStorage.removeItem('lln_cart');
     } catch (e) {
-      console.warn('Could not save cart to localStorage', e);
+      console.warn('Could not save cart to storage', e);
     }
   }, [cart, currentUser]);
 
@@ -1002,8 +1010,8 @@ function App() {
           const data = await res.json();
           setServerQuote(data);
         }
-      } catch (err) {
-        console.warn('Backend quote notice:', err.message);
+      } catch (_) {
+        // Graceful fallback to client-side pricing calculation when backend is offline
       }
     };
     fetchQuote();
@@ -1085,7 +1093,10 @@ function App() {
       localStorage.removeItem('lln_token');
       localStorage.removeItem('lln_user');
       localStorage.removeItem('lln_admin_users');
+      localStorage.removeItem('lln_cart');
+      sessionStorage.removeItem('lln_guest_cart');
     } catch (e) {}
+    setCart([]);
     setIsAdminAuthenticated(false);
     setCurrentUser(null);
     setAdminUser(null);
@@ -1578,9 +1589,18 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('lln_token');
-    localStorage.removeItem('lln_user');
+    try {
+      localStorage.removeItem('lln_token');
+      localStorage.removeItem('lln_user');
+      localStorage.removeItem('licht_admin_auth');
+      sessionStorage.removeItem('licht_admin_auth');
+      localStorage.removeItem('lln_cart');
+      sessionStorage.removeItem('lln_guest_cart');
+    } catch (e) {}
+    setCart([]);
+    setIsAdminAuthenticated(false);
     setCurrentUser(null);
+    setAdminUser(null);
     setIsAuthOpen(false);
     showToast('Signed out successfully.');
   };
@@ -1589,11 +1609,18 @@ function App() {
   const processKingsChatAuth = useCallback(async (authPayload) => {
     setAuthLoading(true);
     let resolvedUser = null;
+    const accessToken = authPayload?.accessToken || authPayload?.access_token || authPayload?.token || (typeof authPayload === 'string' ? authPayload : null);
+    const payloadToSend = {
+      ...authPayload,
+      ...(accessToken ? { accessToken } : {})
+    };
+
+    // 1. Try backend authentication endpoint
     try {
       const res = await fetch(`${API_BASE}/auth/kingschat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authPayload)
+        body: JSON.stringify(payloadToSend)
       });
 
       if (res.ok) {
@@ -1605,40 +1632,87 @@ function App() {
           lastName: data.lastName,
           role: data.role || 'ROLE_CUSTOMER'
         };
-        localStorage.setItem('lln_token', data.token);
+        localStorage.setItem('lln_token', data.token || accessToken || ('kc_token_' + Date.now()));
         localStorage.setItem('lln_user', JSON.stringify(resolvedUser));
         setCurrentUser(resolvedUser);
       }
-    } catch (err) {
-      console.warn('Backend KingsChat auth endpoint notice:', err.message);
+    } catch (_) {
+      // Backend not reached or offline; proceed to direct KingsChat resolution
+    }
+
+    // 2. Direct KingsChat Profile API resolution if backend is offline
+    if (!resolvedUser && accessToken) {
+      try {
+        const profileRes = await fetch('https://connect.kingsch.at/api/profile', {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'x-api-key': KINGSCHAT_API_KEY
+          }
+        });
+        if (profileRes.ok) {
+          const pData = await profileRes.json();
+          const pProfile = pData.profile || pData.user || pData;
+          const pUser = pProfile.user || pProfile;
+          const pEmail = pUser.email || (pUser.username ? `${pUser.username.replace(/[^a-zA-Z0-9._-]/g, '')}@kingschat.loveworld.org` : null);
+          if (pEmail) {
+            const fullName = pUser.name || pUser.username || 'KingsChat Member';
+            const parts = fullName.trim().split(/\s+/);
+            const fName = parts[0] || 'KingsChat';
+            const lName = parts.slice(1).join(' ') || 'Member';
+            const isSharon = (
+              pEmail.toLowerCase() === 'sharonshelke1@gmail.com' ||
+              pEmail.toLowerCase() === 'sharon@lichtluxenaturals.org'
+            );
+            resolvedUser = {
+              id: pUser.id || Date.now(),
+              email: pEmail,
+              firstName: fName,
+              lastName: lName,
+              role: isSharon ? 'ADMIN' : 'ROLE_CUSTOMER'
+            };
+            localStorage.setItem('lln_token', accessToken);
+            localStorage.setItem('lln_user', JSON.stringify(resolvedUser));
+            setCurrentUser(resolvedUser);
+          }
+        }
+      } catch (directErr) {
+        console.warn('Direct KingsChat profile lookup note:', directErr.message);
+      }
+    }
+
+    // 3. Fallback when explicit profile or email payload was provided
+    if (!resolvedUser && (authPayload?.profile || authPayload?.email)) {
+      const profile = authPayload?.profile || {};
+      const userEmail = profile.email || authPayload.email;
+      if (userEmail) {
+        const fullName = profile.name || authPayload.name || userEmail.split('@')[0];
+        const parts = fullName.trim().split(/\s+/);
+        const fName = parts[0] || 'Member';
+        const lName = parts.slice(1).join(' ') || '';
+
+        const isSharon = (
+          userEmail.toLowerCase() === 'sharonshelke1@gmail.com' || 
+          userEmail.toLowerCase() === 'sharon@lichtluxenaturals.org'
+        );
+
+        resolvedUser = {
+          id: Date.now(),
+          email: userEmail,
+          firstName: fName,
+          lastName: lName,
+          role: isSharon ? 'ADMIN' : 'ROLE_CUSTOMER'
+        };
+
+        localStorage.setItem('lln_token', accessToken || ('kc_token_' + Date.now()));
+        localStorage.setItem('lln_user', JSON.stringify(resolvedUser));
+        setCurrentUser(resolvedUser);
+      }
     }
 
     if (!resolvedUser) {
-      // Client-side fallback if backend is offline or preview
-      const profile = authPayload?.profile || {};
-      const userEmail = profile.email || authPayload.email || 'sharonshelke1@gmail.com';
-      const fullName = profile.name || authPayload.name || 'Sharon Rajiv Shelke';
-      const parts = fullName.split(' ');
-      const fName = parts[0] || 'Sharon';
-      const lName = parts.slice(1).join(' ') || 'Shelke';
-
-      const isSharon = (
-        userEmail.toLowerCase() === 'sharonshelke1@gmail.com' || 
-        userEmail.toLowerCase() === 'sharon@lichtluxenaturals.org' ||
-        fullName.toLowerCase().includes('sharon')
-      );
-
-      resolvedUser = {
-        id: Date.now(),
-        email: userEmail,
-        firstName: fName,
-        lastName: lName,
-        role: isSharon ? 'ADMIN' : 'ROLE_CUSTOMER'
-      };
-
-      localStorage.setItem('lln_token', 'kc_token_' + Date.now());
-      localStorage.setItem('lln_user', JSON.stringify(resolvedUser));
-      setCurrentUser(resolvedUser);
+      showToast('KingsChat authentication could not be completed. Please try again.');
+      setAuthLoading(false);
+      return;
     }
 
     setIsAuthOpen(false);
@@ -1675,36 +1749,56 @@ function App() {
 
   const handleKingsChatLogin = useCallback(() => {
     setAuthLoading(true);
-    const redirectUri = window.location.origin;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://lichtluxenaturals.org';
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const redirectUri = isLocal ? 'https://lichtluxenaturals.org/' : `${origin}/`;
 
-    // 1. If window.kingsChatConnect SDK is loaded
-    if (window.kingsChatConnect && typeof window.kingsChatConnect.login === 'function') {
-      window.kingsChatConnect.login({
-        scopes: ['profile']
-      }).then(res => {
-        processKingsChatAuth(res);
-      }).catch(err => {
-        console.warn('KingsChat Connect popup notice:', err);
-        setAuthLoading(false);
-      });
+    // Authentic KingsChat Authorization Endpoint on accounts.kingsch.at
+    const authUrl = `https://accounts.kingsch.at?client_id=${KINGSCHAT_CLIENT_ID}&scopes=["profile"]&redirect_uri=${encodeURIComponent(redirectUri)}&post_message=1`;
+
+    const width = Math.min(Math.floor((window.outerWidth || 800) * 0.9), 600);
+    const height = Math.min(Math.floor((window.outerHeight || 700) * 0.9), 700);
+    const left = Math.floor((window.screenX || 0) + ((window.outerWidth || 800) - width) / 2);
+    const top = Math.floor((window.screenY || 0) + ((window.outerHeight || 700) - height) / 4);
+    const windowFeatures = `toolbar=0,scrollbars=1,status=1,resizable=1,location=1,menuBar=0,width=${width},height=${height},left=${left},top=${top}`;
+
+    const authWindow = window.open(authUrl, 'kingschat_auth', windowFeatures);
+
+    if (!authWindow || authWindow.closed || typeof authWindow.closed === 'undefined') {
+      window.location.href = authUrl;
       return;
     }
 
-    // 2. KingsChat Connect Web OAuth redirect
-    const authUrl = `https://connect.kingschat.online/developer/login?client_id=${KINGSCHAT_CLIENT_ID}&scopes=["profile"]&post_redirect=true&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    
-    // Open in authentication window
-    const authWindow = window.open(authUrl, 'kingschat_auth', 'width=520,height=680');
-    if (!authWindow || authWindow.closed || typeof authWindow.closed === 'undefined') {
-      window.location.href = authUrl;
-    } else {
-      const timer = setInterval(() => {
-        if (authWindow.closed) {
-          clearInterval(timer);
+    const handleAuthMessage = (event) => {
+      const allowedOrigins = [
+        'https://accounts.kingsch.at',
+        'https://accounts.staging.kingsch.at',
+        'https://connect.kingsch.at',
+        window.location.origin
+      ];
+      if (!allowedOrigins.includes(event.origin)) return;
+
+      if (event.data) {
+        try { authWindow.close(); } catch (_) {}
+        window.removeEventListener('message', handleAuthMessage);
+        if (event.data.error) {
+          showToast(event.data.error || 'KingsChat authentication was cancelled.');
           setAuthLoading(false);
+        } else {
+          processKingsChatAuth(event.data);
         }
-      }, 1000);
-    }
+      }
+    };
+
+    window.addEventListener('message', handleAuthMessage, false);
+
+    const checkClosedTimer = setInterval(() => {
+      if (authWindow.closed) {
+        clearInterval(checkClosedTimer);
+        window.removeEventListener('message', handleAuthMessage);
+        setAuthLoading(false);
+      }
+    }, 500);
   }, [processKingsChatAuth]);
 
   // ─── PayPal Handlers ─────────────────────────────────────────────
