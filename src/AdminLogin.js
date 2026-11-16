@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import './AdminPortal.css';
 
-export default function AdminLogin({ onLoginSuccess, onExitToStore }) {
+export default function AdminLogin({ onLoginSuccess, onExitToStore, onBackToStore }) {
+  const exitStore = onExitToStore || onBackToStore;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -244,7 +245,7 @@ export default function AdminLogin({ onLoginSuccess, onExitToStore }) {
         {/* Footer & Back to Store */}
         <div className="admin-login-footer">
           <button 
-            onClick={onExitToStore}
+            onClick={exitStore}
             className="admin-login-back-btn"
           >
             <ArrowLeft size={15} />

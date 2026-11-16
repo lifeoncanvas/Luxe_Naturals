@@ -999,18 +999,43 @@ function App() {
   // Handle Admin Login Success
   const handleAdminLoginSuccess = (adminData) => {
     setIsAdminAuthenticated(true);
-    setAdminUser(adminData.displayName || 'Operations Lead');
-    showToast(`Welcome back, ${adminData.displayName || 'Administrator'}`);
+    const dName = adminData.displayName || 'Operations Lead';
+    setAdminUser(dName);
+    const uName = (adminData.username || '').toLowerCase();
+    if (uName.includes('sharon') || uName === 'admin@licht.com' || uName.includes('admin')) {
+      const adminUserProfile = {
+        firstName: dName.split(' ')[0] || 'Sharon',
+        lastName: 'Shelke',
+        email: uName.includes('@') ? uName : 'sharonshelke1@gmail.com',
+        role: 'ADMIN'
+      };
+      setCurrentUser(adminUserProfile);
+      try {
+        localStorage.setItem('lln_user', JSON.stringify(adminUserProfile));
+      } catch (_) {}
+    }
+    showToast(`Welcome back, ${dName}`);
   };
 
-  // Handle Admin Logout
-  const handleAdminLogout = () => {
+  // Handle Admin Logout - completely clears admin auth & user session
+  const handleAdminLogout = (exitToStore = false) => {
     try {
       localStorage.removeItem('licht_admin_auth');
       sessionStorage.removeItem('licht_admin_auth');
+      localStorage.removeItem('lln_token');
+      localStorage.removeItem('lln_user');
+      localStorage.removeItem('lln_admin_users');
     } catch (e) {}
     setIsAdminAuthenticated(false);
-    showToast('Signed out of Operations Console');
+    setCurrentUser(null);
+    setAdminUser(null);
+    if (exitToStore) {
+      if (window.location.pathname === '/admin' || window.location.hash.includes('admin')) {
+        window.history.pushState(null, '', '/');
+      }
+      setActiveTab('home');
+    }
+    showToast('✨ Signed out of Operations Console successfully.');
   };
 
   // Navigate to tab & scroll to top
@@ -1768,6 +1793,7 @@ function App() {
       return (
         <AdminLogin 
           onLoginSuccess={handleAdminLoginSuccess}
+          onExitToStore={() => navigateToStore('home')}
           onBackToStore={() => navigateToStore('home')}
         />
       );
