@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { 
   ShoppingBag, 
@@ -626,6 +626,8 @@ function App() {
     }
   }, [currentUser]);
 
+  const isCapturingRef = useRef(false);
+  const [serverQuote, setServerQuote] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState('address'); // 'address' | 'payment'
@@ -897,9 +899,16 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeCurrency, setActiveCurrency] = useState('GBP');
 
-  // Synchronize browser history and path changes
+  // Synchronize browser history, back-button drawer closures, and admin route
   useEffect(() => {
-    const handleLocationChange = () => {
+    const handleLocationChange = (e) => {
+      const state = e.state;
+      if (!state || state.drawer !== 'checkout') {
+        setIsCheckoutOpen(false);
+      }
+      if (!state || state.drawer !== 'cart') {
+        setIsCartOpen(false);
+      }
       if (checkIsAdminPath()) {
         setActiveTab('admin');
       } else if (activeTab === 'admin') {
@@ -972,16 +981,45 @@ function App() {
     });
   };
 
-  // Cart Subtotal & Dynamic Delivery Calculations
-  const cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const freeShippingThreshold = 70; // Free delivery on orders over £70
-  const isFreeShippingEligible = cartSubtotal >= freeShippingThreshold;
-  const standardDeliveryPrice = isFreeShippingEligible ? 0 : 6.99; // Standard delivery: £6.99 or Free over £70
-  const expressDeliveryPrice = 10.99; // Express delivery: £10.99
-  const deliveryFee = cart.length === 0 ? 0 : (deliveryOption === 'express' ? expressDeliveryPrice : standardDeliveryPrice);
-  const cartTotal = cartSubtotal + deliveryFee;
-  const progressToFreeShipping = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
-  const amountForFreeShipping = Math.max(0, freeShippingThreshold - cartSubtotal);
+  // Authoritative Server-Driven Quote Synchronizer
+  useEffect(() => {
+    if (cart.length === 0) {
+      setServerQuote(null);
+      return;
+    }
+    let isCancelled = false;
+    const fetchQuote = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/paypal/calculate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: cart.map(i => ({ id: i.id, quantity: i.quantity })),
+            deliveryOption: deliveryOption
+          })
+        });
+        if (res.ok && !isCancelled) {
+          const data = await res.json();
+          setServerQuote(data);
+        }
+      } catch (err) {
+        console.warn('Backend quote notice:', err.message);
+      }
+    };
+    fetchQuote();
+    return () => { isCancelled = true; };
+  }, [cart, deliveryOption]);
+
+  // Cart Subtotal & Server-Driven Delivery Calculations
+  const fallbackSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const cartSubtotal = serverQuote?.subtotal != null ? Number(serverQuote.subtotal) : fallbackSubtotal;
+  const isFreeShippingEligible = serverQuote?.isFreeShipping ?? (cartSubtotal >= 70);
+  const standardDeliveryPrice = isFreeShippingEligible ? 0 : 6.99;
+  const expressDeliveryPrice = 10.99;
+  const deliveryFee = cart.length === 0 ? 0 : (serverQuote?.shipping != null ? Number(serverQuote.shipping) : (deliveryOption === 'express' ? expressDeliveryPrice : standardDeliveryPrice));
+  const cartTotal = serverQuote?.total != null ? Number(serverQuote.total) : (cartSubtotal + deliveryFee);
+  const progressToFreeShipping = Math.min(100, (cartSubtotal / 70) * 100);
+  const amountForFreeShipping = Math.max(0, 70 - cartSubtotal);
 
   // Handle Contact Form Submit
   const handleContactSubmit = (e) => {
@@ -1039,8 +1077,8 @@ function App() {
     showToast(`Welcome back, ${dName}`);
   };
 
-  // Handle Admin Logout - completely clears admin auth & user session
-  const handleAdminLogout = (exitToStore = false) => {
+  // Handle Admin Logout - completely clears admin auth & user session and redirects to home
+  const handleAdminLogout = () => {
     try {
       localStorage.removeItem('licht_admin_auth');
       sessionStorage.removeItem('licht_admin_auth');
@@ -1051,13 +1089,14 @@ function App() {
     setIsAdminAuthenticated(false);
     setCurrentUser(null);
     setAdminUser(null);
-    if (exitToStore) {
+    setActiveTab('home');
+    if (typeof window !== 'undefined') {
       if (window.location.pathname === '/admin' || window.location.hash.includes('admin')) {
         window.history.pushState(null, '', '/');
       }
-      setActiveTab('home');
+      showToast('✨ Signed out of Operations Console successfully.');
+      window.location.href = '/';
     }
-    showToast('✨ Signed out of Operations Console successfully.');
   };
 
   // Navigate to tab & scroll to top
@@ -1229,7 +1268,7 @@ function App() {
     ? (selectedVariant || selectedProduct.variants[0])
     : selectedProduct;
 
-  // Open Checkout with auto pre-fill
+  // Open Checkout with auto pre-fill and browser Back button support
   const openCheckout = () => {
     setIsCartOpen(false);
     setCheckoutStep('address');
@@ -1241,7 +1280,36 @@ function App() {
         shippingPhone: prev.shippingPhone || currentUser.phone || ''
       }));
     }
+    try {
+      window.history.pushState({ drawer: 'checkout' }, '');
+    } catch (_) {}
     setIsCheckoutOpen(true);
+  };
+
+  const closeCheckout = () => {
+    setIsCheckoutOpen(false);
+    try {
+      if (window.history.state && window.history.state.drawer === 'checkout') {
+        window.history.back();
+      }
+    } catch (_) {}
+  };
+
+  // Open & Close Cart Drawer with browser Back button support
+  const openCart = () => {
+    try {
+      window.history.pushState({ drawer: 'cart' }, '');
+    } catch (_) {}
+    setIsCartOpen(true);
+  };
+
+  const closeCart = () => {
+    setIsCartOpen(false);
+    try {
+      if (window.history.state && window.history.state.drawer === 'cart') {
+        window.history.back();
+      }
+    } catch (_) {}
   };
 
   // Validate Checkout Step 1 (UK Delivery Details)
@@ -1643,33 +1711,12 @@ function App() {
   // Get JWT token from localStorage (set during auth login)
   const getAuthToken = () => localStorage.getItem('lln_token');
 
-  // Create PayPal order via client-side SDK actions or backend
-  const createPayPalOrder = useCallback(async (data, actions) => {
+  // Create PayPal order exclusively via backend POST /api/paypal/create-order
+  // Sends only item ids, quantities, delivery option and shipping info. Never sends price or cartTotal.
+  const createPayPalOrder = useCallback(async () => {
+    if (paymentProcessing) return;
     setPaymentProcessing(true);
 
-    // 1. Primary: Direct Client-Side SDK creation with guaranteed GBP currency match
-    if (actions && actions.order && typeof actions.order.create === 'function') {
-      try {
-        const orderId = await actions.order.create({
-          intent: 'CAPTURE',
-          purchase_units: [
-            {
-              description: 'LICHT LUXE NATURALS Order — Made in LOVEWORLD',
-              amount: {
-                currency_code: 'GBP',
-                value: Number(cartTotal || 0).toFixed(2),
-              },
-            },
-          ],
-        });
-        setPaymentProcessing(false);
-        return orderId;
-      } catch (sdkErr) {
-        console.warn('PayPal actions.order.create fallback to backend:', sdkErr);
-      }
-    }
-
-    // 2. Fallback: Spring Boot backend create-order (with explicit GBP currency)
     try {
       const token = getAuthToken();
       const authHeaders = {
@@ -1677,15 +1724,10 @@ function App() {
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       };
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-
       const response = await fetch(`${API_BASE}/paypal/create-order`, {
         method: 'POST',
         headers: authHeaders,
-        signal: controller.signal,
         body: JSON.stringify({
-          currency: 'GBP',
           deliveryOption: deliveryOption,
           shippingInfo: shippingAddress,
           items: cart.map(item => ({
@@ -1694,125 +1736,80 @@ function App() {
           }))
         }),
       });
-      clearTimeout(timeoutId);
 
-      if (response.ok) {
-        const orderData = await response.json();
-        if (orderData && orderData.id) {
-          setPaymentProcessing(false);
-          return orderData.id;
-        }
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || 'Failed to initialize PayPal order on server');
       }
+
+      const orderData = await response.json();
+      if (!orderData || !orderData.id) {
+        throw new Error('PayPal order ID was not returned by server.');
+      }
+      return orderData.id;
     } catch (backendErr) {
-      console.warn('Backend PayPal create-order unavailable:', backendErr?.message);
+      console.error('PayPal createOrder error:', backendErr);
+      setPaymentProcessing(false);
+      showToast("We couldn't initialize your payment session. Please try again.");
+      throw backendErr;
+    }
+  }, [cart, deliveryOption, shippingAddress, paymentProcessing]);
+
+  // Capture PayPal order after buyer approval via backend POST /api/paypal/capture-order/{orderId}
+  // Idempotent, server-driven, displays server-calculated total on confirmation.
+  const capturePayPalOrder = useCallback(async (data) => {
+    // Idempotency safeguard: if capture is already in progress, ignore duplicate clicks/invocations
+    if (isCapturingRef.current) return;
+    isCapturingRef.current = true;
+    setPaymentProcessing(true);
+
+    const orderId = data?.orderID;
+    if (!orderId) {
+      isCapturingRef.current = false;
+      setPaymentProcessing(false);
+      showToast("We couldn't complete your payment. You have not been charged. Please try again.");
+      return;
     }
 
-    setPaymentProcessing(false);
-    throw new Error('PayPal payment actions are not available');
-  }, [cart, cartTotal, deliveryOption, shippingAddress]);
-
-  // Capture PayPal order after buyer approval
-  const capturePayPalOrder = useCallback(async (data, actions) => {
-    setPaymentProcessing(true);
     try {
-      let captureSuccess = false;
-      let orderNumber = `LN-${Date.now() % 100000}`;
-      let totalAmount = Number(cartTotal || cartSubtotal);
-      let confirmedSubtotal = cartSubtotal;
-      let confirmedFee = deliveryFee;
-      let paypalOrderId = data?.orderID;
+      const token = getAuthToken();
+      const authHeaders = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
 
-      // 1. Attempt backend capture if available
-      try {
-        const token = getAuthToken();
-        const authHeaders = {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        };
+      const response = await fetch(`${API_BASE}/paypal/capture-order/${orderId}`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({
+          deliveryOption: deliveryOption,
+          shippingInfo: shippingAddress,
+          items: cart.map(item => ({
+            id: item.id,
+            quantity: item.quantity
+          }))
+        }),
+      });
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-        const response = await fetch(`${API_BASE}/paypal/capture-order/${data.orderID}`, {
-          method: 'POST',
-          headers: authHeaders,
-          signal: controller.signal,
-          body: JSON.stringify({
-            currency: 'GBP',
-            shippingInfo: shippingAddress,
-            items: cart.map(item => ({
-              id: item.id,
-              quantity: item.quantity
-            }))
-          }),
-        });
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const result = await response.json();
-          captureSuccess = true;
-          if (result.orderNumber) orderNumber = result.orderNumber;
-          if (result.totalAmount) totalAmount = Number(result.totalAmount);
-          if (result.paypalOrderId) paypalOrderId = result.paypalOrderId;
-        }
-      } catch (backendErr) {
-        console.warn('Backend PayPal capture unreachable, capturing client-side via actions:', backendErr.message);
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson.message || `Capture failed with status ${response.status}`);
       }
 
-      // 2. Client-side SDK capture fallback if backend didn't capture
-      if (!captureSuccess && actions && actions.order && typeof actions.order.capture === 'function') {
-        const details = await actions.order.capture();
-        console.log('PayPal Captured Successfully via SDK:', details);
-        captureSuccess = true;
-        if (details.id) paypalOrderId = details.id;
+      const result = await response.json();
+      console.log('✅ Server captured and confirmed PayPal order:', result);
 
-        // Persist SDK-captured order directly into Spring Boot database
-        try {
-          const token = getAuthToken();
-          const authHeaders = {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-          };
-          const dbRes = await fetch(`${API_BASE}/orders/checkout`, {
-            method: 'POST',
-            headers: authHeaders,
-            body: JSON.stringify({
-              orderNumber: orderNumber,
-              paypalOrderId: paypalOrderId,
-              customer: {
-                name: shippingAddress.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Direct Customer'),
-                email: shippingAddress.shippingEmail || currentUser?.email || 'customer@lichtluxenaturals.org',
-                phone: shippingAddress.shippingPhone || currentUser?.phone || '',
-                address: [shippingAddress.shippingAddress, shippingAddress.shippingCity, shippingAddress.shippingPostcode].filter(Boolean).join(', ') || 'United Kingdom'
-              },
-              shippingInfo: shippingAddress,
-              items: cart.map(item => ({
-                id: item.id,
-                quantity: item.quantity
-              })),
-              deliveryOption: deliveryOption,
-              paymentMethod: 'PayPal (Live)'
-            })
-          });
-          if (dbRes.ok) {
-            const dbData = await dbRes.json();
-            if (dbData.orderNumber) orderNumber = dbData.orderNumber;
-            if (dbData.total) totalAmount = Number(dbData.total);
-            if (dbData.subtotal) confirmedSubtotal = Number(dbData.subtotal);
-            if (dbData.deliveryFee) confirmedFee = Number(dbData.deliveryFee);
-            console.log('✅ PayPal order saved to database:', dbData);
-          }
-        } catch (dbErr) {
-          console.warn('Backend PayPal save notice:', dbErr.message);
-        }
-      }
+      const serverTotal = Number(result.totalAmount || result.total || cartTotal);
+      const serverOrderNumber = result.orderNumber || `LLN-${orderId.slice(-6).toUpperCase()}`;
+      const carrier = result.carrier || (deliveryOption === 'express' ? 'Royal Mail Special Delivery Guaranteed' : 'Royal Mail Tracked 48');
+      const trackingNumber = result.trackingNumber || `RM${Math.floor(100000000 + Math.random() * 900000000)}GB`;
 
       const liveConfirmedOrder = {
-        id: orderNumber,
-        date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        id: serverOrderNumber,
+        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         customer: {
           name: shippingAddress.shippingName || (currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Direct Customer'),
-          email: shippingAddress.shippingEmail || currentUser?.email || 'customer@lichtluxenaturals.org',
+          email: shippingAddress.shippingEmail || currentUser?.email || '',
           phone: shippingAddress.shippingPhone || currentUser?.phone || '',
           address: [shippingAddress.shippingAddress, shippingAddress.shippingCity, shippingAddress.shippingPostcode].filter(Boolean).join(', ') || 'United Kingdom'
         },
@@ -1821,19 +1818,18 @@ function App() {
           qty: item.quantity,
           price: item.price
         })),
-        total: totalAmount,
+        total: serverTotal,
         deliveryMethod: deliveryOption === 'express' ? 'Express Delivery (1–2 Days)' : 'Standard Delivery (3–5 Days)',
         deliveryFee: deliveryFee,
-        paymentMethod: 'PayPal (Live)',
+        paymentMethod: 'PayPal',
         paymentStatus: 'Paid',
         deliveryStatus: 'Processing',
-        courier: deliveryOption === 'express' ? 'Royal Mail Special Delivery Guaranteed' : 'Royal Mail Tracked 48',
-        trackingNumber: `RM${Math.floor(100000000 + Math.random() * 900000000)}GB`,
-        source: 'Online Storefront (PayPal Live)',
-        notes: `Verified live purchase (PayPal Order: ${paypalOrderId || data.orderID})`
+        carrier: carrier,
+        trackingNumber: trackingNumber,
+        source: 'Online Storefront (PayPal)'
       };
 
-      // Deduct inventory
+      // Deduct inventory locally for immediate UI update
       setAdminInventory(prevInv => {
         return prevInv.map(invItem => {
           const cartMatch = cart.find(c => 
@@ -1859,20 +1855,23 @@ function App() {
       setIsCheckoutOpen(false);
       setCart([]);
       setOrderConfirmation({
-        orderNumber: orderNumber,
-        total: totalAmount.toFixed(2),
-        subtotal: confirmedSubtotal ? Number(confirmedSubtotal).toFixed(2) : undefined,
-        paypalOrderId: paypalOrderId,
+        orderNumber: serverOrderNumber,
+        total: serverTotal.toFixed(2),
+        subtotal: cartSubtotal ? Number(cartSubtotal).toFixed(2) : undefined,
+        paypalOrderId: orderId,
         shipping: shippingAddress,
         deliveryMethod: deliveryOption === 'express' ? 'Express Delivery' : 'Standard Delivery',
-        deliveryFee: confirmedFee ? Number(confirmedFee).toFixed(2) : deliveryFee.toFixed(2),
-        method: 'PayPal (Live)'
+        deliveryFee: Number(deliveryFee).toFixed(2),
+        carrier: carrier,
+        trackingNumber: trackingNumber,
+        method: 'PayPal ✓'
       });
-      showToast('✨ Payment successful! Order ' + orderNumber + ' confirmed.');
+      showToast(`✨ Payment successful! Order #${serverOrderNumber} confirmed.`);
     } catch (error) {
-      console.error('PayPal capture error:', error);
-      showToast('Payment notice: ' + (error.message || 'Payment capture failed.'));
+      console.error('PayPal technical error details:', error);
+      showToast("We couldn't complete your payment. You have not been charged. Please try again.");
     } finally {
+      isCapturingRef.current = false;
       setPaymentProcessing(false);
     }
   }, [cart, cartTotal, cartSubtotal, deliveryOption, deliveryFee, shippingAddress, currentUser]);
@@ -2019,7 +2018,7 @@ function App() {
             
             <button 
               className="btn-primary header-cart-btn" 
-              onClick={() => setIsCartOpen(true)}
+              onClick={openCart}
               style={{ padding: '0.6rem 1.25rem', fontSize: '0.825rem', gap: '0.45rem', fontWeight: 600 }}
             >
               <ShoppingBag size={16} />
@@ -4031,11 +4030,11 @@ function App() {
 
       {/* SHOPPING BAG DRAWER */}
       {isCartOpen && (
-        <div className="cart-drawer-overlay" onClick={() => setIsCartOpen(false)}>
+        <div className="cart-drawer-overlay" onClick={closeCart}>
           <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
               <h3 className="drawer-title font-serif">Your Shopping Bag ({cart.reduce((a, b) => a + b.quantity, 0)})</h3>
-              <button className="close-drawer-btn" onClick={() => setIsCartOpen(false)}>
+              <button className="close-drawer-btn" onClick={closeCart}>
                 <X size={20} />
               </button>
             </div>
@@ -4058,7 +4057,7 @@ function App() {
                 <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#5C635B' }}>
                   Your shopping bag is currently empty.
                   <div style={{ marginTop: '1.5rem' }}>
-                    <button className="btn-primary" onClick={() => { setIsCartOpen(false); navigateToTab('shop'); }}>
+                    <button className="btn-primary" onClick={() => { closeCart(); navigateToTab('shop'); }}>
                       Discover Essentials
                     </button>
                   </div>
@@ -4216,7 +4215,7 @@ function App() {
 
       {/* SECURE CHECKOUT MODAL (2-STEP: DELIVERY ADDRESS & PAYMENT) */}
       {isCheckoutOpen && (
-        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setIsCheckoutOpen(false)}>
+        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={closeCheckout}>
           <div className="modal-card checkout-modal" style={{ maxWidth: '880px', width: '95%', maxHeight: '92vh', padding: '0', display: 'flex', flexDirection: 'row', overflow: 'hidden', borderRadius: '8px', boxShadow: '0 25px 60px rgba(45,58,41,0.18)' }} onClick={(e) => e.stopPropagation()}>
             
             {/* Left Side: Order Summary */}
@@ -4271,7 +4270,7 @@ function App() {
 
             {/* Right Side: Two-Step Checkout (Address & Payment) */}
             <div className="checkout-form-col" style={{ backgroundColor: '#FFFFFF', padding: '2rem 2.25rem', width: '58%', position: 'relative', overflowY: 'auto' }}>
-              <button className="close-modal-btn" onClick={() => setIsCheckoutOpen(false)} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem' }}>
+              <button className="close-modal-btn" onClick={closeCheckout} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem' }}>
                 <X size={20} />
               </button>
               
