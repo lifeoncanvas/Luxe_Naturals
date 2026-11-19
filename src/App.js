@@ -550,6 +550,7 @@ function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
   const [authExpandedOption, setAuthExpandedOption] = useState(null); // 'email' | 'phone' | null
+  const [pendingCartItem, setPendingCartItem] = useState(null); // { product, quantity }
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem('lln_user');
@@ -633,6 +634,30 @@ function App() {
       }
     }
   }, [currentUser]);
+
+  // Automatically add pending product to bag when user logs in or registers
+  useEffect(() => {
+    if (currentUser && pendingCartItem) {
+      const { product, quantity } = pendingCartItem;
+      setCart(prev => {
+        const existing = prev.find(item => item.id === product.id);
+        if (existing) {
+          return prev.map(item => 
+            item.id === product.id ? { ...item, quantity: item.quantity + (quantity || 1) } : item
+          );
+        }
+        return [...prev, { ...product, quantity: quantity || 1 }];
+      });
+      showToast(`✨ Added ${product.name} to your bag ♡`);
+      setPendingCartItem(null);
+    }
+  }, [currentUser, pendingCartItem]);
+
+  const closeAuthModal = () => {
+    setIsAuthOpen(false);
+    setAuthExpandedOption(null);
+    setPendingCartItem(null);
+  };
 
   const isCapturingRef = useRef(false);
   const [serverQuote, setServerQuote] = useState(null);
@@ -955,7 +980,18 @@ function App() {
   };
 
   // Cart operations
-  const addToCart = (product, quantity = 1) => {
+  const addToCart = (product, quantity = 1, forceGuest = false) => {
+    if (!product) return;
+
+    // If user is not logged in, suggest signing in or registering first to save items to their account
+    if (!currentUser && !forceGuest) {
+      setPendingCartItem({ product, quantity });
+      setAuthMode('login');
+      setIsAuthOpen(true);
+      showToast(`✨ Please sign in or register to add ${product.name} to your bag`);
+      return;
+    }
+
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
@@ -966,6 +1002,7 @@ function App() {
       return [...prev, { ...product, quantity }];
     });
     showToast(`Added ${product.name} (${quantity}) to your bag ♡`);
+    setPendingCartItem(null);
   };
 
   const updateCartQuantity = (id, delta) => {
@@ -1612,18 +1649,31 @@ function App() {
     setAuthLoading(true);
     let resolvedUser = null;
     const accessToken = authPayload?.accessToken || authPayload?.access_token || authPayload?.token || (typeof authPayload === 'string' ? authPayload : null);
+    const userProfile = authPayload?.user || authPayload?.profile || {};
+
     const payloadToSend = {
-      ...authPayload,
-      ...(accessToken ? { accessToken } : {})
+      token: accessToken,
+      accessToken: accessToken,
+      email: authPayload?.email || userProfile?.email || null,
+      firstName: authPayload?.firstName || userProfile?.first_name || userProfile?.firstName || (userProfile?.name ? userProfile.name.split(' ')[0] : null),
+      lastName: authPayload?.lastName || userProfile?.last_name || userProfile?.lastName || (userProfile?.name && userProfile.name.includes(' ') ? userProfile.name.split(' ').slice(1).join(' ') : null),
+      username: authPayload?.username || userProfile?.username || null
     };
 
-    // 1. Try backend authentication endpoint
+    // 1. Try backend authentication endpoint (/api/auth/kingchat & /api/auth/kingschat)
     try {
-      const res = await fetch(`${API_BASE}/auth/kingschat`, {
+      let res = await fetch(`${API_BASE}/auth/kingchat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payloadToSend)
       });
+      if (!res.ok) {
+        res = await fetch(`${API_BASE}/auth/kingschat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadToSend)
+        });
+      }
 
       if (res.ok) {
         const data = await res.json();
@@ -1756,7 +1806,7 @@ function App() {
     const redirectUri = isLocal ? 'https://lichtluxenaturals.org/' : `${origin}/`;
 
     // Authentic KingsChat Authorization Endpoint on accounts.kingsch.at
-    const authUrl = `https://accounts.kingsch.at?client_id=${KINGSCHAT_CLIENT_ID}&scopes=["profile"]&redirect_uri=${encodeURIComponent(redirectUri)}&post_message=1`;
+    const authUrl = `https://accounts.kingsch.at?client_id=${KINGSCHAT_CLIENT_ID}&scopes=["authenticate", "profile"]&redirect_uri=${encodeURIComponent(redirectUri)}&post_message=1`;
 
     const width = Math.min(Math.floor((window.outerWidth || 800) * 0.9), 600);
     const height = Math.min(Math.floor((window.outerHeight || 700) * 0.9), 700);
@@ -2093,6 +2143,7 @@ function App() {
             <button 
               className="icon-btn header-desktop-action" 
               title={currentUser ? (currentUser.firstName ? `Account (${currentUser.firstName})` : 'My Account') : 'Sign In / Register'} 
+              aria-label={currentUser ? 'My Account' : 'Sign In or Register'}
               onClick={() => { 
                 if (currentUser) {
                   setAuthMode('profile');
@@ -2103,10 +2154,25 @@ function App() {
               }}
             >
               <User size={19} />
+              {currentUser && (
+                <span 
+                  style={{
+                    position: 'absolute',
+                    top: '3px',
+                    right: '3px',
+                    width: '6px',
+                    height: '6px',
+                    backgroundColor: '#C5A059',
+                    borderRadius: '50%',
+                    border: '1px solid #FAF7F2'
+                  }} 
+                />
+              )}
             </button>
             <button 
               className="icon-btn header-desktop-action" 
               title="Search" 
+              aria-label="Search Products"
               onClick={() => setIsSearchOpen(true)}
             >
               <Search size={19} />
@@ -2115,6 +2181,7 @@ function App() {
             <button 
               className="btn-primary header-cart-btn" 
               onClick={openCart}
+              aria-label={`Shopping Bag (${cart.reduce((a, b) => a + b.quantity, 0)} items)`}
               style={{ padding: '0.6rem 1.25rem', fontSize: '0.825rem', gap: '0.45rem', fontWeight: 600 }}
             >
               <ShoppingBag size={16} />
@@ -5039,9 +5106,9 @@ function App() {
 
       {/* AUTHENTICATION & PASSWORD RECOVERY MODAL - LUXURY VIBE */}
       {isAuthOpen && (
-        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => { setIsAuthOpen(false); setAuthExpandedOption(null); }}>
+        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={closeAuthModal}>
           <div className="modal-card" style={{ maxWidth: '480px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem 2.25rem', borderRadius: '6px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 40px rgba(45,58,41,0.08)' }} onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={() => { setIsAuthOpen(false); setAuthExpandedOption(null); }} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', color: '#5C635B' }}>
+            <button className="close-modal-btn" onClick={closeAuthModal} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', color: '#5C635B' }}>
               <X size={22} />
             </button>
             
@@ -5058,6 +5125,32 @@ function App() {
                  authMode === 'login' ? 'Access your member profile' : 'Join the Luxe Naturals community'}
               </p>
             </div>
+
+            {/* PENDING CART ITEM SUGGESTION BANNER */}
+            {pendingCartItem && (authMode === 'login' || authMode === 'register') && (
+              <div style={{
+                marginBottom: '1.5rem',
+                padding: '0.9rem 1.15rem',
+                backgroundColor: '#FAF7F2',
+                border: '1px solid #DFCAA7',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                textAlign: 'left',
+                boxShadow: '0 4px 12px rgba(197, 160, 89, 0.08)'
+              }}>
+                <Sparkles size={22} color="#C5A059" style={{ flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2D3A29' }}>
+                    Sign in to add to your bag
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#5C635B', marginTop: '2px', lineHeight: 1.4 }}>
+                    Please sign in or create an account to add <strong>{pendingCartItem.product?.name}</strong> to your bag and save your order.
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* ─── PROFILE VIEW (WHEN LOGGED IN) ─── */}
             {authMode === 'profile' && currentUser && (
@@ -5411,6 +5504,25 @@ function App() {
                       {authMode === 'login' ? 'Sign up here' : 'Sign in here'}
                     </button>
                   </>
+                )}
+
+                {/* OPTIONAL GUEST CONTINUATION IF USER CLICKED ADD TO BAG */}
+                {pendingCartItem && (authMode === 'login' || authMode === 'register') && (
+                  <div style={{ marginTop: '0.9rem', paddingTop: '0.75rem', borderTop: '1px dashed #E5DFC5' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        const item = pendingCartItem;
+                        closeAuthModal();
+                        if (item) {
+                          addToCart(item.product, item.quantity, true);
+                        }
+                      }} 
+                      style={{ background: 'none', border: 'none', color: '#7A8279', fontSize: '0.78rem', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                    >
+                      Or continue adding {pendingCartItem.product?.name} as Guest →
+                    </button>
+                  </div>
                 )}
               </div>
             )}
