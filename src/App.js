@@ -1803,7 +1803,7 @@ function App() {
     setAuthLoading(true);
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://lichtluxenaturals.org';
     const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    const redirectUri = isLocal ? 'https://lichtluxenaturals.org/' : `${origin}/`;
+    const redirectUri = isLocal ? `${window.location.origin}/` : `${origin}/`;
 
     // Authentic KingsChat Authorization Endpoint on accounts.kingsch.at
     const authUrl = `https://accounts.kingsch.at?client_id=${KINGSCHAT_CLIENT_ID}&scopes=["authenticate", "profile"]&redirect_uri=${encodeURIComponent(redirectUri)}&post_message=1`;
@@ -1821,6 +1821,8 @@ function App() {
       return;
     }
 
+    let authReceived = false;
+
     const handleAuthMessage = (event) => {
       const allowedOrigins = [
         'https://accounts.kingsch.at',
@@ -1831,6 +1833,7 @@ function App() {
       if (!allowedOrigins.includes(event.origin)) return;
 
       if (event.data) {
+        authReceived = true;
         try { authWindow.close(); } catch (_) {}
         window.removeEventListener('message', handleAuthMessage);
         if (event.data.error) {
@@ -1849,6 +1852,9 @@ function App() {
         clearInterval(checkClosedTimer);
         window.removeEventListener('message', handleAuthMessage);
         setAuthLoading(false);
+        if (!authReceived && isLocal) {
+          showToast('💡 Local Testing: Use the "⚡ Local Dev Sign-In" button below, or add http://localhost:3000 to KingsChat Developer Portal.');
+        }
       }
     }, 500);
   }, [processKingsChatAuth]);
@@ -5358,6 +5364,83 @@ function App() {
                       Official Loveworld Single Sign-On
                     </span>
                   </div>
+
+                  {/* LOCALHOST DEVELOPMENT QUICK TEST CONTROLS */}
+                  {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
+                    <div style={{
+                      backgroundColor: '#FAF6EE',
+                      border: '1px dashed #C5A059',
+                      borderRadius: '6px',
+                      padding: '0.65rem 0.75rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.45rem',
+                      marginTop: '0.15rem'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '0.7rem', color: '#6E5535', fontWeight: 700, letterSpacing: '0.04em' }}>
+                          ⚡ LOCAL TEST SIGN-IN
+                        </span>
+                        <span style={{ fontSize: '0.65rem', color: '#8C887B' }}>
+                          (Bypasses origin check on localhost)
+                        </span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            processKingsChatAuth({
+                              token: 'dev_sharon_token_' + Date.now(),
+                              email: 'sharonshelke1@gmail.com',
+                              firstName: 'Sharon',
+                              lastName: 'Shelke',
+                              username: 'Sharon Rajiv Shelke'
+                            });
+                          }}
+                          style={{
+                            padding: '0.5rem',
+                            backgroundColor: '#2D3A29',
+                            color: '#DFCAA7',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '0.72rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'center'
+                          }}
+                          title="Sign in as Sharon (Administrator) with full access"
+                        >
+                          👑 As Sharon (Admin)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            processKingsChatAuth({
+                              token: 'dev_cust_token_' + Date.now(),
+                              email: 'demo.customer@lichtluxenaturals.org',
+                              firstName: 'Demo',
+                              lastName: 'Customer',
+                              username: 'democustomer'
+                            });
+                          }}
+                          style={{
+                            padding: '0.5rem',
+                            backgroundColor: '#DFCAA7',
+                            color: '#2D3A29',
+                            border: '1px solid #C5A059',
+                            borderRadius: '4px',
+                            fontSize: '0.72rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'center'
+                          }}
+                          title="Sign in as customer to test shopping bag & checkout"
+                        >
+                          👤 As Customer Demo
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* EMAIL BUTTON & ACCORDION */}
