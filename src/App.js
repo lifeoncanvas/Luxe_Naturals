@@ -32,6 +32,8 @@ import AdminLogin from './AdminLogin';
 import SettingsModal from './SettingsModal';
 import LegalModal from './LegalModal';
 import './AdminPortal.css';
+import kingsChatWebSdk from 'kingschat-web-sdk';
+import 'kingschat-web-sdk/dist/stylesheets/style.min.css';
 
 // Horizontal Side-by-Side Logo Component (Icon on Left, Bold Company Typography on Right)
 const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', variant = 'light', markOnly = false, style = {} }) => {
@@ -1651,14 +1653,21 @@ function App() {
     const accessToken = authPayload?.accessToken || authPayload?.access_token || authPayload?.token || (typeof authPayload === 'string' ? authPayload : null);
     const userProfile = authPayload?.user || authPayload?.profile || {};
 
+    let extractedEmail = authPayload?.email || userProfile?.email || null;
+    if (extractedEmail && typeof extractedEmail === 'object') {
+      extractedEmail = extractedEmail.address || extractedEmail.email || null;
+    }
+
     const payloadToSend = {
       token: accessToken,
       accessToken: accessToken,
-      email: authPayload?.email || userProfile?.email || null,
+      email: extractedEmail,
       firstName: authPayload?.firstName || userProfile?.first_name || userProfile?.firstName || (userProfile?.name ? userProfile.name.split(' ')[0] : null),
       lastName: authPayload?.lastName || userProfile?.last_name || userProfile?.lastName || (userProfile?.name && userProfile.name.includes(' ') ? userProfile.name.split(' ').slice(1).join(' ') : null),
       username: authPayload?.username || userProfile?.username || null
     };
+
+    console.log("[KingsChat] Authenticating with backend at " + API_BASE + "/auth/kingchat", payloadToSend);
 
     // 1. Try backend authentication endpoint (/api/auth/kingchat & /api/auth/kingschat)
     try {
@@ -1705,7 +1714,10 @@ function App() {
           const pData = await profileRes.json();
           const pProfile = pData.profile || pData.user || pData;
           const pUser = pProfile.user || pProfile;
-          const pEmail = pUser.email || (pUser.username ? `${pUser.username.replace(/[^a-zA-Z0-9._-]/g, '')}@kingschat.loveworld.org` : null);
+          let pEmail = pUser.email || (pUser.username ? `${pUser.username.replace(/[^a-zA-Z0-9._-]/g, '')}@kingschat.loveworld.org` : null);
+          if (pEmail && typeof pEmail === 'object') {
+            pEmail = pEmail.address || pEmail.email || null;
+          }
           if (pEmail) {
             const fullName = pUser.name || pUser.username || 'KingsChat Member';
             const parts = fullName.trim().split(/\s+/);
@@ -1733,9 +1745,9 @@ function App() {
     }
 
     // 3. Fallback when explicit profile or email payload was provided
-    if (!resolvedUser && (authPayload?.profile || authPayload?.email)) {
-      const profile = authPayload?.profile || {};
-      const userEmail = profile.email || authPayload.email;
+    if (!resolvedUser && (authPayload?.profile || authPayload?.email || extractedEmail)) {
+      const profile = authPayload?.profile || authPayload?.user || {};
+      const userEmail = extractedEmail || profile.email;
       if (userEmail) {
         const fullName = profile.name || authPayload.name || userEmail.split('@')[0];
         const parts = fullName.trim().split(/\s+/);
@@ -1799,64 +1811,65 @@ function App() {
     }
   }, [navigateToAdmin]);
 
-  const handleKingsChatLogin = useCallback(() => {
+  const handleKingsChatLogin = useCallback(async () => {
     setAuthLoading(true);
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://lichtluxenaturals.org';
-    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    const redirectUri = isLocal ? `${window.location.origin}/` : `${origin}/`;
-
-    // Authentic KingsChat Authorization Endpoint on accounts.kingsch.at
-    const authUrl = `https://accounts.kingsch.at?client_id=${KINGSCHAT_CLIENT_ID}&scopes=["authenticate", "profile"]&redirect_uri=${encodeURIComponent(redirectUri)}&post_message=1`;
-
-    const width = Math.min(Math.floor((window.outerWidth || 800) * 0.9), 600);
-    const height = Math.min(Math.floor((window.outerHeight || 700) * 0.9), 700);
-    const left = Math.floor((window.screenX || 0) + ((window.outerWidth || 800) - width) / 2);
-    const top = Math.floor((window.screenY || 0) + ((window.outerHeight || 700) - height) / 4);
-    const windowFeatures = `toolbar=0,scrollbars=1,status=1,resizable=1,location=1,menuBar=0,width=${width},height=${height},left=${left},top=${top}`;
-
-    const authWindow = window.open(authUrl, 'kingschat_auth', windowFeatures);
-
-    if (!authWindow || authWindow.closed || typeof authWindow.closed === 'undefined') {
-      window.location.href = authUrl;
-      return;
-    }
-
-    let authReceived = false;
-
-    const handleAuthMessage = (event) => {
-      const allowedOrigins = [
-        'https://accounts.kingsch.at',
-        'https://accounts.staging.kingsch.at',
-        'https://connect.kingsch.at',
-        window.location.origin
-      ];
-      if (!allowedOrigins.includes(event.origin)) return;
-
-      if (event.data) {
-        authReceived = true;
-        try { authWindow.close(); } catch (_) {}
-        window.removeEventListener('message', handleAuthMessage);
-        if (event.data.error) {
-          showToast(event.data.error || 'KingsChat authentication was cancelled.');
-          setAuthLoading(false);
-        } else {
-          processKingsChatAuth(event.data);
-        }
-      }
+    const clientId = (window.ENV?.KINGSCHAT_CLIENT_ID || process.env.REACT_APP_KINGSCHAT_CLIENT_ID || KINGSCHAT_CLIENT_ID).trim();
+    const loginOptions = {
+      scopes: ["authenticate", "profile"],
+      clientId: clientId,
     };
 
-    window.addEventListener('message', handleAuthMessage, false);
+    try {
+      console.log("[KingsChat] Initiating kingsChatWebSdk.login with clientId:", clientId);
+      const tokenResponse = await kingsChatWebSdk.login(loginOptions);
+      console.log("KingsChat SDK Login Success:", tokenResponse);
+      const { accessToken } = tokenResponse;
+      let kcUser = tokenResponse.user || null;
 
-    const checkClosedTimer = setInterval(() => {
-      if (authWindow.closed) {
-        clearInterval(checkClosedTimer);
-        window.removeEventListener('message', handleAuthMessage);
-        setAuthLoading(false);
-        if (!authReceived && isLocal) {
-          showToast('💡 Local Testing: Use the "⚡ Local Dev Sign-In" button below, or add http://localhost:3000 to KingsChat Developer Portal.');
+      if (!kcUser && accessToken) {
+        try {
+          const pRes = await fetch("https://connect.kingsch.at/api/profile", {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
+          if (pRes.ok) {
+            const pData = await pRes.json();
+            const rawProfile = pData.profile || pData.user || pData;
+            let profileEmail = null;
+            if (rawProfile?.email) {
+              profileEmail = typeof rawProfile.email === 'object' ? (rawProfile.email.address || rawProfile.email.email) : rawProfile.email;
+            }
+            kcUser = {
+              ...rawProfile,
+              email: profileEmail || rawProfile?.email
+            };
+            console.log("Fetched KingsChat Profile on client:", kcUser);
+          }
+        } catch (profileErr) {
+          console.warn("Client profile fetch error:", profileErr);
         }
       }
-    }, 500);
+
+      await processKingsChatAuth({
+        token: accessToken,
+        accessToken: accessToken,
+        user: kcUser,
+        profile: kcUser,
+        email: kcUser?.email,
+        firstName: kcUser?.first_name || kcUser?.firstName || (kcUser?.name ? kcUser.name.split(' ')[0] : null),
+        lastName: kcUser?.last_name || kcUser?.lastName || (kcUser?.name && kcUser.name.includes(' ') ? kcUser.name.split(' ').slice(1).join(' ') : null),
+        username: kcUser?.username
+      });
+    } catch (err) {
+      console.error("KingsChat SDK login error:", err);
+      setAuthLoading(false);
+      const errMsg = err?.message || String(err || '');
+      const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      if (isLocal) {
+        showToast('💡 Local Testing: Use the "⚡ Local Test Sign-In" buttons below for instant local testing!');
+      } else if (!errMsg.toLowerCase().includes('closed') && !errMsg.toLowerCase().includes('cancel')) {
+        showToast('KingsChat login was cancelled or failed.');
+      }
+    }
   }, [processKingsChatAuth]);
 
   // ─── PayPal Handlers ─────────────────────────────────────────────
