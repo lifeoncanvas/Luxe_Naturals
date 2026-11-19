@@ -514,7 +514,7 @@ const paypalInitialOptions = {
   'client-id': PAYPAL_CLIENT_ID,
   currency: 'GBP',
   intent: 'capture',
-  'disable-funding': 'credit,card',
+  components: 'buttons',
 };
 
 // Helper: check if currently on /admin or #/admin
@@ -639,6 +639,7 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState('address'); // 'address' | 'payment'
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('paypal'); // 'paypal' | 'espees'
   const [deliveryOption, setDeliveryOption] = useState('standard'); // 'standard' | 'express'
   const [shippingAddress, setShippingAddress] = useState({
     shippingName: '',
@@ -1283,6 +1284,7 @@ function App() {
   const openCheckout = () => {
     setIsCartOpen(false);
     setCheckoutStep('address');
+    setSelectedPaymentMethod('paypal');
     if (currentUser) {
       setShippingAddress(prev => ({
         ...prev,
@@ -4672,10 +4674,150 @@ function App() {
                     <p style={{ color: '#5C635B', fontSize: '0.85rem', margin: 0 }}>Select your preferred secure payment method.</p>
                   </div>
 
+                  {/* Payment Method Selector Tabs */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    {/* Tab 1: PayPal & Cards */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod('paypal')}
+                      style={{
+                        padding: '0.9rem 1rem',
+                        borderRadius: '8px',
+                        border: selectedPaymentMethod === 'paypal' ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                        backgroundColor: selectedPaymentMethod === 'paypal' ? '#FAF6EE' : '#FFFFFF',
+                        boxShadow: selectedPaymentMethod === 'paypal' ? '0 4px 14px rgba(197, 160, 89, 0.2)' : 'none',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.35rem',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#2D3A29' }}>
+                          PayPal & Cards
+                        </span>
+                        <span style={{
+                          width: '18px',
+                          height: '18px',
+                          borderRadius: '50%',
+                          border: selectedPaymentMethod === 'paypal' ? '5px solid #C5A059' : '2px solid #D6DDD3',
+                          backgroundColor: '#FFF'
+                        }} />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.2rem' }}>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '14px' }} />
+                        <CreditCard size={14} color="#6E5535" />
+                        <span style={{ fontSize: '0.72rem', color: '#6E5535', fontWeight: 600 }}>Debit / Credit Card</span>
+                      </div>
+                    </button>
+
+                    {/* Tab 2: Espees (ESP) */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod('espees')}
+                      style={{
+                        padding: '0.9rem 1rem',
+                        borderRadius: '8px',
+                        border: selectedPaymentMethod === 'espees' ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                        backgroundColor: selectedPaymentMethod === 'espees' ? '#FAF6EE' : '#FFFFFF',
+                        boxShadow: selectedPaymentMethod === 'espees' ? '0 4px 14px rgba(197, 160, 89, 0.2)' : 'none',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.35rem',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#2D3A29' }}>
+                          ⚡ Pay with Espees
+                        </span>
+                        <span style={{
+                          width: '18px',
+                          height: '18px',
+                          borderRadius: '50%',
+                          border: selectedPaymentMethod === 'espees' ? '5px solid #C5A059' : '2px solid #D6DDD3',
+                          backgroundColor: '#FFF'
+                        }} />
+                      </div>
+                      <span style={{ fontSize: '0.72rem', color: '#6E5535', fontWeight: 600 }}>
+                        {cartTotal.toFixed(2)} ESP • Loveworld Pay
+                      </span>
+                    </button>
+                  </div>
+
                   {/* Payment Methods */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+                    {/* PAYPAL SMART BUTTONS (Active by Default) */}
+                    {selectedPaymentMethod === 'paypal' && (
+                      <div style={{ border: '2px solid #C5A059', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF', boxShadow: '0 4px 18px rgba(197, 160, 89, 0.12)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.1rem', paddingBottom: '0.75rem', borderBottom: '1px solid #F0ECE1' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '22px' }} />
+                            <div>
+                              <div style={{ fontSize: '0.95rem', color: '#2D3A29', fontWeight: 700 }}>PayPal & Card Checkout</div>
+                              <div style={{ fontSize: '0.72rem', color: '#5C635B' }}>Fast, verified & encrypted UK checkout</div>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: '0.7rem', backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', padding: '0.2rem 0.55rem', borderRadius: '4px', fontWeight: 700 }}>
+                            RECOMMENDED
+                          </span>
+                        </div>
+
+                        <p style={{ margin: '0 0 1.25rem 0', fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5 }}>
+                          Click the yellow <strong>PayPal</strong> button below to sign in, or click <strong>Debit or Credit Card</strong> to pay directly with your bank card (Visa, Mastercard, Maestro, Amex) — <em>no PayPal account required</em>.
+                        </p>
+
+                        {paymentProcessing && (
+                          <div style={{ textAlign: 'center', padding: '1rem', color: '#6E5535', fontSize: '0.9rem' }}>
+                            <div style={{ display: 'inline-block', width: '20px', height: '20px', border: '2px solid #E5DFC5', borderTopColor: '#C5A059', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginRight: '0.5rem', verticalAlign: 'middle' }}></div>
+                            Processing your payment securely...
+                          </div>
+                        )}
+
+                        <div style={{ opacity: paymentProcessing ? 0.5 : 1, pointerEvents: paymentProcessing ? 'none' : 'auto' }}>
+                          <PayPalButtons
+                            style={{
+                              layout: 'vertical',
+                              color: 'gold',
+                              shape: 'rect',
+                              label: 'pay',
+                              height: 48,
+                              tagline: false,
+                            }}
+                            createOrder={createPayPalOrder}
+                            onApprove={capturePayPalOrder}
+                            onError={(err) => {
+                              setPaymentProcessing(false);
+                              console.error('PayPal notice/error:', err);
+                              const msg = err?.message || String(err || '');
+                              if (!msg.toLowerCase().includes('closed') && !msg.toLowerCase().includes('cancel')) {
+                                showToast("We couldn't complete your payment. You have not been charged. Please try again.");
+                              }
+                            }}
+                            onCancel={() => {
+                              setPaymentProcessing(false);
+                              showToast('PayPal checkout cancelled.');
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginTop: '1.15rem', color: '#8C887B', fontSize: '0.75rem' }}>
+                          <span>🔒 256-Bit SSL Encrypted</span>
+                          <span>•</span>
+                          <span>✓ Official UK PayPal Partner</span>
+                          <span>•</span>
+                          <span>✓ Buyer Protection</span>
+                        </div>
+                      </div>
+                    )}
                     
-                                        {/* ESPEES (ESP) · LOVEWORLD PAY OPTION */}
+                    {/* ESPEES (ESP) · LOVEWORLD PAY OPTION */}
+                    {selectedPaymentMethod === 'espees' && (
                     <div style={{ border: '2px solid #C5A059', borderRadius: '8px', padding: '1.35rem 1.5rem', backgroundColor: '#FAF6EE', position: 'relative', boxShadow: '0 4px 18px rgba(197, 160, 89, 0.15)' }}>
                       <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
                         <span style={{ backgroundColor: '#2D3A29', color: '#DFCAA7', fontSize: '0.625rem', padding: '0.2rem 0.55rem', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.08em' }}>
@@ -4790,29 +4932,10 @@ function App() {
                           </div>
 
                           <div style={{ marginBottom: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                            <div style={{ marginBottom: '0.35rem' }}>
                               <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                                 Your Espees Username or Reference Code *
                               </label>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEspeesUsernameRef('usertest01');
-                                  showToast('⚡ Filled test buyer: @usertest01');
-                                }}
-                                style={{
-                                  fontSize: '0.72rem',
-                                  backgroundColor: '#EAE3D2',
-                                  border: '1px solid #C5A059',
-                                  color: '#6E5535',
-                                  borderRadius: '3px',
-                                  padding: '0.15rem 0.5rem',
-                                  cursor: 'pointer',
-                                  fontWeight: 700
-                                }}
-                              >
-                                ⚡ Fill Test User (@usertest01)
-                              </button>
                             </div>
                             <input
                               type="text"
@@ -4903,62 +5026,7 @@ function App() {
                         ⚡ Powered by Espees Global Financial Network • Made in Loveworld
                       </div>
                     </div>
-
-                    {/* DIRECT CARD PAYMENT (STRIPE - COMING SOON) */}
-                    <div style={{ border: '1px dashed #D6DDD3', borderRadius: '8px', padding: '1.15rem 1.35rem', backgroundColor: '#FAF7F2' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <CreditCard size={18} color="#6E5535" />
-                          <span style={{ fontWeight: 600, color: '#2D3A29', fontSize: '0.95rem' }}>Credit / Debit Card (Direct Stripe)</span>
-                        </div>
-                        <span style={{ fontSize: '0.68rem', backgroundColor: '#E5DFC5', color: '#6E5535', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>COMING SOON</span>
-                      </div>
-                      <p style={{ margin: 0, fontSize: '0.825rem', color: '#5C635B', lineHeight: 1.45 }}>
-                        Direct on-site card checkout is currently being integrated with Stripe UK. To pay now using any <strong>Debit or Credit Card</strong> (Visa, Mastercard, Maestro, Amex), please use the <strong>PayPal button below</strong> and select <em>"Pay with Credit or Debit Card"</em> — no PayPal account required.
-                      </p>
-                    </div>
-
-                    {/* PAYPAL SMART BUTTONS */}
-                    <div style={{ border: '1px solid #E5DFC5', borderRadius: '8px', padding: '1.25rem 1.5rem', backgroundColor: '#FFFFFF' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '20px' }} />
-                        <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Fast, secure PayPal checkout</span>
-                      </div>
-                      
-                      {paymentProcessing && (
-                        <div style={{ textAlign: 'center', padding: '1rem', color: '#6E5535', fontSize: '0.9rem' }}>
-                          <div style={{ display: 'inline-block', width: '20px', height: '20px', border: '2px solid #E5DFC5', borderTopColor: '#C5A059', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginRight: '0.5rem', verticalAlign: 'middle' }}></div>
-                          Processing your payment securely...
-                        </div>
-                      )}
-                      
-                      <div style={{ opacity: paymentProcessing ? 0.5 : 1, pointerEvents: paymentProcessing ? 'none' : 'auto' }}>
-                        <PayPalButtons
-                          style={{
-                            layout: 'vertical',
-                            color: 'gold',
-                            shape: 'rect',
-                            label: 'pay',
-                            height: 45,
-                            tagline: false,
-                          }}
-                          createOrder={createPayPalOrder}
-                          onApprove={capturePayPalOrder}
-                          onError={(err) => {
-                            setPaymentProcessing(false);
-                            console.error('PayPal notice/error:', err);
-                            const msg = err?.message || String(err || '');
-                            if (!msg.toLowerCase().includes('closed') && !msg.toLowerCase().includes('cancel')) {
-                              showToast('PayPal notice: Please complete authentication in the PayPal window.');
-                            }
-                          }}
-                          onCancel={() => {
-                            setPaymentProcessing(false);
-                            showToast('PayPal checkout cancelled.');
-                          }}
-                        />
-                      </div>
-                    </div>
+                  )}
 
                   </div>
                 </div>
@@ -5191,34 +5259,11 @@ function App() {
                     </svg>
                     {authLoading ? 'Connecting to KingsChat...' : (authMode === 'login' ? 'Sign in with KingsChat' : 'Sign up with KingsChat')}
                   </button>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 0.25rem' }}>
-                    <span style={{ fontSize: '0.68rem', color: '#6E5535' }}>
-                      Project: <strong>luxe natural</strong> • Loveworld SSO
+                  <div style={{ textAlign: 'center', padding: '0.4rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                    <ShieldCheck size={14} color="#C5A059" />
+                    <span style={{ fontSize: '0.75rem', color: '#6E5535', fontWeight: 500 }}>
+                      Official Loveworld Single Sign-On
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        processKingsChatAuth({
-                          profile: {
-                            name: 'Sharon Rajiv Shelke',
-                            email: 'sharonshelke1@gmail.com',
-                            username: 'sharonshelke1'
-                          }
-                        });
-                      }}
-                      style={{
-                        fontSize: '0.68rem',
-                        color: '#6E5535',
-                        background: '#FAF6EE',
-                        border: '1px solid #C5A059',
-                        borderRadius: '3px',
-                        padding: '0.15rem 0.45rem',
-                        cursor: 'pointer',
-                        fontWeight: 600
-                      }}
-                    >
-                      ⚡ Test: @Sharon Rajiv Shelke
-                    </button>
                   </div>
                 </div>
 
