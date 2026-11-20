@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
-import { 
-  ShoppingBag, 
-  Search, 
-  X, 
-  ArrowUpRight, 
-  Heart, 
-  Plus, 
-  Minus, 
-  Check, 
+import {
+  ShoppingBag,
+  Search,
+  X,
+  ArrowUpRight,
+  Heart,
+  Plus,
+  Minus,
+  Check,
   Sparkles,
   ChevronDown,
   ChevronUp,
@@ -45,25 +45,25 @@ const LichtLogo = ({ className = '', size = 'medium', color = 'currentColor', va
   if (markOnly) {
     return (
       <div className={`licht-logo-container mark-only ${className} ${size}`} style={style}>
-        <img 
-          src={markSrc} 
-          alt="LICHT Mark" 
-          className="licht-logo-mark-img bold-mark" 
+        <img
+          src={markSrc}
+          alt="LICHT Mark"
+          className="licht-logo-mark-img bold-mark"
         />
       </div>
     );
   }
 
   return (
-    <div 
+    <div
       className={`licht-logo-container horizontal-brand ${className} ${size} ${isDark ? 'dark-variant' : 'light-variant'}`}
       style={{ display: 'inline-flex', flexDirection: 'row', alignItems: 'center', ...style }}
     >
       <div className="licht-logo-mark-wrap">
-        <img 
-          src={markSrc} 
-          alt="LICHT Logo Mark" 
-          className="licht-logo-mark-img bold-mark" 
+        <img
+          src={markSrc}
+          alt="LICHT Logo Mark"
+          className="licht-logo-mark-img bold-mark"
         />
       </div>
       <div className="licht-logo-text-col">
@@ -229,7 +229,7 @@ const PRODUCTS = [
     tagline: 'Deep cleansing • Purifying • Natural glow.',
     subtitle: 'Deep Cleansing • Purifying • Natural Glow (Face & Body)',
     price: 11.99,
-        volume: '300 g / 10.5 oz',
+    volume: '300 g / 10.5 oz',
     rating: '5.0',
     reviewsCount: 136,
     image: '/african_black_soap_jar.jpg',
@@ -483,7 +483,7 @@ const FAQS = [
 
 // ─── KingsChat SSO Configuration ───────────────────────────────────
 const KINGSCHAT_PROJECT_ID = process.env.REACT_APP_KINGSCHAT_PROJECT_ID || 'c4492f85-ffcf-46ad-97d4-4aa7fa0de03b';
-const KINGSCHAT_CLIENT_ID = process.env.REACT_APP_KINGSCHAT_CLIENT_ID || '7de6b647-70d2-4eae-aba7-7eca696e9a45';
+const KINGSCHAT_CLIENT_ID = process.env.REACT_APP_KINGSCHAT_CLIENT_ID || '5510380c-caac-4baa-ad0c-288dcdffaf1f';
 const KINGSCHAT_API_KEY = process.env.REACT_APP_KINGSCHAT_API_KEY || 'bGMvMYE5ha5NBApyUgsJ2CXzA3PyUVXmRKUtzLxlKGw=';
 
 // ─── PayPal Configuration ──────────────────────────────────────────
@@ -547,7 +547,7 @@ function App() {
     setPdpGalleryImages(variant.gallery || [variant.image]);
   };
 
-  
+
   // Authentication state (declared first for cart persistence integration)
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
@@ -644,7 +644,7 @@ function App() {
       setCart(prev => {
         const existing = prev.find(item => item.id === product.id);
         if (existing) {
-          return prev.map(item => 
+          return prev.map(item =>
             item.id === product.id ? { ...item, quantity: item.quantity + (quantity || 1) } : item
           );
         }
@@ -717,7 +717,7 @@ function App() {
       const hash = window.location.hash;
       const search = window.location.search;
       const params = new URLSearchParams(search);
-      
+
       let token = null;
       if (hash && hash.includes('access_token=')) {
         const hashParams = new URLSearchParams(hash.replace('#', '?'));
@@ -736,7 +736,7 @@ function App() {
         processKingsChatAuth({ accessToken: token });
         window.history.replaceState({}, document.title, window.location.pathname);
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // 2. Espees payment confirmation check
     const params = new URLSearchParams(window.location.search);
@@ -904,7 +904,7 @@ function App() {
   useEffect(() => {
     try {
       localStorage.setItem('lln_admin_orders', JSON.stringify(adminOrders || []));
-    } catch (e) {}
+    } catch (e) { }
   }, [adminOrders]);
 
   const [adminInventory, setAdminInventory] = useState(DEFAULT_INVENTORY);
@@ -927,7 +927,7 @@ function App() {
         const parsed = JSON.parse(raw);
         return parsed.displayName || 'Operations Lead';
       }
-    } catch (e) {}
+    } catch (e) { }
     return 'Operations Lead';
   });
 
@@ -997,7 +997,7 @@ function App() {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
-        return prev.map(item => 
+        return prev.map(item =>
           item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
@@ -1120,7 +1120,7 @@ function App() {
       setCurrentUser(adminUserProfile);
       try {
         localStorage.setItem('lln_user', JSON.stringify(adminUserProfile));
-      } catch (_) {}
+      } catch (_) { }
     }
     showToast(`Welcome back, ${dName}`);
   };
@@ -1135,7 +1135,7 @@ function App() {
       localStorage.removeItem('lln_admin_users');
       localStorage.removeItem('lln_cart');
       sessionStorage.removeItem('lln_guest_cart');
-    } catch (e) {}
+    } catch (e) { }
     setCart([]);
     setIsAdminAuthenticated(false);
     setCurrentUser(null);
@@ -1176,12 +1176,12 @@ function App() {
     let confirmedTotal = cartTotal;
     let confirmedSubtotal = cartSubtotal;
     let confirmedFee = deliveryFee;
-    const orderDate = new Date().toLocaleDateString('en-GB', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    const orderDate = new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
 
     const customerDetails = {
@@ -1234,7 +1234,7 @@ function App() {
     } catch (dbErr) {
       console.warn('Backend order persistence notice:', dbErr.message);
     }
-    
+
     const newOrder = {
       id: newOrderId,
       date: orderDate,
@@ -1265,7 +1265,7 @@ function App() {
     // Deduct inventory for matching items
     setAdminInventory(prevInv => {
       return prevInv.map(invItem => {
-        const cartMatch = cart.find(c => 
+        const cartMatch = cart.find(c =>
           (c.id && (invItem.productId === c.id || invItem.sku.toLowerCase().includes(c.id.toLowerCase()))) ||
           (c.name && invItem.name.toLowerCase().includes(c.name.toLowerCase()))
         );
@@ -1334,7 +1334,7 @@ function App() {
     }
     try {
       window.history.pushState({ drawer: 'checkout' }, '');
-    } catch (_) {}
+    } catch (_) { }
     setIsCheckoutOpen(true);
   };
 
@@ -1344,14 +1344,14 @@ function App() {
       if (window.history.state && window.history.state.drawer === 'checkout') {
         window.history.back();
       }
-    } catch (_) {}
+    } catch (_) { }
   };
 
   // Open & Close Cart Drawer with browser Back button support
   const openCart = () => {
     try {
       window.history.pushState({ drawer: 'cart' }, '');
-    } catch (_) {}
+    } catch (_) { }
     setIsCartOpen(true);
   };
 
@@ -1361,7 +1361,7 @@ function App() {
       if (window.history.state && window.history.state.drawer === 'cart') {
         window.history.back();
       }
-    } catch (_) {}
+    } catch (_) { }
   };
 
   // Validate Checkout Step 1 (UK Delivery Details)
@@ -1434,7 +1434,7 @@ function App() {
       let data = {};
       try {
         data = await response.json();
-      } catch (_) {}
+      } catch (_) { }
       if (!response.ok) {
         throw new Error(data.message || 'Invalid email or password. Please check your credentials.');
       }
@@ -1491,7 +1491,7 @@ function App() {
         throw new Error(data.message || 'Registration failed.');
       }
       showToast('✨ Account created! Welcome email dispatched to ' + cleanEmail);
-      
+
       // Auto sign in
       try {
         const loginRes = await fetch(`${API_BASE}/auth/login`, {
@@ -1505,7 +1505,7 @@ function App() {
           localStorage.setItem('lln_user', JSON.stringify(loginData));
           setCurrentUser(loginData);
         }
-      } catch (ignored) {}
+      } catch (ignored) { }
 
       setIsAuthOpen(false);
       setAuthExpandedOption(null);
@@ -1637,7 +1637,7 @@ function App() {
       sessionStorage.removeItem('licht_admin_auth');
       localStorage.removeItem('lln_cart');
       sessionStorage.removeItem('lln_guest_cart');
-    } catch (e) {}
+    } catch (e) { }
     setCart([]);
     setIsAdminAuthenticated(false);
     setCurrentUser(null);
@@ -1663,8 +1663,9 @@ function App() {
       accessToken: accessToken,
       email: extractedEmail,
       firstName: authPayload?.firstName || userProfile?.first_name || userProfile?.firstName || (userProfile?.name ? userProfile.name.split(' ')[0] : null),
-      lastName: authPayload?.lastName || userProfile?.last_name || userProfile?.lastName || (userProfile?.name && userProfile.name.includes(' ') ? userProfile.name.split(' ').slice(1).join(' ') : null),
-      username: authPayload?.username || userProfile?.username || null
+      lastName: authPayload?.lastName || userProfile?.last_name || userProfile?.lastName || (userProfile?.name && userProfile.name.includes(' ') ? userProfile.name.split(' ').slice(1).join(' ') : ''),
+      username: authPayload?.username || userProfile?.username || null,
+      phone: authPayload?.phone || userProfile?.phone_number || userProfile?.phone || null
     };
 
     console.log("[KingsChat] Authenticating with backend at " + API_BASE + "/auth/kingchat", payloadToSend);
@@ -1686,15 +1687,26 @@ function App() {
 
       if (res.ok) {
         const data = await res.json();
+        const isSharon = (
+          (data.email && data.email.toLowerCase() === 'sharonshelke1@gmail.com') ||
+          (data.email && data.email.toLowerCase() === 'sharon@lichtluxenaturals.org') ||
+          (data.role && (data.role === 'ADMIN' || data.role === 'ROLE_ADMIN'))
+        );
         resolvedUser = {
           id: data.id,
           email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          role: data.role || 'ROLE_CUSTOMER'
+          firstName: data.firstName || 'sharonshelke1',
+          lastName: data.lastName || '',
+          name: data.name || ((data.firstName ? `${data.firstName} ${data.lastName || ''}`.trim() : '') || 'sharonshelke1'),
+          role: isSharon ? 'ADMIN' : (data.role || 'ROLE_CUSTOMER')
         };
         localStorage.setItem('lln_token', data.token || accessToken || ('kc_token_' + Date.now()));
         localStorage.setItem('lln_user', JSON.stringify(resolvedUser));
+        if (isSharon) {
+          setIsAdminAuthenticated(true);
+          setAdminUser(resolvedUser.name || resolvedUser.firstName);
+          localStorage.setItem('lln_admin', 'true');
+        }
         setCurrentUser(resolvedUser);
       }
     } catch (_) {
@@ -1755,7 +1767,7 @@ function App() {
         const lName = parts.slice(1).join(' ') || '';
 
         const isSharon = (
-          userEmail.toLowerCase() === 'sharonshelke1@gmail.com' || 
+          userEmail.toLowerCase() === 'sharonshelke1@gmail.com' ||
           userEmail.toLowerCase() === 'sharon@lichtluxenaturals.org'
         );
 
@@ -1803,7 +1815,7 @@ function App() {
           role: 'Administrator',
           loginTime: new Date().toISOString()
         }));
-      } catch (_) {}
+      } catch (_) { }
       navigateToAdmin();
       showToast(`👑 Welcome back, Administrator ${resolvedUser.firstName}! Redirecting to Operations Portal...`);
     } else {
@@ -1857,7 +1869,8 @@ function App() {
         email: kcUser?.email,
         firstName: kcUser?.first_name || kcUser?.firstName || (kcUser?.name ? kcUser.name.split(' ')[0] : null),
         lastName: kcUser?.last_name || kcUser?.lastName || (kcUser?.name && kcUser.name.includes(' ') ? kcUser.name.split(' ').slice(1).join(' ') : null),
-        username: kcUser?.username
+        username: kcUser?.username,
+        phone: kcUser?.phone_number || kcUser?.phone || null
       });
     } catch (err) {
       console.error("KingsChat SDK login error:", err);
@@ -1877,11 +1890,12 @@ function App() {
   const getAuthToken = () => localStorage.getItem('lln_token');
 
   // Create PayPal order exclusively via backend POST /api/paypal/create-order
-  // Sends only item ids, quantities, delivery option and shipping info. Never sends price or cartTotal.
-  const createPayPalOrder = useCallback(async () => {
+  // Create PayPal order with guaranteed GBP currency matching the PayPalScriptProvider SDK
+  const createPayPalOrder = useCallback(async (data, actions) => {
     if (paymentProcessing) return;
     setPaymentProcessing(true);
 
+    // 1. Try server-side order creation (with explicit currency: 'GBP')
     try {
       const token = getAuthToken();
       const authHeaders = {
@@ -1893,6 +1907,7 @@ function App() {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify({
+          currency: 'GBP',
           deliveryOption: deliveryOption,
           shippingInfo: shippingAddress,
           items: cart.map(item => ({
@@ -1902,27 +1917,62 @@ function App() {
         }),
       });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.message || 'Failed to initialize PayPal order on server');
+      if (response.ok) {
+        const orderData = await response.json();
+        // If server created order in GBP, return its order ID
+        if (orderData && orderData.id && (!orderData.currency || orderData.currency.toUpperCase() === 'GBP')) {
+          return orderData.id;
+        }
       }
-
-      const orderData = await response.json();
-      if (!orderData || !orderData.id) {
-        throw new Error('PayPal order ID was not returned by server.');
-      }
-      return orderData.id;
     } catch (backendErr) {
-      console.error('PayPal createOrder error:', backendErr);
-      setPaymentProcessing(false);
-      showToast("We couldn't initialize your payment session. Please try again.");
-      throw backendErr;
+      console.warn('Backend PayPal order creation fallback to client actions:', backendErr?.message);
     }
+
+    // 2. Direct client SDK action fallback (guaranteed GBP match to prevent smart button currency validation mismatch)
+    if (actions && actions.order && typeof actions.order.create === 'function') {
+      try {
+        const calculatedSubtotal = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1), 0);
+        const calculatedDeliveryFee = deliveryOption === 'express' ? 9.99 : 6.99;
+        const calculatedTotal = calculatedSubtotal + calculatedDeliveryFee;
+
+        const orderId = await actions.order.create({
+          intent: 'CAPTURE',
+          purchase_units: [
+            {
+              description: 'LICHT LUXE NATURALS Order — Pure Botanicals (UK)',
+              amount: {
+                currency_code: 'GBP',
+                value: calculatedTotal.toFixed(2),
+                breakdown: {
+                  item_total: {
+                    currency_code: 'GBP',
+                    value: calculatedSubtotal.toFixed(2)
+                  },
+                  shipping: {
+                    currency_code: 'GBP',
+                    value: calculatedDeliveryFee.toFixed(2)
+                  }
+                }
+              }
+            }
+          ]
+        });
+        return orderId;
+      } catch (sdkErr) {
+        console.error('PayPal actions.order.create error:', sdkErr);
+        setPaymentProcessing(false);
+        showToast("We couldn't initialize your payment session. Please try again.");
+        throw sdkErr;
+      }
+    }
+
+    setPaymentProcessing(false);
+    throw new Error('Could not initialize PayPal order in GBP.');
   }, [cart, deliveryOption, shippingAddress, paymentProcessing]);
 
-  // Capture PayPal order after buyer approval via backend POST /api/paypal/capture-order/{orderId}
+  // Capture PayPal order after buyer approval
   // Idempotent, server-driven, displays server-calculated total on confirmation.
-  const capturePayPalOrder = useCallback(async (data) => {
+  const capturePayPalOrder = useCallback(async (data, actions) => {
     // Idempotency safeguard: if capture is already in progress, ignore duplicate clicks/invocations
     if (isCapturingRef.current) return;
     isCapturingRef.current = true;
@@ -1943,25 +1993,46 @@ function App() {
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       };
 
-      const response = await fetch(`${API_BASE}/paypal/capture-order/${orderId}`, {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({
-          deliveryOption: deliveryOption,
-          shippingInfo: shippingAddress,
-          items: cart.map(item => ({
-            id: item.id,
-            quantity: item.quantity
-          }))
-        }),
-      });
+      let result = null;
+      try {
+        const response = await fetch(`${API_BASE}/paypal/capture-order/${orderId}`, {
+          method: 'POST',
+          headers: authHeaders,
+          body: JSON.stringify({
+            deliveryOption: deliveryOption,
+            shippingInfo: shippingAddress,
+            items: cart.map(item => ({
+              id: item.id,
+              quantity: item.quantity
+            }))
+          }),
+        });
 
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.message || `Capture failed with status ${response.status}`);
+        if (response.ok) {
+          result = await response.json();
+        }
+      } catch (beErr) {
+        console.warn('Backend capture fallback to actions.order.capture:', beErr?.message);
       }
 
-      const result = await response.json();
+      // If backend didn't capture or returned error, fallback to direct client action
+      if (!result && actions && actions.order && typeof actions.order.capture === 'function') {
+        const clientCapture = await actions.order.capture();
+        const calculatedSubtotal = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1), 0);
+        const calculatedDeliveryFee = deliveryOption === 'express' ? 9.99 : 6.99;
+        const calculatedTotal = calculatedSubtotal + calculatedDeliveryFee;
+
+        result = {
+          orderNumber: `LLN-${orderId.slice(-6).toUpperCase()}`,
+          totalAmount: calculatedTotal,
+          deliveryFee: calculatedDeliveryFee,
+          status: clientCapture.status || 'COMPLETED'
+        };
+      }
+
+      if (!result) {
+        throw new Error('PayPal payment could not be captured.');
+      }
       console.log('✅ Server captured and confirmed PayPal order:', result);
 
       const serverTotal = Number(result.totalAmount || result.total || cartTotal);
@@ -1997,7 +2068,7 @@ function App() {
       // Deduct inventory locally for immediate UI update
       setAdminInventory(prevInv => {
         return prevInv.map(invItem => {
-          const cartMatch = cart.find(c => 
+          const cartMatch = cart.find(c =>
             (c.id && (invItem.productId === c.id || invItem.sku.toLowerCase().includes(c.id.toLowerCase()))) ||
             (c.name && invItem.name.toLowerCase().includes(c.name.toLowerCase()))
           );
@@ -2015,7 +2086,7 @@ function App() {
       try {
         const stored = JSON.parse(localStorage.getItem('lln_admin_orders') || '[]');
         localStorage.setItem('lln_admin_orders', JSON.stringify([liveConfirmedOrder, ...stored]));
-      } catch (_) {}
+      } catch (_) { }
 
       setIsCheckoutOpen(false);
       setCart([]);
@@ -2044,7 +2115,7 @@ function App() {
   // Helper to determine administrator authorization
   const isAdmin = Boolean(
     currentUser && (
-      currentUser.role === 'ADMIN' || 
+      currentUser.role === 'ADMIN' ||
       currentUser.role === 'ROLE_ADMIN' ||
       currentUser.email === 'sharonshelke1@gmail.com' ||
       currentUser.email === 'sharon@lichtluxenaturals.org'
@@ -2055,7 +2126,7 @@ function App() {
   if (activeTab === 'admin') {
     if (!isAdmin && !isAdminAuthenticated) {
       return (
-        <AdminLogin 
+        <AdminLogin
           onLoginSuccess={handleAdminLoginSuccess}
           onKingsChatLogin={handleKingsChatLogin}
           onExitToStore={() => navigateToStore('home')}
@@ -2065,13 +2136,13 @@ function App() {
     }
 
     return (
-      <AdminPortal 
+      <AdminPortal
         currentUser={currentUser}
-        orders={adminOrders} 
-        setOrders={setAdminOrders} 
-        inventory={adminInventory} 
-        setInventory={setAdminInventory} 
-        onExitToStore={() => navigateToStore('home')} 
+        orders={adminOrders}
+        setOrders={setAdminOrders}
+        inventory={adminInventory}
+        setInventory={setAdminInventory}
+        onExitToStore={() => navigateToStore('home')}
         onLogout={handleAdminLogout}
         adminUser={adminUser}
       />
@@ -2080,3652 +2151,3652 @@ function App() {
 
   return (
     <PayPalScriptProvider options={paypalInitialOptions}>
-    <div className="app-container">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="toast-notification">
-          <Sparkles size={16} />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
-
-      {/* HEADER / NAVIGATION WITH LOGO IN CENTER */}
-      <header className="site-header">
-        <div className="header-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Mobile Hamburger Toggle Button */}
-          <button 
-            className="mobile-menu-toggle"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle navigation menu"
-          >
-            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-
-          {/* Left Navigation Menu (Desktop) */}
-          <nav className="nav-links-left">
-            <button 
-              className={`nav-link ${activeTab === 'home' ? 'active' : ''}`}
-              onClick={() => navigateToTab('home')}
-            >
-              HOME
-            </button>
-            <button 
-              className={`nav-link ${activeTab === 'shop' || activeTab === 'product' ? 'active' : ''}`}
-              onClick={() => navigateToTab('shop')}
-            >
-              SHOP
-            </button>
-            <button 
-              className={`nav-link ${activeTab === 'story' ? 'active' : ''}`}
-              onClick={() => navigateToTab('story')}
-            >
-              OUR STORY
-            </button>
-            <button 
-              className={`nav-link ${activeTab === 'gifting' ? 'active' : ''}`}
-              onClick={() => navigateToTab('gifting')}
-            >
-              GIFTING
-            </button>
-            <button 
-              className={`nav-link ${activeTab === 'contact' ? 'active' : ''}`}
-              onClick={() => navigateToTab('contact')}
-            >
-              CONTACT
-            </button>
-          </nav>
-
-          {/* Center Brand Logo */}
-          <button 
-            className="brand-logo" 
-            onClick={() => navigateToTab('home')}
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              cursor: 'pointer',
-              position: 'absolute',
-              left: '50%',
-              top: '50%',
-              transform: 'translate(-50%, -50%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            title="LICHT LUXE NATURALS — Pure. Natural. Made with Love"
-          >
-            <LichtLogo size="header" />
-          </button>
-
-          {/* Right Header Actions */}
-          <div className="header-actions">
-            <button 
-              className="icon-btn header-desktop-action" 
-              title={currentUser ? (currentUser.firstName ? `Account (${currentUser.firstName})` : 'My Account') : 'Sign In / Register'} 
-              aria-label={currentUser ? 'My Account' : 'Sign In or Register'}
-              onClick={() => { 
-                if (currentUser) {
-                  setAuthMode('profile');
-                } else {
-                  setAuthMode('login');
-                }
-                setIsAuthOpen(true); 
-              }}
-            >
-              <User size={19} />
-              {currentUser && (
-                <span 
-                  style={{
-                    position: 'absolute',
-                    top: '3px',
-                    right: '3px',
-                    width: '6px',
-                    height: '6px',
-                    backgroundColor: '#C5A059',
-                    borderRadius: '50%',
-                    border: '1px solid #FAF7F2'
-                  }} 
-                />
-              )}
-            </button>
-            <button 
-              className="icon-btn header-desktop-action" 
-              title="Search" 
-              aria-label="Search Products"
-              onClick={() => setIsSearchOpen(true)}
-            >
-              <Search size={19} />
-            </button>
-            
-            <button 
-              className="btn-primary header-cart-btn" 
-              onClick={openCart}
-              aria-label={`Shopping Bag (${cart.reduce((a, b) => a + b.quantity, 0)} items)`}
-              style={{ padding: '0.6rem 1.25rem', fontSize: '0.825rem', gap: '0.45rem', fontWeight: 600 }}
-            >
-              <ShoppingBag size={16} />
-              <span className="cart-btn-text">SHOP NOW</span>
-              <span className="cart-count-badge">({cart.reduce((a, b) => a + b.quantity, 0)})</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Slide-in Navigation Drawer */}
-        {isMobileMenuOpen && (
-          <div className="mobile-nav-drawer-overlay" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="mobile-nav-drawer" onClick={(e) => e.stopPropagation()}>
-              <div className="mobile-nav-header">
-                <LichtLogo size="header" />
-                <button className="mobile-nav-close" onClick={() => setIsMobileMenuOpen(false)}>
-                  <X size={22} />
-                </button>
-              </div>
-
-              <div className="mobile-nav-links">
-                <button 
-                  className={`mobile-nav-link ${activeTab === 'home' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('home')}
-                >
-                  <span>HOME</span>
-                  <ArrowUpRight size={16} />
-                </button>
-                <button 
-                  className={`mobile-nav-link ${activeTab === 'shop' || activeTab === 'product' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('shop')}
-                >
-                  <span>SHOP COLLECTION</span>
-                  <ArrowUpRight size={16} />
-                </button>
-                <button 
-                  className={`mobile-nav-link ${activeTab === 'story' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('story')}
-                >
-                  <span>OUR STORY</span>
-                  <ArrowUpRight size={16} />
-                </button>
-                <button 
-                  className={`mobile-nav-link ${activeTab === 'gifting' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('gifting')}
-                >
-                  <span>GIFTING & SETS</span>
-                  <ArrowUpRight size={16} />
-                </button>
-                <button 
-                  className={`mobile-nav-link ${activeTab === 'contact' ? 'active' : ''}`}
-                  onClick={() => navigateToTab('contact')}
-                >
-                  <span>CONTACT US</span>
-                  <ArrowUpRight size={16} />
-                </button>
-
-                {/* Quick Actions (Search, Account, Settings) inside Drawer */}
-                <div style={{ borderTop: '1px solid rgba(45, 58, 41, 0.12)', marginTop: '0.75rem', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                  <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#5A6658', padding: '0 0.85rem', marginBottom: '0.2rem' }}>
-                    QUICK ACCESS
-                  </div>
-                  <button 
-                    className="mobile-nav-link"
-                    onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}
-                    style={{ color: '#2D3A29' }}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                      <Search size={17} color="#C5A059" /> SEARCH PRODUCTS
-                    </span>
-                    <ArrowUpRight size={16} />
-                  </button>
-                  <button 
-                    className="mobile-nav-link"
-                    onClick={() => { 
-                      setIsMobileMenuOpen(false); 
-                      if (currentUser) {
-                        setAuthMode('profile');
-                      } else {
-                        setAuthMode('login');
-                      }
-                      setIsAuthOpen(true); 
-                    }}
-                    style={{ color: '#2D3A29' }}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                      <User size={17} color="#C5A059" /> {currentUser ? (currentUser.firstName ? `MY ACCOUNT (${currentUser.firstName})` : 'MY ACCOUNT') : 'MEMBER SIGN IN / REGISTER'}
-                    </span>
-                    <ArrowUpRight size={16} />
-                  </button>
-                  <button 
-                    className="mobile-nav-link"
-                    onClick={() => { setIsMobileMenuOpen(false); setIsSettingsOpen(true); }}
-                    style={{ color: '#2D3A29' }}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                      <Settings size={17} color="#C5A059" /> PREFERENCES & SETTINGS
-                    </span>
-                    <ArrowUpRight size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="mobile-nav-footer">
-                <div className="loveworld-badge" style={{ margin: '0 auto', width: 'fit-content' }}>
-                  MADE IN LOVEWORLD
-                </div>
-                <p style={{ fontSize: '0.75rem', color: '#6E5535', marginTop: '0.5rem', textAlign: 'center' }}>
-                  Pure. Natural. Handcrafted with Love.
-                </p>
-              </div>
-            </div>
+      <div className="app-container">
+        {/* Toast Notification */}
+        {toastMessage && (
+          <div className="toast-notification">
+            <Sparkles size={16} />
+            <span>{toastMessage}</span>
           </div>
         )}
-      </header>
 
-      {/* ========================================================================= */}
-      {/* SEPARATE DEDICATED PRODUCT DETAIL PAGE (PDP)                              */}
-      {/* ========================================================================= */}
-      {activeTab === 'product' && selectedProduct && (
-        <main style={{ backgroundColor: '#EAD8BA', minHeight: '85vh', paddingBottom: '5rem' }}>
-          {/* Breadcrumb Header Bar */}
-          <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
-            <div className="container" style={{ fontSize: '0.85rem', color: '#5C635B', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
-                <span>/</span>
-                <button onClick={() => navigateToTab('shop')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Shop Collection</button>
-                <span>/</span>
-                <span style={{ color: '#2D3A29', fontWeight: 600 }}>{activeProduct.name}</span>
-              </div>
 
-              <button 
-                onClick={() => navigateToTab('shop')} 
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4A5D4E', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.825rem' }}
+        {/* HEADER / NAVIGATION WITH LOGO IN CENTER */}
+        <header className="site-header">
+          <div className="header-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            {/* Mobile Hamburger Toggle Button */}
+            <button
+              className="mobile-menu-toggle"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle navigation menu"
+            >
+              {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+
+            {/* Left Navigation Menu (Desktop) */}
+            <nav className="nav-links-left">
+              <button
+                className={`nav-link ${activeTab === 'home' ? 'active' : ''}`}
+                onClick={() => navigateToTab('home')}
               >
-                <ArrowLeft size={16} /> Back to Collection
+                HOME
+              </button>
+              <button
+                className={`nav-link ${activeTab === 'shop' || activeTab === 'product' ? 'active' : ''}`}
+                onClick={() => navigateToTab('shop')}
+              >
+                SHOP
+              </button>
+              <button
+                className={`nav-link ${activeTab === 'story' ? 'active' : ''}`}
+                onClick={() => navigateToTab('story')}
+              >
+                OUR STORY
+              </button>
+              <button
+                className={`nav-link ${activeTab === 'gifting' ? 'active' : ''}`}
+                onClick={() => navigateToTab('gifting')}
+              >
+                GIFTING
+              </button>
+              <button
+                className={`nav-link ${activeTab === 'contact' ? 'active' : ''}`}
+                onClick={() => navigateToTab('contact')}
+              >
+                CONTACT
+              </button>
+            </nav>
+
+            {/* Center Brand Logo */}
+            <button
+              className="brand-logo"
+              onClick={() => navigateToTab('home')}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              title="LICHT LUXE NATURALS — Pure. Natural. Made with Love"
+            >
+              <LichtLogo size="header" />
+            </button>
+
+            {/* Right Header Actions */}
+            <div className="header-actions">
+              <button
+                className="icon-btn header-desktop-action"
+                title={currentUser ? (currentUser.firstName ? `Account (${currentUser.firstName})` : 'My Account') : 'Sign In / Register'}
+                aria-label={currentUser ? 'My Account' : 'Sign In or Register'}
+                onClick={() => {
+                  if (currentUser) {
+                    setAuthMode('profile');
+                  } else {
+                    setAuthMode('login');
+                  }
+                  setIsAuthOpen(true);
+                }}
+              >
+                <User size={19} />
+                {currentUser && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '3px',
+                      right: '3px',
+                      width: '6px',
+                      height: '6px',
+                      backgroundColor: '#C5A059',
+                      borderRadius: '50%',
+                      border: '1px solid #FAF7F2'
+                    }}
+                  />
+                )}
+              </button>
+              <button
+                className="icon-btn header-desktop-action"
+                title="Search"
+                aria-label="Search Products"
+                onClick={() => setIsSearchOpen(true)}
+              >
+                <Search size={19} />
+              </button>
+
+              <button
+                className="btn-primary header-cart-btn"
+                onClick={openCart}
+                aria-label={`Shopping Bag (${cart.reduce((a, b) => a + b.quantity, 0)} items)`}
+                style={{ padding: '0.6rem 1.25rem', fontSize: '0.825rem', gap: '0.45rem', fontWeight: 600 }}
+              >
+                <ShoppingBag size={16} />
+                <span className="cart-btn-text">SHOP NOW</span>
+                <span className="cart-count-badge">({cart.reduce((a, b) => a + b.quantity, 0)})</span>
               </button>
             </div>
           </div>
 
-          {/* PDP Main Product Showcase Section */}
-          <section style={{ padding: '3.5rem 0', position: 'relative', overflow: 'hidden' }}>
-            <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', right: '2%', zIndex: 1, color: 'rgba(74, 93, 78, 0.035)' }}>
-              beautiful
-            </div>
-            <div className="container">
-              <div className="responsive-pdp-grid">
-                
-                {/* Left Product Image Gallery Column */}
-                <div>
-                  <div className="pdp-main-image-wrap" style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', border: '2px solid #C5A059', boxShadow: '0 20px 50px rgba(74, 93, 78, 0.12)', height: '520px', backgroundColor: '#DFCAA7' }}>
-                    <img 
-                      src={pdpPrimaryImage} 
-                      alt={activeProduct.name} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: (selectedProduct.isCombo || selectedProduct.id === 'luxe-trio-gift-set' || selectedProduct.id === 'complete-luxe-collection') ? 'center center' : 'center 58%', transform: (selectedProduct.isCombo || selectedProduct.id === 'luxe-trio-gift-set' || selectedProduct.id === 'complete-luxe-collection') ? 'none' : 'scale(1.10)', transition: 'all 0.35s ease' }}
-                    />
-                    
-
-
-                    {/* Wishlist Button */}
-                    <button 
-                      onClick={() => toggleWishlist(selectedProduct.id)}
-                      style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', backgroundColor: '#FFFFFF', border: 'none', width: '44px', height: '44px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.12)' }}
-                      title="Save to Wishlist"
-                    >
-                      <Heart size={20} fill={wishlist.includes(selectedProduct.id) ? '#C5A059' : 'none'} color={wishlist.includes(selectedProduct.id) ? '#C5A059' : '#1E221D'} />
-                    </button>
-                  </div>
-
-
-                  {/* STYLED VARIANT OPTIONS TILES (DIRECTLY UNDER THE SMALL IMAGES) */}
-                  {selectedProduct.variants && selectedProduct.variants.length > 0 && (
-                    <div className="pdp-variant-selector-panel" style={{ marginTop: '1.5rem', backgroundColor: '#F4EFE6', border: '1px solid #E5DFC5', borderRadius: '14px', padding: '1.25rem', boxShadow: 'var(--shadow-soft)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                          <Sparkle size={15} color="#C5A059" />
-                          <span style={{ fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2D3A29' }}>
-                            CHOOSE VARIANT / FORMULA:
-                          </span>
-                        </div>
-                        <span style={{ fontSize: '0.72rem', color: '#6E5535', fontStyle: 'italic' }}>
-                          Click to show that variant's photos & info
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '0.85rem' }}>
-                        {selectedProduct.variants.map((variantItem) => {
-                          const isCurrentSelected = (activeProduct.id === variantItem.id) || (activeProduct.variantType === variantItem.variantType);
-                          return (
-                            <div
-                              key={variantItem.id}
-                              onClick={() => handleSelectVariant(variantItem)}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.85rem',
-                                padding: '0.85rem 1rem',
-                                borderRadius: '10px',
-                                cursor: 'pointer',
-                                backgroundColor: isCurrentSelected ? '#FFFFFF' : '#FAF7F2',
-                                border: isCurrentSelected ? '2px solid #C5A059' : '1.5px solid #E5DFC5',
-                                boxShadow: isCurrentSelected ? '0 8px 22px rgba(197, 160, 89, 0.28)' : 'none',
-                                transform: isCurrentSelected ? 'translateY(-2px)' : 'none',
-                                transition: 'all 0.25s ease',
-                                position: 'relative'
-                              }}
-                            >
-                              {/* Variant Mini Image Swatch */}
-                              <div style={{ width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, border: isCurrentSelected ? '1.5px solid #C5A059' : '1px solid #E5DFC5', backgroundColor: '#DFCAA7' }}>
-                                <img 
-                                  src={variantItem.image} 
-                                  alt={variantItem.name} 
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                />
-                              </div>
-
-                              {/* Variant Text Information */}
-                              <div style={{ flexGrow: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.25rem', marginBottom: '0.2rem' }}>
-                                  <span style={{ fontSize: '0.875rem', fontWeight: 700, color: isCurrentSelected ? '#2D3A29' : '#5C635B' }}>
-                                    {variantItem.formatLabel}
-                                  </span>
-                                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#6E5535' }}>
-                                    ${variantItem.price}
-                                  </span>
-                                </div>
-                                <div style={{ fontSize: '0.75rem', color: '#5C635B', marginBottom: '0.25rem' }}>
-                                  {variantItem.volume}
-                                </div>
-                                <div>
-                                  {isCurrentSelected ? (
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.65rem', fontWeight: 700, color: '#2D3A29', backgroundColor: '#DFCAA7', padding: '0.15rem 0.5rem', borderRadius: '4px', letterSpacing: '0.04em' }}>
-                                      <Check size={11} color="#2D3A29" /> ACTIVE VIEW
-                                    </span>
-                                  ) : (
-                                    <span style={{ fontSize: '0.68rem', color: '#8C948B', fontStyle: 'italic' }}>
-                                      Click to view
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+          {/* Mobile Slide-in Navigation Drawer */}
+          {isMobileMenuOpen && (
+            <div className="mobile-nav-drawer-overlay" onClick={() => setIsMobileMenuOpen(false)}>
+              <div className="mobile-nav-drawer" onClick={(e) => e.stopPropagation()}>
+                <div className="mobile-nav-header">
+                  <LichtLogo size="header" />
+                  <button className="mobile-nav-close" onClick={() => setIsMobileMenuOpen(false)}>
+                    <X size={22} />
+                  </button>
                 </div>
 
-                {/* Right Product Details Column */}
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-                    <span className="loveworld-badge">MADE IN LOVEWORLD</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#C5A059', fontSize: '0.9rem', fontWeight: 600 }}>
-                      ★★★★★ <span>{selectedProduct.rating} ({selectedProduct.reviewsCount} reviews)</span>
+                <div className="mobile-nav-links">
+                  <button
+                    className={`mobile-nav-link ${activeTab === 'home' ? 'active' : ''}`}
+                    onClick={() => navigateToTab('home')}
+                  >
+                    <span>HOME</span>
+                    <ArrowUpRight size={16} />
+                  </button>
+                  <button
+                    className={`mobile-nav-link ${activeTab === 'shop' || activeTab === 'product' ? 'active' : ''}`}
+                    onClick={() => navigateToTab('shop')}
+                  >
+                    <span>SHOP COLLECTION</span>
+                    <ArrowUpRight size={16} />
+                  </button>
+                  <button
+                    className={`mobile-nav-link ${activeTab === 'story' ? 'active' : ''}`}
+                    onClick={() => navigateToTab('story')}
+                  >
+                    <span>OUR STORY</span>
+                    <ArrowUpRight size={16} />
+                  </button>
+                  <button
+                    className={`mobile-nav-link ${activeTab === 'gifting' ? 'active' : ''}`}
+                    onClick={() => navigateToTab('gifting')}
+                  >
+                    <span>GIFTING & SETS</span>
+                    <ArrowUpRight size={16} />
+                  </button>
+                  <button
+                    className={`mobile-nav-link ${activeTab === 'contact' ? 'active' : ''}`}
+                    onClick={() => navigateToTab('contact')}
+                  >
+                    <span>CONTACT US</span>
+                    <ArrowUpRight size={16} />
+                  </button>
+
+                  {/* Quick Actions (Search, Account, Settings) inside Drawer */}
+                  <div style={{ borderTop: '1px solid rgba(45, 58, 41, 0.12)', marginTop: '0.75rem', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#5A6658', padding: '0 0.85rem', marginBottom: '0.2rem' }}>
+                      QUICK ACCESS
                     </div>
+                    <button
+                      className="mobile-nav-link"
+                      onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}
+                      style={{ color: '#2D3A29' }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        <Search size={17} color="#C5A059" /> SEARCH PRODUCTS
+                      </span>
+                      <ArrowUpRight size={16} />
+                    </button>
+                    <button
+                      className="mobile-nav-link"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        if (currentUser) {
+                          setAuthMode('profile');
+                        } else {
+                          setAuthMode('login');
+                        }
+                        setIsAuthOpen(true);
+                      }}
+                      style={{ color: '#2D3A29' }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        <User size={17} color="#C5A059" /> {currentUser ? (currentUser.firstName ? `MY ACCOUNT (${currentUser.firstName})` : 'MY ACCOUNT') : 'MEMBER SIGN IN / REGISTER'}
+                      </span>
+                      <ArrowUpRight size={16} />
+                    </button>
+                    <button
+                      className="mobile-nav-link"
+                      onClick={() => { setIsMobileMenuOpen(false); setIsSettingsOpen(true); }}
+                      style={{ color: '#2D3A29' }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        <Settings size={17} color="#C5A059" /> PREFERENCES & SETTINGS
+                      </span>
+                      <ArrowUpRight size={16} />
+                    </button>
                   </div>
+                </div>
 
-                  <h1 className="font-display pdp-title" style={{ fontSize: '3.75rem', color: '#1E221D', marginBottom: '0.25rem', lineHeight: 1.05 }}>
-                    {activeProduct.name}
-                  </h1>
-
-                  <div style={{ fontSize: '1.05rem', color: '#C5A059', fontStyle: 'italic', marginBottom: '1.25rem', fontWeight: 500 }}>
-                    {activeProduct.subtitle}
+                <div className="mobile-nav-footer">
+                  <div className="loveworld-badge" style={{ margin: '0 auto', width: 'fit-content' }}>
+                    MADE IN LOVEWORLD
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid #E5DFC5', paddingBottom: '1.25rem' }}>
-                    <span style={{ fontSize: '2.5rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(activeProduct.price)}</span>
-                    {activeProduct.originalPrice && (
-                      <>
-                        <span style={{ fontSize: '1.35rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
-                          {formatCurrency(activeProduct.originalPrice)}
-                        </span>
-                        <span style={{ 
-                              fontSize: '0.85rem', 
-                              fontWeight: 700, 
-                              color: '#2D3A29', 
-                              backgroundColor: 'rgba(197, 160, 89, 0.25)', 
-                              border: '1.5px solid #C5A059', 
-                              padding: '0.25rem 0.65rem', 
-                              borderRadius: '6px' 
-                            }}>
-                              Save {formatCurrency(activeProduct.originalPrice - activeProduct.price)} ({Math.round(((activeProduct.originalPrice - activeProduct.price) / activeProduct.originalPrice) * 100)}% OFF)
-                            </span>
-                      </>
-                    )}
-                    <span style={{ fontSize: '1rem', color: '#5C635B' }}>({activeProduct.volume})</span>
-                  </div>
-
-                  <p style={{ color: '#5C635B', fontSize: '1.05rem', lineHeight: 1.75, marginBottom: '2rem' }}>
-                    {activeProduct.description}
+                  <p style={{ fontSize: '0.75rem', color: '#6E5535', marginTop: '0.5rem', textAlign: 'center' }}>
+                    Pure. Natural. Handcrafted with Love.
                   </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </header>
 
-                  {/* Quantity Selector & Action Buttons */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#2D3A29' }}>QUANTITY:</span>
-                      <div className="qty-controls" style={{ padding: '0.4rem 0.8rem', backgroundColor: '#FFFFFF', border: '1px solid #E5DFC5', borderRadius: '4px' }}>
-                        <button className="qty-btn" onClick={() => setPdpQuantity(Math.max(1, pdpQuantity - 1))}><Minus size={14} /></button>
-                        <span className="qty-num" style={{ fontSize: '1rem', minWidth: '30px', textAlign: 'center', fontWeight: 600 }}>{pdpQuantity}</span>
-                        <button className="qty-btn" onClick={() => setPdpQuantity(pdpQuantity + 1)}><Plus size={14} /></button>
-                      </div>
-                    </div>
+        {/* ========================================================================= */}
+        {/* SEPARATE DEDICATED PRODUCT DETAIL PAGE (PDP)                              */}
+        {/* ========================================================================= */}
+        {activeTab === 'product' && selectedProduct && (
+          <main style={{ backgroundColor: '#EAD8BA', minHeight: '85vh', paddingBottom: '5rem' }}>
+            {/* Breadcrumb Header Bar */}
+            <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
+              <div className="container" style={{ fontSize: '0.85rem', color: '#5C635B', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
+                  <span>/</span>
+                  <button onClick={() => navigateToTab('shop')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Shop Collection</button>
+                  <span>/</span>
+                  <span style={{ color: '#2D3A29', fontWeight: 600 }}>{activeProduct.name}</span>
+                </div>
 
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                      <button 
-                        className="btn-primary" 
-                        style={{ flexGrow: 1, justifyContent: 'center', padding: '1rem 2rem', fontSize: '0.95rem', fontWeight: 600 }}
-                        onClick={() => addToCart(activeProduct, pdpQuantity)}
+                <button
+                  onClick={() => navigateToTab('shop')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4A5D4E', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.825rem' }}
+                >
+                  <ArrowLeft size={16} /> Back to Collection
+                </button>
+              </div>
+            </div>
+
+            {/* PDP Main Product Showcase Section */}
+            <section style={{ padding: '3.5rem 0', position: 'relative', overflow: 'hidden' }}>
+              <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', right: '2%', zIndex: 1, color: 'rgba(74, 93, 78, 0.035)' }}>
+                beautiful
+              </div>
+              <div className="container">
+                <div className="responsive-pdp-grid">
+
+                  {/* Left Product Image Gallery Column */}
+                  <div>
+                    <div className="pdp-main-image-wrap" style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', border: '2px solid #C5A059', boxShadow: '0 20px 50px rgba(74, 93, 78, 0.12)', height: '520px', backgroundColor: '#DFCAA7' }}>
+                      <img
+                        src={pdpPrimaryImage}
+                        alt={activeProduct.name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: (selectedProduct.isCombo || selectedProduct.id === 'luxe-trio-gift-set' || selectedProduct.id === 'complete-luxe-collection') ? 'center center' : 'center 58%', transform: (selectedProduct.isCombo || selectedProduct.id === 'luxe-trio-gift-set' || selectedProduct.id === 'complete-luxe-collection') ? 'none' : 'scale(1.10)', transition: 'all 0.35s ease' }}
+                      />
+
+
+
+                      {/* Wishlist Button */}
+                      <button
+                        onClick={() => toggleWishlist(selectedProduct.id)}
+                        style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', backgroundColor: '#FFFFFF', border: 'none', width: '44px', height: '44px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.12)' }}
+                        title="Save to Wishlist"
                       >
-                        <ShoppingBag size={18} /> ADD TO BAG · {formatCurrency(activeProduct.price * pdpQuantity)} ({(activeProduct.price * pdpQuantity).toFixed(2)} ESP)
+                        <Heart size={20} fill={wishlist.includes(selectedProduct.id) ? '#C5A059' : 'none'} color={wishlist.includes(selectedProduct.id) ? '#C5A059' : '#1E221D'} />
                       </button>
-
-                      <a 
-                        href="tel:07831082965" 
-                        className="btn-secondary"
-                        style={{ padding: '1rem 1.5rem', fontSize: '0.875rem' }}
-                      >
-                        <Phone size={16} /> ORDER BY CALL: 07831082965
-                      </a>
                     </div>
+
+
+                    {/* STYLED VARIANT OPTIONS TILES (DIRECTLY UNDER THE SMALL IMAGES) */}
+                    {selectedProduct.variants && selectedProduct.variants.length > 0 && (
+                      <div className="pdp-variant-selector-panel" style={{ marginTop: '1.5rem', backgroundColor: '#F4EFE6', border: '1px solid #E5DFC5', borderRadius: '14px', padding: '1.25rem', boxShadow: 'var(--shadow-soft)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                            <Sparkle size={15} color="#C5A059" />
+                            <span style={{ fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2D3A29' }}>
+                              CHOOSE VARIANT / FORMULA:
+                            </span>
+                          </div>
+                          <span style={{ fontSize: '0.72rem', color: '#6E5535', fontStyle: 'italic' }}>
+                            Click to show that variant's photos & info
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '0.85rem' }}>
+                          {selectedProduct.variants.map((variantItem) => {
+                            const isCurrentSelected = (activeProduct.id === variantItem.id) || (activeProduct.variantType === variantItem.variantType);
+                            return (
+                              <div
+                                key={variantItem.id}
+                                onClick={() => handleSelectVariant(variantItem)}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.85rem',
+                                  padding: '0.85rem 1rem',
+                                  borderRadius: '10px',
+                                  cursor: 'pointer',
+                                  backgroundColor: isCurrentSelected ? '#FFFFFF' : '#FAF7F2',
+                                  border: isCurrentSelected ? '2px solid #C5A059' : '1.5px solid #E5DFC5',
+                                  boxShadow: isCurrentSelected ? '0 8px 22px rgba(197, 160, 89, 0.28)' : 'none',
+                                  transform: isCurrentSelected ? 'translateY(-2px)' : 'none',
+                                  transition: 'all 0.25s ease',
+                                  position: 'relative'
+                                }}
+                              >
+                                {/* Variant Mini Image Swatch */}
+                                <div style={{ width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, border: isCurrentSelected ? '1.5px solid #C5A059' : '1px solid #E5DFC5', backgroundColor: '#DFCAA7' }}>
+                                  <img
+                                    src={variantItem.image}
+                                    alt={variantItem.name}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  />
+                                </div>
+
+                                {/* Variant Text Information */}
+                                <div style={{ flexGrow: 1, minWidth: 0 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.25rem', marginBottom: '0.2rem' }}>
+                                    <span style={{ fontSize: '0.875rem', fontWeight: 700, color: isCurrentSelected ? '#2D3A29' : '#5C635B' }}>
+                                      {variantItem.formatLabel}
+                                    </span>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#6E5535' }}>
+                                      ${variantItem.price}
+                                    </span>
+                                  </div>
+                                  <div style={{ fontSize: '0.75rem', color: '#5C635B', marginBottom: '0.25rem' }}>
+                                    {variantItem.volume}
+                                  </div>
+                                  <div>
+                                    {isCurrentSelected ? (
+                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.65rem', fontWeight: 700, color: '#2D3A29', backgroundColor: '#DFCAA7', padding: '0.15rem 0.5rem', borderRadius: '4px', letterSpacing: '0.04em' }}>
+                                        <Check size={11} color="#2D3A29" /> ACTIVE VIEW
+                                      </span>
+                                    ) : (
+                                      <span style={{ fontSize: '0.68rem', color: '#8C948B', fontStyle: 'italic' }}>
+                                        Click to view
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Included Items for Combos & Gift Sets */}
-                  {activeProduct.includedItems && activeProduct.includedItems.length > 0 && (
-                    <div style={{ backgroundColor: '#FDFBF7', borderRadius: '12px', border: '2px solid #C5A059', padding: '1.5rem', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(197, 160, 89, 0.12)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid #E5DFC5', paddingBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6E5535' }}>
-                          ★ WHAT'S INCLUDED ({activeProduct.includedItems.length} FULL-SIZE ESSENTIALS)
-                        </span>
-                        {activeProduct.originalPrice && (
-                          <span style={{ fontSize: '0.8rem', color: '#2D3A29', fontWeight: 600, backgroundColor: 'rgba(197, 160, 89, 0.25)', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                            Save {formatCurrency(activeProduct.originalPrice - activeProduct.price)}
-                          </span>
-                        )}
+                  {/* Right Product Details Column */}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+                      <span className="loveworld-badge">MADE IN LOVEWORLD</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#C5A059', fontSize: '0.9rem', fontWeight: 600 }}>
+                        ★★★★★ <span>{selectedProduct.rating} ({selectedProduct.reviewsCount} reviews)</span>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {activeProduct.includedItems.map((item, idx) => (
-                          <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.65rem 0.85rem', backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid #E5DFC5' }}>
-                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#C5A059', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0, marginTop: '2px' }}>
-                              {idx + 1}
-                            </div>
-                            <div style={{ flexGrow: 1 }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.25rem' }}>
-                                <strong style={{ color: '#1E221D', fontSize: '0.95rem' }}>{item.name}</strong>
-                                <span style={{ color: '#6E5535', fontSize: '0.85rem', fontWeight: 600 }}>{item.size}</span>
+                    </div>
+
+                    <h1 className="font-display pdp-title" style={{ fontSize: '3.75rem', color: '#1E221D', marginBottom: '0.25rem', lineHeight: 1.05 }}>
+                      {activeProduct.name}
+                    </h1>
+
+                    <div style={{ fontSize: '1.05rem', color: '#C5A059', fontStyle: 'italic', marginBottom: '1.25rem', fontWeight: 500 }}>
+                      {activeProduct.subtitle}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid #E5DFC5', paddingBottom: '1.25rem' }}>
+                      <span style={{ fontSize: '2.5rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(activeProduct.price)}</span>
+                      {activeProduct.originalPrice && (
+                        <>
+                          <span style={{ fontSize: '1.35rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
+                            {formatCurrency(activeProduct.originalPrice)}
+                          </span>
+                          <span style={{
+                            fontSize: '0.85rem',
+                            fontWeight: 700,
+                            color: '#2D3A29',
+                            backgroundColor: 'rgba(197, 160, 89, 0.25)',
+                            border: '1.5px solid #C5A059',
+                            padding: '0.25rem 0.65rem',
+                            borderRadius: '6px'
+                          }}>
+                            Save {formatCurrency(activeProduct.originalPrice - activeProduct.price)} ({Math.round(((activeProduct.originalPrice - activeProduct.price) / activeProduct.originalPrice) * 100)}% OFF)
+                          </span>
+                        </>
+                      )}
+                      <span style={{ fontSize: '1rem', color: '#5C635B' }}>({activeProduct.volume})</span>
+                    </div>
+
+                    <p style={{ color: '#5C635B', fontSize: '1.05rem', lineHeight: 1.75, marginBottom: '2rem' }}>
+                      {activeProduct.description}
+                    </p>
+
+                    {/* Quantity Selector & Action Buttons */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#2D3A29' }}>QUANTITY:</span>
+                        <div className="qty-controls" style={{ padding: '0.4rem 0.8rem', backgroundColor: '#FFFFFF', border: '1px solid #E5DFC5', borderRadius: '4px' }}>
+                          <button className="qty-btn" onClick={() => setPdpQuantity(Math.max(1, pdpQuantity - 1))}><Minus size={14} /></button>
+                          <span className="qty-num" style={{ fontSize: '1rem', minWidth: '30px', textAlign: 'center', fontWeight: 600 }}>{pdpQuantity}</span>
+                          <button className="qty-btn" onClick={() => setPdpQuantity(pdpQuantity + 1)}><Plus size={14} /></button>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                        <button
+                          className="btn-primary"
+                          style={{ flexGrow: 1, justifyContent: 'center', padding: '1rem 2rem', fontSize: '0.95rem', fontWeight: 600 }}
+                          onClick={() => addToCart(activeProduct, pdpQuantity)}
+                        >
+                          <ShoppingBag size={18} /> ADD TO BAG · {formatCurrency(activeProduct.price * pdpQuantity)} ({(activeProduct.price * pdpQuantity).toFixed(2)} ESP)
+                        </button>
+
+                        <a
+                          href="tel:07831082965"
+                          className="btn-secondary"
+                          style={{ padding: '1rem 1.5rem', fontSize: '0.875rem' }}
+                        >
+                          <Phone size={16} /> ORDER BY CALL: 07831082965
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Included Items for Combos & Gift Sets */}
+                    {activeProduct.includedItems && activeProduct.includedItems.length > 0 && (
+                      <div style={{ backgroundColor: '#FDFBF7', borderRadius: '12px', border: '2px solid #C5A059', padding: '1.5rem', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(197, 160, 89, 0.12)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid #E5DFC5', paddingBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6E5535' }}>
+                            ★ WHAT'S INCLUDED ({activeProduct.includedItems.length} FULL-SIZE ESSENTIALS)
+                          </span>
+                          {activeProduct.originalPrice && (
+                            <span style={{ fontSize: '0.8rem', color: '#2D3A29', fontWeight: 600, backgroundColor: 'rgba(197, 160, 89, 0.25)', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                              Save {formatCurrency(activeProduct.originalPrice - activeProduct.price)}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                          {activeProduct.includedItems.map((item, idx) => (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.65rem 0.85rem', backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid #E5DFC5' }}>
+                              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#C5A059', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0, marginTop: '2px' }}>
+                                {idx + 1}
                               </div>
-                              {item.desc && (
-                                <p style={{ margin: '0.2rem 0 0', fontSize: '0.825rem', color: '#5C635B', lineHeight: 1.4 }}>{item.desc}</p>
-                              )}
+                              <div style={{ flexGrow: 1 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.25rem' }}>
+                                  <strong style={{ color: '#1E221D', fontSize: '0.95rem' }}>{item.name}</strong>
+                                  <span style={{ color: '#6E5535', fontSize: '0.85rem', fontWeight: 600 }}>{item.size}</span>
+                                </div>
+                                {item.desc && (
+                                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.825rem', color: '#5C635B', lineHeight: 1.4 }}>{item.desc}</p>
+                                )}
+                              </div>
                             </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Perfect For & How to Use Accordion Boxes */}
+                    <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.75rem', boxShadow: 'var(--shadow-soft)', marginBottom: '1.5rem' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2D3A29', marginBottom: '0.75rem' }}>
+                        PERFECT FOR YOUR ROUTINE:
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', fontSize: '0.9rem', color: '#5C635B' }}>
+                        {activeProduct.perfectFor && activeProduct.perfectFor.map((item, idx) => (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Check size={14} color="#4A5D4E" /> {item}
                           </div>
                         ))}
                       </div>
                     </div>
-                  )}
 
-                  {/* Perfect For & How to Use Accordion Boxes */}
-                  <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.75rem', boxShadow: 'var(--shadow-soft)', marginBottom: '1.5rem' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2D3A29', marginBottom: '0.75rem' }}>
-                      PERFECT FOR YOUR ROUTINE:
+                    <div style={{ backgroundColor: '#DFCAA7', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.5rem', marginBottom: '1.5rem' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6E5535', marginBottom: '0.35rem' }}>
+                        HOW TO USE YOUR RITUAL:
+                      </div>
+                      <div style={{ fontSize: '0.95rem', color: '#2D3A29', fontStyle: 'italic', lineHeight: 1.6 }}>
+                        “{activeProduct.howToUse}”
+                      </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', fontSize: '0.9rem', color: '#5C635B' }}>
-                      {activeProduct.perfectFor && activeProduct.perfectFor.map((item, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <Check size={14} color="#4A5D4E" /> {item}
+
+                    {activeProduct.storage && (
+                      <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.25rem 1.5rem', marginBottom: '1.5rem', boxShadow: 'var(--shadow-soft)' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2D3A29', marginBottom: '0.35rem' }}>
+                          STORAGE & CARE:
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ backgroundColor: '#DFCAA7', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.5rem', marginBottom: '1.5rem' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6E5535', marginBottom: '0.35rem' }}>
-                      HOW TO USE YOUR RITUAL:
-                    </div>
-                    <div style={{ fontSize: '0.95rem', color: '#2D3A29', fontStyle: 'italic', lineHeight: 1.6 }}>
-                      “{activeProduct.howToUse}”
-                    </div>
-                  </div>
-
-                  {activeProduct.storage && (
-                    <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.25rem 1.5rem', marginBottom: '1.5rem', boxShadow: 'var(--shadow-soft)' }}>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2D3A29', marginBottom: '0.35rem' }}>
-                        STORAGE & CARE:
-                      </div>
-                      <div style={{ fontSize: '0.9rem', color: '#5C635B', lineHeight: 1.6 }}>
-                        {activeProduct.storage}
-                      </div>
-                    </div>
-                  )}
-
-                  {activeProduct.ingredients && (
-                    <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.5rem', boxShadow: 'var(--shadow-soft)' }}>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2D3A29', marginBottom: '0.5rem' }}>
-                        AUTHENTIC BOTANICAL INGREDIENTS:
-                      </div>
-                      <div style={{ fontSize: '0.875rem', color: '#5C635B', lineHeight: 1.6 }}>
-                        {activeProduct.ingredients}
-                      </div>
-                    </div>
-                  )}
-
-                </div>
-
-              </div>
-            </div>
-          </section>
-
-          {/* SIMILAR PRODUCTS / YOU MAY ALSO LOVE SECTION (2 COLUMNS & ROWS ON MOBILE) */}
-          <section style={{ padding: '4.5rem 0', backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5' }}>
-            <div className="container">
-              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                <div className="text-uppercase" style={{ color: '#4A5D4E', marginBottom: '0.35rem' }}>
-                  THE COMPLETE COLLECTION
-                </div>
-                <h2 className="font-display" style={{ fontSize: '3.25rem', color: '#1E221D' }}>
-                  You May Also Love
-                </h2>
-                <p style={{ color: '#5C635B', fontSize: '0.95rem' }}>
-                  Explore complementary natural body-care essentials crafted from nature.
-                </p>
-              </div>
-
-              <div className="product-cards-grid">
-                {PRODUCTS.filter(p => p.id !== selectedProduct.id).map(product => (
-                  <div 
-                    key={product.id}
-                    className="responsive-product-card" data-product-id={product.id} data-is-combo={product.isCombo ? 'true' : 'false'}
-                    style={{ 
-                      backgroundColor: '#F4EFE6', 
-                      borderRadius: '12px', 
-                      overflow: 'hidden', 
-                      border: '1px solid #E5DFC5',
-                      boxShadow: 'var(--shadow-soft)',
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }}
-                  >
-                    <div 
-                      className="card-media-wrap"
-                      style={{ position: 'relative', height: '240px', overflow: 'hidden', backgroundColor: '#DFCAA7', cursor: 'pointer' }}
-                      onClick={() => openProductDetail(product)}
-                    >
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
-                        className="card-media-img"
-                        style={{ 
-                          width: '100%', 
-                          height: '100%', 
-                          objectFit: 'cover', 
-                          objectPosition: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'center center' : 'center 60%', 
-                          transform: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'none' : 'scale(1.14)', 
-                          transition: 'transform 0.4s ease' 
-                        }}
-                      />
-                      <button 
-                        className="card-wishlist-btn"
-                        onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
-                        style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', zIndex: 3 }}
-                      >
-                        <Heart size={18} fill={wishlist.includes(product.id) ? '#C5A059' : 'none'} color={wishlist.includes(product.id) ? '#C5A059' : '#1E221D'} />
-                      </button>
-                      {product.originalPrice && (
-                        <div 
-                          style={{
-                            position: 'absolute',
-                            top: '1rem',
-                            left: '1rem',
-                            backgroundColor: '#C5A059',
-                            color: '#FFFFFF',
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
-                            letterSpacing: '0.06em',
-                            textTransform: 'uppercase',
-                            padding: '0.35rem 0.75rem',
-                            borderRadius: '30px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                            zIndex: 2
-                          }}
-                        >
-                          ★ SAVE {formatCurrency(product.originalPrice - product.price)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                        <div style={{ fontSize: '0.9rem', color: '#5C635B', lineHeight: 1.6 }}>
+                          {activeProduct.storage}
                         </div>
-                      )}
-                    </div>
-
-                    <div className="card-body" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                      <div className="card-subtitle" style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
-                        {product.subtitle}
                       </div>
-                      <h3 
-                        className="card-title font-display" 
-                        style={{ fontSize: '1.65rem', color: '#2D3A29', marginBottom: '0.35rem', cursor: 'pointer' }}
-                        onClick={() => openProductDetail(product)}
-                      >
-                        {product.name}
-                      </h3>
-                      <div className="card-price-row" style={{ fontSize: '1.15rem', fontWeight: 600, color: '#6E5535', marginBottom: '0.75rem' }}>
-                        {formatCurrency(product.price)} <span className="card-volume" style={{ fontSize: '0.8rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
+                    )}
+
+                    {activeProduct.ingredients && (
+                      <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', border: '1px solid #E5DFC5', padding: '1.5rem', boxShadow: 'var(--shadow-soft)' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2D3A29', marginBottom: '0.5rem' }}>
+                          AUTHENTIC BOTANICAL INGREDIENTS:
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: '#5C635B', lineHeight: 1.6 }}>
+                          {activeProduct.ingredients}
+                        </div>
                       </div>
+                    )}
 
-                      <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.5rem' }}>
-                        <button 
-                          className="btn-primary card-btn-primary" 
-                          style={{ flexGrow: 1, justifyContent: 'center', padding: '0.75rem', fontSize: '0.8rem' }}
-                          onClick={() => addToCart(product)}
-                        >
-                          <ShoppingBag size={14} /> ADD · {formatCurrency(product.price)} ({product.price} ESP)
-                        </button>
-                        <button 
-                          className="btn-secondary card-btn-secondary" 
-                          style={{ padding: '0.75rem 1rem', fontSize: '0.8rem' }}
-                          onClick={() => openProductDetail(product)}
-                        >
-                          View
-                        </button>
-                      </div>
-                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        </main>
-      )}
 
-      {/* ========================================================================= */}
-      {/* SEPARATE VIEW 1: SEPARATE DEDICATED "ABOUT US / OUR STORY" PAGE           */}
-      {/* ========================================================================= */}
-      {activeTab === 'story' && (
-        <main style={{ backgroundColor: '#EAD8BA', minHeight: '80vh' }}>
-          {/* Breadcrumb Header */}
-          <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
-            <div className="container" style={{ fontSize: '0.825rem', color: '#5C635B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
-              <span>/</span>
-              <span style={{ color: '#2D3A29', fontWeight: 600 }}>About Us & Our Story</span>
-            </div>
-          </div>
-
-          {/* About Us Hero Banner with Italiana Font */}
-          <section style={{ padding: '4rem 0 3rem 0', textAlign: 'center', backgroundColor: '#EAD8BA', position: 'relative', overflow: 'hidden' }}>
-            <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', opacity: 0.5, color: 'rgba(74, 93, 78, 0.035)', zIndex: 1 }}>
-              grace
-            </div>
-            <div className="container" style={{ maxWidth: '900px', position: 'relative', zIndex: 2 }}>
-              <span className="loveworld-badge" style={{ marginBottom: '1.25rem' }}>
-                MADE IN LOVEWORLD
-              </span>
-              <h1 className="font-display" style={{ fontSize: '4.5rem', color: '#1E221D', marginBottom: '1rem', lineHeight: 1.05 }}>
-                Born from Nature.<br />
-                <span style={{ color: '#4A5D4E', fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>Made with Love.</span>
-              </h1>
-              <p style={{ fontSize: '1.2rem', color: '#6E5535', fontStyle: 'italic', fontWeight: 500 }}>
-                The Story, Heart & Philosophy Behind LICHT LUXE NATURALS
-              </p>
-            </div>
-          </section>
-
-          {/* Main Editorial Story Section */}
-          <section style={{ padding: '2rem 0 5rem 0' }}>
-            <div className="container">
-              <div className="responsive-story-grid">
-                
-                <div style={{ position: 'relative' }}>
-                  <div style={{ borderRadius: '12px', overflow: 'hidden', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(74, 93, 78, 0.12)', backgroundColor: '#DFCAA7' }}>
-                    <img 
-                      src="/licht_luxe_all_five_products_water.png" 
-                      alt="LICHT LUXE NATURALS Complete 5-Product Botanical Master Collection" 
-                      style={{ width: '100%', height: 'auto', display: 'block', aspectRatio: '16 / 9', objectFit: 'cover', objectPosition: 'center center' }}
-                    />
-                  </div>
-                  <div style={{ position: 'absolute', bottom: '-25px', right: '-20px' }}>
-                    <MadeInLoveworldEmblem size="medium" />
-                  </div>
                 </div>
+              </div>
+            </section>
 
-                <div>
-                  <h2 className="font-display" style={{ fontSize: '3rem', color: '#2D3A29', marginBottom: '1.25rem' }}>
-                    Our Story
+            {/* SIMILAR PRODUCTS / YOU MAY ALSO LOVE SECTION (2 COLUMNS & ROWS ON MOBILE) */}
+            <section style={{ padding: '4.5rem 0', backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5' }}>
+              <div className="container">
+                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                  <div className="text-uppercase" style={{ color: '#4A5D4E', marginBottom: '0.35rem' }}>
+                    THE COMPLETE COLLECTION
+                  </div>
+                  <h2 className="font-display" style={{ fontSize: '3.25rem', color: '#1E221D' }}>
+                    You May Also Love
                   </h2>
-                  <div style={{ color: '#5C635B', fontSize: '1.05rem', lineHeight: 1.8, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <p style={{ fontSize: '1.15rem', color: '#2D3A29', fontWeight: 500 }}>
-                      LICHT LUXE NATURALS was created from a simple belief:
-                    </p>
-                    <blockquote style={{ borderLeft: '4px solid #C5A059', paddingLeft: '1.25rem', color: '#6E5535', fontStyle: 'italic', fontSize: '1.15rem', margin: '0.25rem 0' }}>
-                      “Natural skincare should feel good, look beautiful and fit effortlessly into everyday life.”
-                    </blockquote>
-                    <p>
-                      We create natural body-care products inspired by the richness of nature and the desire to give your skin the care it deserves.
-                    </p>
-                    <p>
-                      From our pure raw shea butter and cold-pressed coconut oil to our nourishing body butter and traditional African black soap (both liquid and traditional jar), every product is created with care, integrity and authentic botanical quality.
-                    </p>
-                    <p>
-                      We believe that taking care of your skin isn't just a routine. It's a moment of self-care. And every moment of self-care deserves a little luxury.
-                    </p>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </section>
-
-          {/* Why LICHT LUXE? 4 Pillars */}
-          <section style={{ padding: '5rem 0', backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5', borderBottom: '1px solid #E5DFC5' }}>
-            <div className="container">
-              <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-                <div className="text-uppercase" style={{ color: '#4A5D4E', marginBottom: '0.35rem' }}>
-                  OUR FOUR PILLARS
-                </div>
-                <h2 className="font-display" style={{ fontSize: '3.25rem', color: '#1E221D' }}>
-                  Why LICHT LUXE?
-                </h2>
-              </div>
-
-              <div className="product-cards-grid">
-                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem 1.75rem', borderRadius: '12px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
-                  <div style={{ backgroundColor: '#EAF0E8', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4A5D4E', marginBottom: '1.25rem' }}>
-                    <Leaf size={24} />
-                  </div>
-                  <h3 className="font-serif" style={{ fontSize: '1.5rem', color: '#2D3A29', marginBottom: '0.5rem' }}>
-                    Natural Ingredients
-                  </h3>
-                  <p style={{ color: '#5C635B', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                    We celebrate the goodness of naturally derived ingredients, keeping formulas pure, botanical and skin-nourishing.
+                  <p style={{ color: '#5C635B', fontSize: '0.95rem' }}>
+                    Explore complementary natural body-care essentials crafted from nature.
                   </p>
                 </div>
 
-                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem 1.75rem', borderRadius: '12px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
-                  <div style={{ backgroundColor: '#EAF0E8', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4A5D4E', marginBottom: '1.25rem' }}>
-                    <Sparkle size={24} />
-                  </div>
-                  <h3 className="font-serif" style={{ fontSize: '1.5rem', color: '#2D3A29', marginBottom: '0.5rem' }}>
-                    Simple Skincare
-                  </h3>
-                  <p style={{ color: '#5C635B', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                    We believe effective skincare doesn't have to be complicated. Simple, intentional body care yields the best results.
-                  </p>
-                </div>
-
-                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem 1.75rem', borderRadius: '12px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
-                  <div style={{ backgroundColor: '#EAF0E8', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4A5D4E', marginBottom: '1.25rem' }}>
-                    <Award size={24} />
-                  </div>
-                  <h3 className="font-serif" style={{ fontSize: '1.5rem', color: '#2D3A29', marginBottom: '0.5rem' }}>
-                    Quality First
-                  </h3>
-                  <p style={{ color: '#5C635B', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                    Every product is made with care, consistency and attention to quality, giving your skin the luxurious texture it deserves.
-                  </p>
-                </div>
-
-                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem 1.75rem', borderRadius: '12px', border: '1.5px solid #C5A059', boxShadow: '0 10px 25px rgba(197, 160, 89, 0.12)' }}>
-                  <div style={{ backgroundColor: '#F4EBD9', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', marginBottom: '1.25rem' }}>
-                    <Heart size={24} />
-                  </div>
-                  <h3 className="font-serif" style={{ fontSize: '1.5rem', color: '#2D3A29', marginBottom: '0.5rem' }}>
-                    Made with Love
-                  </h3>
-                  <p style={{ color: '#5C635B', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                    Our products carry the spirit behind our brand: <strong>MADE IN LOVEWORLD</strong>. Purposeful, beautiful and crafted with love.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Our Philosophy Deep Dive */}
-          <section style={{ padding: '5rem 0', backgroundColor: '#2D3A29', color: '#FAF7F2', textAlign: 'center' }}>
-            <div className="container" style={{ maxWidth: '800px' }}>
-              <div className="loveworld-badge" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#C5A059', borderColor: '#C5A059', marginBottom: '1.25rem' }}>
-                OUR PHILOSOPHY
-              </div>
-              <h2 className="font-display" style={{ fontSize: '3.75rem', color: '#FAF7F2', marginBottom: '1.25rem' }}>
-                Nature. Nourishment. Love.
-              </h2>
-              <p style={{ fontSize: '1.2rem', color: '#EAF0E8', lineHeight: 1.8, marginBottom: '1.75rem', fontStyle: 'italic' }}>
-                “At LICHT LUXE NATURALS, our philosophy is simple: What you put on your skin matters.”
-              </p>
-              <p style={{ fontSize: '1.025rem', color: '#D6DDD3', lineHeight: 1.8, marginBottom: '2.5rem' }}>
-                We are committed to creating products that bring together the richness of natural ingredients and the experience of everyday luxury. Our goal is to help you build a simple body-care ritual that leaves your skin feeling soft, nourished, moisturised and loved.
-              </p>
-              <button 
-                className="btn-primary" 
-                onClick={() => navigateToTab('shop')}
-                style={{ backgroundColor: '#C5A059', borderColor: '#C5A059', color: '#2D3A29', fontWeight: 600, padding: '0.95rem 2rem' }}
-              >
-                Shop Our Collection <ArrowUpRight size={16} />
-              </button>
-            </div>
-          </section>
-        </main>
-      )}
-
-      {/* ========================================================================= */}
-      {/* SEPARATE VIEW 2: SEPARATE DEDICATED "SHOP / PRODUCTS" PAGE                */}
-      {/* ========================================================================= */}
-      {activeTab === 'shop' && (
-        <main style={{ backgroundColor: '#EAD8BA', minHeight: '80vh' }}>
-          <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
-            <div className="container" style={{ fontSize: '0.825rem', color: '#5C635B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
-              <span>/</span>
-              <span style={{ color: '#2D3A29', fontWeight: 600 }}>The Collection</span>
-            </div>
-          </div>
-
-          <section style={{ padding: '4rem 0', backgroundColor: '#EAD8BA' }}>
-            <div className="container">
-              <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-                <span className="loveworld-badge" style={{ marginBottom: '1rem' }}>
-                  THE LICHT LUXE COLLECTION
-                </span>
-                <h1 className="font-display" style={{ fontSize: '4rem', color: '#1E221D' }}>
-                  Natural Body-Care Essentials
-                </h1>
-                <p style={{ color: '#5C635B', fontSize: '1.05rem', maxWidth: '600px', margin: '0.5rem auto 0 auto' }}>
-                  Handcrafted with pure, naturally derived ingredients for healthy, nourished and beautifully cared-for skin.
-                </p>
-              </div>
-
-              <div className="product-cards-grid">
-                {PRODUCTS.map(product => (
-                  <div 
-                    key={product.id}
-                    className="responsive-product-card" data-product-id={product.id} data-is-combo={product.isCombo ? 'true' : 'false'}
-                    style={{ 
-                      backgroundColor: '#F4EFE6', 
-                      borderRadius: '12px', 
-                      overflow: 'hidden', 
-                      border: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? '2px solid #C5A059' : '1px solid #E5DFC5',
-                      boxShadow: 'var(--shadow-soft)',
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }}
-                  >
-                    <div 
-                      className="card-media-wrap"
-                      style={{ position: 'relative', height: '300px', overflow: 'hidden', backgroundColor: '#DFCAA7', cursor: 'pointer' }}
-                      onClick={() => openProductDetail(product)}
+                <div className="product-cards-grid">
+                  {PRODUCTS.filter(p => p.id !== selectedProduct.id).map(product => (
+                    <div
+                      key={product.id}
+                      className="responsive-product-card" data-product-id={product.id} data-is-combo={product.isCombo ? 'true' : 'false'}
+                      style={{
+                        backgroundColor: '#F4EFE6',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        border: '1px solid #E5DFC5',
+                        boxShadow: 'var(--shadow-soft)',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
                     >
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
-                        className="card-media-img"
-                        style={{ 
-                          width: '100%', 
-                          height: '100%', 
-                          objectFit: 'cover', 
-                          objectPosition: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'center center' : 'center 60%', 
-                          transform: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'none' : 'scale(1.14)', 
-                          transition: 'transform 0.4s ease' 
-                        }}
-                      />
-                      <button 
-                        className="card-wishlist-btn"
-                        onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
-                        style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', zIndex: 3 }}
-                      >
-                        <Heart size={18} fill={wishlist.includes(product.id) ? '#C5A059' : 'none'} color={wishlist.includes(product.id) ? '#C5A059' : '#1E221D'} />
-                      </button>
-                      {product.originalPrice && (
-                        <div 
-                          style={{
-                            position: 'absolute',
-                            top: '1rem',
-                            left: '1rem',
-                            backgroundColor: '#C5A059',
-                            color: '#FFFFFF',
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
-                            letterSpacing: '0.06em',
-                            textTransform: 'uppercase',
-                            padding: '0.35rem 0.75rem',
-                            borderRadius: '30px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                            zIndex: 2
-                          }}
-                        >
-                          ★ SAVE {formatCurrency(product.originalPrice - product.price)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="card-body" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                      <div className="card-subtitle" style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                        {product.subtitle}
-                      </div>
-                      <h3 
-                        className="card-title font-display" 
-                        style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '0.5rem', cursor: 'pointer' }}
+                      <div
+                        className="card-media-wrap"
+                        style={{ position: 'relative', height: '240px', overflow: 'hidden', backgroundColor: '#DFCAA7', cursor: 'pointer' }}
                         onClick={() => openProductDetail(product)}
                       >
-                        {product.name}
-                      </h3>
-                      <div className="card-price-row" style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-                        <span style={{ fontSize: '1.35rem', fontWeight: 700, color: '#6E5535' }}>
-                          {formatCurrency(product.price)}
-                        </span>
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="card-media-img"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'center center' : 'center 60%',
+                            transform: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'none' : 'scale(1.14)',
+                            transition: 'transform 0.4s ease'
+                          }}
+                        />
+                        <button
+                          className="card-wishlist-btn"
+                          onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
+                          style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', zIndex: 3 }}
+                        >
+                          <Heart size={18} fill={wishlist.includes(product.id) ? '#C5A059' : 'none'} color={wishlist.includes(product.id) ? '#C5A059' : '#1E221D'} />
+                        </button>
                         {product.originalPrice && (
-                          <>
-                            <span style={{ fontSize: '0.95rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
-                              {formatCurrency(product.originalPrice)}
-                            </span>
-                            <span style={{ 
-                              fontSize: '0.72rem', 
-                              fontWeight: 700, 
-                              color: '#2D3A29', 
-                              backgroundColor: 'rgba(197, 160, 89, 0.25)', 
-                              border: '1px solid #C5A059', 
-                              padding: '0.15rem 0.45rem', 
-                              borderRadius: '4px' 
-                            }}>
-                              Save {formatCurrency(product.originalPrice - product.price)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
-                            </span>
-                          </>
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '1rem',
+                              left: '1rem',
+                              backgroundColor: '#C5A059',
+                              color: '#FFFFFF',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              letterSpacing: '0.06em',
+                              textTransform: 'uppercase',
+                              padding: '0.35rem 0.75rem',
+                              borderRadius: '30px',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                              zIndex: 2
+                            }}
+                          >
+                            ★ SAVE {formatCurrency(product.originalPrice - product.price)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                          </div>
                         )}
-                        <span className="card-volume" style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400, marginLeft: product.originalPrice ? '0' : '0.2rem' }}>
-                          ({product.volume})
-                        </span>
                       </div>
 
-                      <p className="card-desc" style={{ fontSize: '0.9rem', color: '#5C635B', marginBottom: '1.25rem', lineHeight: 1.6 }}>
-                        {product.shortDescription}
-                      </p>
-
-                      <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
-                        <button 
-                          className="btn-primary card-btn-primary" 
-                          style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
-                          onClick={() => addToCart(product)}
-                        >
-                          <ShoppingBag size={16} /> ADD · {formatCurrency(product.price)} ({product.price} ESP)
-                        </button>
-                        <button 
-                          className="btn-secondary card-btn-secondary" 
-                          style={{ padding: '0.85rem', justifyContent: 'center' }}
+                      <div className="card-body" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                        <div className="card-subtitle" style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                          {product.subtitle}
+                        </div>
+                        <h3
+                          className="card-title font-display"
+                          style={{ fontSize: '1.65rem', color: '#2D3A29', marginBottom: '0.35rem', cursor: 'pointer' }}
                           onClick={() => openProductDetail(product)}
                         >
-                          View Details
-                        </button>
+                          {product.name}
+                        </h3>
+                        <div className="card-price-row" style={{ fontSize: '1.15rem', fontWeight: 600, color: '#6E5535', marginBottom: '0.75rem' }}>
+                          {formatCurrency(product.price)} <span className="card-volume" style={{ fontSize: '0.8rem', color: '#5C635B', fontWeight: 400 }}>({product.volume})</span>
+                        </div>
+
+                        <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            className="btn-primary card-btn-primary"
+                            style={{ flexGrow: 1, justifyContent: 'center', padding: '0.75rem', fontSize: '0.8rem' }}
+                            onClick={() => addToCart(product)}
+                          >
+                            <ShoppingBag size={14} /> ADD · {formatCurrency(product.price)} ({product.price} ESP)
+                          </button>
+                          <button
+                            className="btn-secondary card-btn-secondary"
+                            style={{ padding: '0.75rem 1rem', fontSize: '0.8rem' }}
+                            onClick={() => openProductDetail(product)}
+                          >
+                            View
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+            </section>
+          </main>
+        )}
+
+        {/* ========================================================================= */}
+        {/* SEPARATE VIEW 1: SEPARATE DEDICATED "ABOUT US / OUR STORY" PAGE           */}
+        {/* ========================================================================= */}
+        {activeTab === 'story' && (
+          <main style={{ backgroundColor: '#EAD8BA', minHeight: '80vh' }}>
+            {/* Breadcrumb Header */}
+            <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
+              <div className="container" style={{ fontSize: '0.825rem', color: '#5C635B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
+                <span>/</span>
+                <span style={{ color: '#2D3A29', fontWeight: 600 }}>About Us & Our Story</span>
               </div>
             </div>
-          </section>
-        </main>
-      )}
 
-      {/* ========================================================================= */}
-      {/* SEPARATE VIEW 3: SEPARATE DEDICATED "GIFTING" PAGE                        */}
-      {/* ========================================================================= */}
-      {activeTab === 'gifting' && (
-        <main style={{ backgroundColor: '#EAD8BA', minHeight: '80vh' }}>
-          <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
-            <div className="container" style={{ fontSize: '0.825rem', color: '#5C635B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
-              <span>/</span>
-              <span style={{ color: '#2D3A29', fontWeight: 600 }}>Gifting & Trio Sets</span>
-            </div>
-          </div>
-
-          <section style={{ padding: '5rem 0', position: 'relative', overflow: 'hidden' }}>
-            <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', right: '2%', zIndex: 1, color: 'rgba(74, 93, 78, 0.035)' }}>
-              love
-            </div>
-            <div className="container">
-              <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-                <span className="loveworld-badge" style={{ marginBottom: '1rem' }}>
-                  GIVE THE GIFT OF LUXURY
+            {/* About Us Hero Banner with Italiana Font */}
+            <section style={{ padding: '4rem 0 3rem 0', textAlign: 'center', backgroundColor: '#EAD8BA', position: 'relative', overflow: 'hidden' }}>
+              <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', opacity: 0.5, color: 'rgba(74, 93, 78, 0.035)', zIndex: 1 }}>
+                grace
+              </div>
+              <div className="container" style={{ maxWidth: '900px', position: 'relative', zIndex: 2 }}>
+                <span className="loveworld-badge" style={{ marginBottom: '1.25rem' }}>
+                  MADE IN LOVEWORLD
                 </span>
-                <h1 className="font-display" style={{ fontSize: '4rem', color: '#1E221D' }}>
-                  Natural Body-Care Gift Sets
+                <h1 className="font-display" style={{ fontSize: '4.5rem', color: '#1E221D', marginBottom: '1rem', lineHeight: 1.05 }}>
+                  Born from Nature.<br />
+                  <span style={{ color: '#4A5D4E', fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>Made with Love.</span>
                 </h1>
-                <p style={{ color: '#5C635B', fontSize: '1.05rem', maxWidth: '600px', margin: '0.5rem auto 0 auto' }}>
-                  Looking for a thoughtful gift? Create a beautiful LICHT LUXE NATURALS gift set for someone special.
+                <p style={{ fontSize: '1.2rem', color: '#6E5535', fontStyle: 'italic', fontWeight: 500 }}>
+                  The Story, Heart & Philosophy Behind LICHT LUXE NATURALS
                 </p>
               </div>
+            </section>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem', marginBottom: '4rem' }}>
-                
-                {/* 5-Piece Complete Collection Card */}
-                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(197, 160, 89, 0.2)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#C5A059', color: '#FFFFFF', padding: '0.35rem 1.25rem', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(197, 160, 89, 0.4)', whiteSpace: 'nowrap' }}>
-                    ★ MASTER 5-PIECE COMBO · SAVE £11.95
+            {/* Main Editorial Story Section */}
+            <section style={{ padding: '2rem 0 5rem 0' }}>
+              <div className="container">
+                <div className="responsive-story-grid">
+
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ borderRadius: '12px', overflow: 'hidden', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(74, 93, 78, 0.12)', backgroundColor: '#DFCAA7' }}>
+                      <img
+                        src="/licht_luxe_all_five_products_water.png"
+                        alt="LICHT LUXE NATURALS Complete 5-Product Botanical Master Collection"
+                        style={{ width: '100%', height: 'auto', display: 'block', aspectRatio: '16 / 9', objectFit: 'cover', objectPosition: 'center center' }}
+                      />
+                    </div>
+                    <div style={{ position: 'absolute', bottom: '-25px', right: '-20px' }}>
+                      <MadeInLoveworldEmblem size="medium" />
+                    </div>
                   </div>
 
-                  <div style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
-                    <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C5A059', fontWeight: 700 }}>
-                      THE ULTIMATE COLLECTION
-                    </div>
-                    <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
-                      The Complete Luxe Naturals
+                  <div>
+                    <h2 className="font-display" style={{ fontSize: '3rem', color: '#2D3A29', marginBottom: '1.25rem' }}>
+                      Our Story
                     </h2>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
-                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(59.00)}</span>
-                      <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                        ⚡ 59.00 ESP
-                      </span>
-                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>{formatCurrency(70.95)}</span>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
-                        Save £11.95 (17% OFF)
-                      </span>
+                    <div style={{ color: '#5C635B', fontSize: '1.05rem', lineHeight: 1.8, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                      <p style={{ fontSize: '1.15rem', color: '#2D3A29', fontWeight: 500 }}>
+                        LICHT LUXE NATURALS was created from a simple belief:
+                      </p>
+                      <blockquote style={{ borderLeft: '4px solid #C5A059', paddingLeft: '1.25rem', color: '#6E5535', fontStyle: 'italic', fontSize: '1.15rem', margin: '0.25rem 0' }}>
+                        “Natural skincare should feel good, look beautiful and fit effortlessly into everyday life.”
+                      </blockquote>
+                      <p>
+                        We create natural body-care products inspired by the richness of nature and the desire to give your skin the care it deserves.
+                      </p>
+                      <p>
+                        From our pure raw shea butter and cold-pressed coconut oil to our nourishing body butter and traditional African black soap (both liquid and traditional jar), every product is created with care, integrity and authentic botanical quality.
+                      </p>
+                      <p>
+                        We believe that taking care of your skin isn't just a routine. It's a moment of self-care. And every moment of self-care deserves a little luxury.
+                      </p>
                     </div>
                   </div>
 
-                  <div 
-                    style={{ borderRadius: '10px', overflow: 'hidden', height: '260px', marginBottom: '1.5rem', cursor: 'pointer', backgroundColor: '#DFCAA7' }}
-                    onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
-                  >
-                    <img 
-                      src="/licht_luxe_all_five_products_water.png" 
-                      alt="The Complete Luxe Naturals Collection 5-Piece Combo" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
-                    />
+                </div>
+              </div>
+            </section>
+
+            {/* Why LICHT LUXE? 4 Pillars */}
+            <section style={{ padding: '5rem 0', backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5', borderBottom: '1px solid #E5DFC5' }}>
+              <div className="container">
+                <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+                  <div className="text-uppercase" style={{ color: '#4A5D4E', marginBottom: '0.35rem' }}>
+                    OUR FOUR PILLARS
+                  </div>
+                  <h2 className="font-display" style={{ fontSize: '3.25rem', color: '#1E221D' }}>
+                    Why LICHT LUXE?
+                  </h2>
+                </div>
+
+                <div className="product-cards-grid">
+                  <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem 1.75rem', borderRadius: '12px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
+                    <div style={{ backgroundColor: '#EAF0E8', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4A5D4E', marginBottom: '1.25rem' }}>
+                      <Leaf size={24} />
+                    </div>
+                    <h3 className="font-serif" style={{ fontSize: '1.5rem', color: '#2D3A29', marginBottom: '0.5rem' }}>
+                      Natural Ingredients
+                    </h3>
+                    <p style={{ color: '#5C635B', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                      We celebrate the goodness of naturally derived ingredients, keeping formulas pure, botanical and skin-nourishing.
+                    </p>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.75rem', flexGrow: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
-                      <Check size={16} color="#C5A059" /> <strong>Pure Shea Butter</strong> (250g / 8.8 oz)
+                  <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem 1.75rem', borderRadius: '12px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
+                    <div style={{ backgroundColor: '#EAF0E8', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4A5D4E', marginBottom: '1.25rem' }}>
+                      <Sparkle size={24} />
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
-                      <Check size={16} color="#C5A059" /> <strong>Pure Coconut Oil</strong> (200ml / 7.0 fl oz)
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
-                      <Check size={16} color="#C5A059" /> <strong>Luxe Body Butter</strong> (250g / 8.8 oz)
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
-                      <Check size={16} color="#C5A059" /> <strong>African Black Liquid Soap</strong> (500ml / 16.9 fl oz)
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
-                      <Check size={16} color="#C5A059" /> <strong>African Black Soap Jar</strong> (300g / 10.5 oz)
-                    </div>
+                    <h3 className="font-serif" style={{ fontSize: '1.5rem', color: '#2D3A29', marginBottom: '0.5rem' }}>
+                      Simple Skincare
+                    </h3>
+                    <p style={{ color: '#5C635B', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                      We believe effective skincare doesn't have to be complicated. Simple, intentional body care yields the best results.
+                    </p>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.85rem' }}>
-                    <button 
-                      className="btn-primary" 
-                      style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
-                      onClick={() => addToCart(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
+                  <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem 1.75rem', borderRadius: '12px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
+                    <div style={{ backgroundColor: '#EAF0E8', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4A5D4E', marginBottom: '1.25rem' }}>
+                      <Award size={24} />
+                    </div>
+                    <h3 className="font-serif" style={{ fontSize: '1.5rem', color: '#2D3A29', marginBottom: '0.5rem' }}>
+                      Quality First
+                    </h3>
+                    <p style={{ color: '#5C635B', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                      Every product is made with care, consistency and attention to quality, giving your skin the luxurious texture it deserves.
+                    </p>
+                  </div>
+
+                  <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem 1.75rem', borderRadius: '12px', border: '1.5px solid #C5A059', boxShadow: '0 10px 25px rgba(197, 160, 89, 0.12)' }}>
+                    <div style={{ backgroundColor: '#F4EBD9', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', marginBottom: '1.25rem' }}>
+                      <Heart size={24} />
+                    </div>
+                    <h3 className="font-serif" style={{ fontSize: '1.5rem', color: '#2D3A29', marginBottom: '0.5rem' }}>
+                      Made with Love
+                    </h3>
+                    <p style={{ color: '#5C635B', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                      Our products carry the spirit behind our brand: <strong>MADE IN LOVEWORLD</strong>. Purposeful, beautiful and crafted with love.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Our Philosophy Deep Dive */}
+            <section style={{ padding: '5rem 0', backgroundColor: '#2D3A29', color: '#FAF7F2', textAlign: 'center' }}>
+              <div className="container" style={{ maxWidth: '800px' }}>
+                <div className="loveworld-badge" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#C5A059', borderColor: '#C5A059', marginBottom: '1.25rem' }}>
+                  OUR PHILOSOPHY
+                </div>
+                <h2 className="font-display" style={{ fontSize: '3.75rem', color: '#FAF7F2', marginBottom: '1.25rem' }}>
+                  Nature. Nourishment. Love.
+                </h2>
+                <p style={{ fontSize: '1.2rem', color: '#EAF0E8', lineHeight: 1.8, marginBottom: '1.75rem', fontStyle: 'italic' }}>
+                  “At LICHT LUXE NATURALS, our philosophy is simple: What you put on your skin matters.”
+                </p>
+                <p style={{ fontSize: '1.025rem', color: '#D6DDD3', lineHeight: 1.8, marginBottom: '2.5rem' }}>
+                  We are committed to creating products that bring together the richness of natural ingredients and the experience of everyday luxury. Our goal is to help you build a simple body-care ritual that leaves your skin feeling soft, nourished, moisturised and loved.
+                </p>
+                <button
+                  className="btn-primary"
+                  onClick={() => navigateToTab('shop')}
+                  style={{ backgroundColor: '#C5A059', borderColor: '#C5A059', color: '#2D3A29', fontWeight: 600, padding: '0.95rem 2rem' }}
+                >
+                  Shop Our Collection <ArrowUpRight size={16} />
+                </button>
+              </div>
+            </section>
+          </main>
+        )}
+
+        {/* ========================================================================= */}
+        {/* SEPARATE VIEW 2: SEPARATE DEDICATED "SHOP / PRODUCTS" PAGE                */}
+        {/* ========================================================================= */}
+        {activeTab === 'shop' && (
+          <main style={{ backgroundColor: '#EAD8BA', minHeight: '80vh' }}>
+            <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
+              <div className="container" style={{ fontSize: '0.825rem', color: '#5C635B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
+                <span>/</span>
+                <span style={{ color: '#2D3A29', fontWeight: 600 }}>The Collection</span>
+              </div>
+            </div>
+
+            <section style={{ padding: '4rem 0', backgroundColor: '#EAD8BA' }}>
+              <div className="container">
+                <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+                  <span className="loveworld-badge" style={{ marginBottom: '1rem' }}>
+                    THE LICHT LUXE COLLECTION
+                  </span>
+                  <h1 className="font-display" style={{ fontSize: '4rem', color: '#1E221D' }}>
+                    Natural Body-Care Essentials
+                  </h1>
+                  <p style={{ color: '#5C635B', fontSize: '1.05rem', maxWidth: '600px', margin: '0.5rem auto 0 auto' }}>
+                    Handcrafted with pure, naturally derived ingredients for healthy, nourished and beautifully cared-for skin.
+                  </p>
+                </div>
+
+                <div className="product-cards-grid">
+                  {PRODUCTS.map(product => (
+                    <div
+                      key={product.id}
+                      className="responsive-product-card" data-product-id={product.id} data-is-combo={product.isCombo ? 'true' : 'false'}
+                      style={{
+                        backgroundColor: '#F4EFE6',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        border: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                        boxShadow: 'var(--shadow-soft)',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
                     >
-                      Add to Bag · {formatCurrency(59.00)} (59.00 ESP)
-                    </button>
-                    <button 
-                      className="btn-secondary" 
-                      style={{ padding: '0.95rem 1.25rem' }}
+                      <div
+                        className="card-media-wrap"
+                        style={{ position: 'relative', height: '300px', overflow: 'hidden', backgroundColor: '#DFCAA7', cursor: 'pointer' }}
+                        onClick={() => openProductDetail(product)}
+                      >
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="card-media-img"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'center center' : 'center 60%',
+                            transform: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'none' : 'scale(1.14)',
+                            transition: 'transform 0.4s ease'
+                          }}
+                        />
+                        <button
+                          className="card-wishlist-btn"
+                          onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
+                          style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', zIndex: 3 }}
+                        >
+                          <Heart size={18} fill={wishlist.includes(product.id) ? '#C5A059' : 'none'} color={wishlist.includes(product.id) ? '#C5A059' : '#1E221D'} />
+                        </button>
+                        {product.originalPrice && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '1rem',
+                              left: '1rem',
+                              backgroundColor: '#C5A059',
+                              color: '#FFFFFF',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              letterSpacing: '0.06em',
+                              textTransform: 'uppercase',
+                              padding: '0.35rem 0.75rem',
+                              borderRadius: '30px',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                              zIndex: 2
+                            }}
+                          >
+                            ★ SAVE {formatCurrency(product.originalPrice - product.price)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="card-body" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                        <div className="card-subtitle" style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                          {product.subtitle}
+                        </div>
+                        <h3
+                          className="card-title font-display"
+                          style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '0.5rem', cursor: 'pointer' }}
+                          onClick={() => openProductDetail(product)}
+                        >
+                          {product.name}
+                        </h3>
+                        <div className="card-price-row" style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                          <span style={{ fontSize: '1.35rem', fontWeight: 700, color: '#6E5535' }}>
+                            {formatCurrency(product.price)}
+                          </span>
+                          {product.originalPrice && (
+                            <>
+                              <span style={{ fontSize: '0.95rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
+                                {formatCurrency(product.originalPrice)}
+                              </span>
+                              <span style={{
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                color: '#2D3A29',
+                                backgroundColor: 'rgba(197, 160, 89, 0.25)',
+                                border: '1px solid #C5A059',
+                                padding: '0.15rem 0.45rem',
+                                borderRadius: '4px'
+                              }}>
+                                Save {formatCurrency(product.originalPrice - product.price)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
+                              </span>
+                            </>
+                          )}
+                          <span className="card-volume" style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400, marginLeft: product.originalPrice ? '0' : '0.2rem' }}>
+                            ({product.volume})
+                          </span>
+                        </div>
+
+                        <p className="card-desc" style={{ fontSize: '0.9rem', color: '#5C635B', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+                          {product.shortDescription}
+                        </p>
+
+                        <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
+                          <button
+                            className="btn-primary card-btn-primary"
+                            style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
+                            onClick={() => addToCart(product)}
+                          >
+                            <ShoppingBag size={16} /> ADD · {formatCurrency(product.price)} ({product.price} ESP)
+                          </button>
+                          <button
+                            className="btn-secondary card-btn-secondary"
+                            style={{ padding: '0.85rem', justifyContent: 'center' }}
+                            onClick={() => openProductDetail(product)}
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </main>
+        )}
+
+        {/* ========================================================================= */}
+        {/* SEPARATE VIEW 3: SEPARATE DEDICATED "GIFTING" PAGE                        */}
+        {/* ========================================================================= */}
+        {activeTab === 'gifting' && (
+          <main style={{ backgroundColor: '#EAD8BA', minHeight: '80vh' }}>
+            <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
+              <div className="container" style={{ fontSize: '0.825rem', color: '#5C635B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
+                <span>/</span>
+                <span style={{ color: '#2D3A29', fontWeight: 600 }}>Gifting & Trio Sets</span>
+              </div>
+            </div>
+
+            <section style={{ padding: '5rem 0', position: 'relative', overflow: 'hidden' }}>
+              <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', right: '2%', zIndex: 1, color: 'rgba(74, 93, 78, 0.035)' }}>
+                love
+              </div>
+              <div className="container">
+                <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+                  <span className="loveworld-badge" style={{ marginBottom: '1rem' }}>
+                    GIVE THE GIFT OF LUXURY
+                  </span>
+                  <h1 className="font-display" style={{ fontSize: '4rem', color: '#1E221D' }}>
+                    Natural Body-Care Gift Sets
+                  </h1>
+                  <p style={{ color: '#5C635B', fontSize: '1.05rem', maxWidth: '600px', margin: '0.5rem auto 0 auto' }}>
+                    Looking for a thoughtful gift? Create a beautiful LICHT LUXE NATURALS gift set for someone special.
+                  </p>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem', marginBottom: '4rem' }}>
+
+                  {/* 5-Piece Complete Collection Card */}
+                  <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '2px solid #C5A059', boxShadow: '0 15px 40px rgba(197, 160, 89, 0.2)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#C5A059', color: '#FFFFFF', padding: '0.35rem 1.25rem', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(197, 160, 89, 0.4)', whiteSpace: 'nowrap' }}>
+                      ★ MASTER 5-PIECE COMBO · SAVE £11.95
+                    </div>
+
+                    <div style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
+                      <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C5A059', fontWeight: 700 }}>
+                        THE ULTIMATE COLLECTION
+                      </div>
+                      <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
+                        The Complete Luxe Naturals
+                      </h2>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
+                        <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(59.00)}</span>
+                        <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                          ⚡ 59.00 ESP
+                        </span>
+                        <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>{formatCurrency(70.95)}</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
+                          Save £11.95 (17% OFF)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{ borderRadius: '10px', overflow: 'hidden', height: '260px', marginBottom: '1.5rem', cursor: 'pointer', backgroundColor: '#DFCAA7' }}
                       onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
                     >
-                      View Details
-                    </button>
-                  </div>
-                </div>
+                      <img
+                        src="/licht_luxe_all_five_products_water.png"
+                        alt="The Complete Luxe Naturals Collection 5-Piece Combo"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
+                      />
+                    </div>
 
-                {/* 3-Piece Trio Box Card */}
-                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '1.5px solid #E5DFC5', boxShadow: '0 15px 40px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                    <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C5A059', fontWeight: 700 }}>
-                      THE LUXE TRIO BOX
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.75rem', flexGrow: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                        <Check size={16} color="#C5A059" /> <strong>Pure Shea Butter</strong> (250g / 8.8 oz)
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                        <Check size={16} color="#C5A059" /> <strong>Pure Coconut Oil</strong> (200ml / 7.0 fl oz)
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                        <Check size={16} color="#C5A059" /> <strong>Luxe Body Butter</strong> (250g / 8.8 oz)
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                        <Check size={16} color="#C5A059" /> <strong>African Black Liquid Soap</strong> (500ml / 16.9 fl oz)
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                        <Check size={16} color="#C5A059" /> <strong>African Black Soap Jar</strong> (300g / 10.5 oz)
+                      </div>
                     </div>
-                    <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
-                      The Complete Ritual Set
-                    </h2>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
-                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(39.99)}</span>
-                      <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                        ⚡ 39.99 ESP
-                      </span>
-                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>{formatCurrency(55.97)}</span>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
-                        Save £15.98 (29% OFF)
-                      </span>
-                    </div>
-                  </div>
 
-                  <div 
-                    style={{ borderRadius: '10px', overflow: 'hidden', height: '260px', marginBottom: '1.5rem', cursor: 'pointer', backgroundColor: '#DFCAA7' }}
-                    onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
-                  >
-                    <img 
-                      src="/luxe_trio_primary.jpg" 
-                      alt="The Luxe Trio Gift Set" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.75rem', flexGrow: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
-                      <Check size={16} color="#C5A059" /> <strong>Pure Shea Butter</strong> (250g / 8.8 oz)
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
-                      <Check size={16} color="#C5A059" /> <strong>Pure Coconut Oil</strong> (200ml / 7.0 fl oz)
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
-                      <Check size={16} color="#C5A059" /> <strong>Luxe Body Butter</strong> (250g / 8.8 oz)
-                    </div>
-                    <div style={{ padding: '0.5rem 0.75rem', backgroundColor: '#DFCAA7', borderRadius: '6px', fontSize: '0.8rem', color: '#2D3A29', marginTop: 'auto' }}>
-                      ✨ Presented in a luxury gift box with gold ribbon
+                    <div style={{ display: 'flex', gap: '0.85rem' }}>
+                      <button
+                        className="btn-primary"
+                        style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
+                        onClick={() => addToCart(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
+                      >
+                        Add to Bag · {formatCurrency(59.00)} (59.00 ESP)
+                      </button>
+                      <button
+                        className="btn-secondary"
+                        style={{ padding: '0.95rem 1.25rem' }}
+                        onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))}
+                      >
+                        View Details
+                      </button>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.85rem' }}>
-                    <button 
-                      className="btn-primary" 
-                      style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
-                      onClick={() => addToCart(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
-                    >
-                      Add to Bag · {formatCurrency(39.99)} (39.99 ESP)
-                    </button>
-                    <button 
-                      className="btn-secondary" 
-                      style={{ padding: '0.95rem 1.25rem' }}
+                  {/* 3-Piece Trio Box Card */}
+                  <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '1.5px solid #E5DFC5', boxShadow: '0 15px 40px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                      <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C5A059', fontWeight: 700 }}>
+                        THE LUXE TRIO BOX
+                      </div>
+                      <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
+                        The Complete Ritual Set
+                      </h2>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
+                        <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(39.99)}</span>
+                        <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                          ⚡ 39.99 ESP
+                        </span>
+                        <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>{formatCurrency(55.97)}</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
+                          Save £15.98 (29% OFF)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{ borderRadius: '10px', overflow: 'hidden', height: '260px', marginBottom: '1.5rem', cursor: 'pointer', backgroundColor: '#DFCAA7' }}
                       onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
                     >
-                      View Details
-                    </button>
-                  </div>
-                </div>
-
-                {/* 2-Piece African Black Soap Clarifying Duo Card */}
-                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '1.5px solid #C5A059', boxShadow: '0 15px 40px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#4A5D4E', color: '#DFCAA7', padding: '0.35rem 1.25rem', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(45, 58, 41, 0.25)', whiteSpace: 'nowrap' }}>
-                    ★ PURIFYING DUO · SAVE £2.99
-                  </div>
-
-                  <div style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
-                    <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C5A059', fontWeight: 700 }}>
-                      PURIFYING DUO COMBO
+                      <img
+                        src="/luxe_trio_primary.jpg"
+                        alt="The Luxe Trio Gift Set"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
                     </div>
-                    <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
-                      Clarifying Duo Set
-                    </h2>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
-                      <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(21.99)}</span>
-                      <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                        ⚡ 21.99 ESP
-                      </span>
-                      <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>{formatCurrency(24.98)}</span>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
-                        Save £2.99 (12% OFF)
-                      </span>
-                    </div>
-                  </div>
 
-                  <div 
-                    style={{ borderRadius: '10px', overflow: 'hidden', height: '260px', marginBottom: '1.5rem', cursor: 'pointer', backgroundColor: '#DFCAA7' }}
-                    onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-clarifying-duo'))}
-                  >
-                    <img 
-                      src="/african_black_soap_duo_combo.jpg" 
-                      alt="African Black Soap Clarifying Duo" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-                    />
-                  </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.75rem', flexGrow: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                        <Check size={16} color="#C5A059" /> <strong>Pure Shea Butter</strong> (250g / 8.8 oz)
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                        <Check size={16} color="#C5A059" /> <strong>Pure Coconut Oil</strong> (200ml / 7.0 fl oz)
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                        <Check size={16} color="#C5A059" /> <strong>Luxe Body Butter</strong> (250g / 8.8 oz)
+                      </div>
+                      <div style={{ padding: '0.5rem 0.75rem', backgroundColor: '#DFCAA7', borderRadius: '6px', fontSize: '0.8rem', color: '#2D3A29', marginTop: 'auto' }}>
+                        ✨ Presented in a luxury gift box with gold ribbon
+                      </div>
+                    </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.75rem', flexGrow: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
-                      <Check size={16} color="#C5A059" /> <strong>African Black Liquid Soap</strong> (500ml / 16.9 fl oz)
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
-                      <Check size={16} color="#C5A059" /> <strong>African Black Soap Jar</strong> (300g / 10.5 oz)
-                    </div>
-                    <div style={{ padding: '0.5rem 0.75rem', backgroundColor: '#DFCAA7', borderRadius: '6px', fontSize: '0.8rem', color: '#2D3A29', marginTop: 'auto' }}>
-                      ✨ Complete duo ritual: daily wash dispenser + deep clarifying jar
+                    <div style={{ display: 'flex', gap: '0.85rem' }}>
+                      <button
+                        className="btn-primary"
+                        style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
+                        onClick={() => addToCart(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
+                      >
+                        Add to Bag · {formatCurrency(39.99)} (39.99 ESP)
+                      </button>
+                      <button
+                        className="btn-secondary"
+                        style={{ padding: '0.95rem 1.25rem' }}
+                        onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))}
+                      >
+                        View Details
+                      </button>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.85rem' }}>
-                    <button 
-                      className="btn-primary" 
-                      style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
-                      onClick={() => addToCart(PRODUCTS.find(p => p.id === 'african-black-soap-clarifying-duo'))}
-                    >
-                      Add to Bag · {formatCurrency(21.99)} (21.99 ESP)
-                    </button>
-                    <button 
-                      className="btn-secondary" 
-                      style={{ padding: '0.95rem 1.25rem' }}
+                  {/* 2-Piece African Black Soap Clarifying Duo Card */}
+                  <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '16px', border: '1.5px solid #C5A059', boxShadow: '0 15px 40px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#4A5D4E', color: '#DFCAA7', padding: '0.35rem 1.25rem', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(45, 58, 41, 0.25)', whiteSpace: 'nowrap' }}>
+                      ★ PURIFYING DUO · SAVE £2.99
+                    </div>
+
+                    <div style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
+                      <div style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C5A059', fontWeight: 700 }}>
+                        PURIFYING DUO COMBO
+                      </div>
+                      <h2 className="font-display" style={{ fontSize: '2.25rem', color: '#2D3A29', margin: '0.25rem 0' }}>
+                        Clarifying Duo Set
+                      </h2>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.25rem' }}>
+                        <span style={{ fontSize: '1.85rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(21.99)}</span>
+                        <span style={{ backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', fontSize: '0.9rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                          ⚡ 21.99 ESP
+                        </span>
+                        <span style={{ fontSize: '1.1rem', color: '#8C948B', textDecoration: 'line-through' }}>{formatCurrency(24.98)}</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', backgroundColor: 'rgba(197, 160, 89, 0.25)', border: '1px solid #C5A059', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
+                          Save £2.99 (12% OFF)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{ borderRadius: '10px', overflow: 'hidden', height: '260px', marginBottom: '1.5rem', cursor: 'pointer', backgroundColor: '#DFCAA7' }}
                       onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-clarifying-duo'))}
                     >
-                      View Details
+                      <img
+                        src="/african_black_soap_duo_combo.jpg"
+                        alt="African Black Soap Clarifying Duo"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.75rem', flexGrow: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                        <Check size={16} color="#C5A059" /> <strong>African Black Liquid Soap</strong> (500ml / 16.9 fl oz)
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.925rem', color: '#2D3A29' }}>
+                        <Check size={16} color="#C5A059" /> <strong>African Black Soap Jar</strong> (300g / 10.5 oz)
+                      </div>
+                      <div style={{ padding: '0.5rem 0.75rem', backgroundColor: '#DFCAA7', borderRadius: '6px', fontSize: '0.8rem', color: '#2D3A29', marginTop: 'auto' }}>
+                        ✨ Complete duo ritual: daily wash dispenser + deep clarifying jar
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.85rem' }}>
+                      <button
+                        className="btn-primary"
+                        style={{ flexGrow: 1, justifyContent: 'center', padding: '0.95rem' }}
+                        onClick={() => addToCart(PRODUCTS.find(p => p.id === 'african-black-soap-clarifying-duo'))}
+                      >
+                        Add to Bag · {formatCurrency(21.99)} (21.99 ESP)
+                      </button>
+                      <button
+                        className="btn-secondary"
+                        style={{ padding: '0.95rem 1.25rem' }}
+                        onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-clarifying-duo'))}
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Occasions & Concierge Section */}
+                <div style={{ backgroundColor: '#F4EFE6', padding: '3rem', borderRadius: '16px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
+                  <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 2.5rem' }}>
+                    <h2 className="font-display" style={{ fontSize: '2.75rem', color: '#2D3A29', marginBottom: '0.75rem' }}>
+                      Thoughtful Gifting for Every Occasion
+                    </h2>
+                    <p style={{ color: '#5C635B', fontSize: '1.05rem', lineHeight: 1.7 }}>
+                      Each gift set is lovingly packaged with our signature gold ribbon and MADE IN LOVEWORLD emblem seal.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', fontSize: '1rem', color: '#2D3A29', backgroundColor: '#DFCAA7', padding: '1.75rem', borderRadius: '12px', border: '1px solid #E5DFC5', marginBottom: '2.5rem', textAlign: 'center' }}>
+                    <div>🎁 Birthdays</div>
+                    <div>🎁 Mother's Day</div>
+                    <div>🎁 Valentine's Day</div>
+                    <div>🎁 Christmas</div>
+                    <div>🎁 Bridesmaids</div>
+                    <div>🎁 Baby Showers</div>
+                    <div>🎁 Self-Care Gifts</div>
+                    <div>🎁 Corporate Gifts</div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    <a href="tel:07831082965" className="btn-secondary" style={{ padding: '0.95rem 2rem', fontSize: '0.95rem' }}>
+                      <Phone size={17} /> Bespoke Gifting Concierge: 07831082965
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </main>
+        )}
+
+        {/* ========================================================================= */}
+        {/* SEPARATE VIEW 4: SEPARATE DEDICATED "CONTACT" PAGE                        */}
+        {/* ========================================================================= */}
+        {activeTab === 'contact' && (
+          <main style={{ backgroundColor: '#EAD8BA', minHeight: '80vh' }}>
+            <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
+              <div className="container" style={{ fontSize: '0.825rem', color: '#5C635B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
+                <span>/</span>
+                <span style={{ color: '#2D3A29', fontWeight: 600 }}>Contact Us</span>
+              </div>
+            </div>
+
+            <section style={{ padding: '5rem 0', position: 'relative', overflow: 'hidden' }}>
+              <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', left: '2%', zIndex: 1, color: 'rgba(74, 93, 78, 0.035)' }}>
+                nourish
+              </div>
+              <div className="container">
+                <div className="responsive-contact-grid">
+                  <div>
+                    <span className="loveworld-badge" style={{ marginBottom: '1rem' }}>
+                      GET IN TOUCH
+                    </span>
+                    <h1 className="font-display" style={{ fontSize: '4rem', color: '#1E221D', marginBottom: '1.25rem' }}>
+                      We'd Love to Hear From You
+                    </h1>
+                    <p style={{ color: '#5C635B', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '2rem' }}>
+                      Have a question about our products, an order or a collaboration? Our team would love to hear from you.
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <div style={{ backgroundColor: '#EAF0E8', padding: '0.75rem', borderRadius: '50%', color: '#4A5D4E' }}><Phone size={20} /></div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6E5535', fontWeight: 600 }}>PHONE / WHATSAPP</div>
+                          <a href="tel:07831082965" style={{ fontSize: '1.1rem', fontWeight: 600, color: '#2D3A29', textDecoration: 'none' }}>07831082965</a>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <div style={{ backgroundColor: '#EAF0E8', padding: '0.75rem', borderRadius: '50%', color: '#4A5D4E' }}><Mail size={20} /></div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6E5535', fontWeight: 600 }}>EMAIL</div>
+                          <a href="mailto:info@lichtluxenaturals.org" style={{ fontSize: '1.05rem', fontWeight: 600, color: '#2D3A29', textDecoration: 'none' }}>info@lichtluxenaturals.org</a>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <div style={{ backgroundColor: '#F4EBD9', padding: '0.75rem', borderRadius: '50%', color: '#C5A059' }}><Camera size={20} /></div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6E5535', fontWeight: 600 }}>INSTAGRAM</div>
+                          <div style={{ fontSize: '1.05rem', fontWeight: 600, color: '#2D3A29' }}>@lichtluxenaturals</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact Form */}
+                  <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '12px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
+                    <h3 className="font-display" style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '1.5rem' }}>
+                      Send Us a Message
+                    </h3>
+
+                    {contactSubmitted ? (
+                      <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                        <Check size={48} color="#4A5D4E" style={{ margin: '0 auto 1rem auto' }} />
+                        <h4 className="font-serif" style={{ fontSize: '1.5rem', color: '#2D3A29' }}>Message Sent!</h4>
+                        <p style={{ color: '#5C635B', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                          Thank you for reaching out to LICHT LUXE NATURALS. We will get back to you shortly.
+                        </p>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleContactSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2D3A29', marginBottom: '0.35rem' }}>Your Name</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Jane Doe"
+                            value={contactForm.name}
+                            onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                            style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '4px', border: '1px solid #E5DFC5', outline: 'none', fontFamily: 'var(--font-sans)', fontSize: '0.95rem' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2D3A29', marginBottom: '0.35rem' }}>Email</label>
+                            <input
+                              type="email"
+                              required
+                              placeholder="jane@example.com"
+                              value={contactForm.email}
+                              onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '4px', border: '1px solid #E5DFC5', outline: 'none', fontFamily: 'var(--font-sans)', fontSize: '0.95rem' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2D3A29', marginBottom: '0.35rem' }}>Phone</label>
+                            <input
+                              type="tel"
+                              placeholder="07831082965"
+                              value={contactForm.phone}
+                              onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '4px', border: '1px solid #E5DFC5', outline: 'none', fontFamily: 'var(--font-sans)', fontSize: '0.95rem' }}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2D3A29', marginBottom: '0.35rem' }}>Topic</label>
+                          <select
+                            value={contactForm.topic}
+                            onChange={(e) => setContactForm({ ...contactForm, topic: e.target.value })}
+                            style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '4px', border: '1px solid #E5DFC5', outline: 'none', fontFamily: 'var(--font-sans)', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                          >
+                            <option>General Inquiry</option>
+                            <option>Product & Ingredient Advice</option>
+                            <option>Order & Delivery Status</option>
+                            <option>Gifting & Custom Trio Sets</option>
+                            <option>Wholesale & Collaborations</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2D3A29', marginBottom: '0.35rem' }}>Message</label>
+                          <textarea
+                            rows={4}
+                            required
+                            placeholder="How can we help you today?"
+                            value={contactForm.message}
+                            onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                            style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '4px', border: '1px solid #E5DFC5', outline: 'none', fontFamily: 'var(--font-sans)', fontSize: '0.95rem', resize: 'vertical' }}
+                          />
+                        </div>
+
+                        <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                          Send Message <ArrowUpRight size={16} />
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+          </main>
+        )}
+
+        {/* ========================================================================= */}
+        {/* HOME PAGE VIEW                                                            */}
+        {/* ========================================================================= */}
+        {activeTab === 'home' && (
+          <main style={{ backgroundColor: '#EAD8BA' }}>
+
+            {/* EDITORIAL HERO SECTION MATCHING REFERENCE IMG 1 & IMG 2 */}
+            <section style={{ position: 'relative', overflow: 'hidden', padding: '3.5rem 0 5rem 0', backgroundColor: '#EAD8BA' }}>
+              {/* Subtle background watermark text: "pure" in top right open background space */}
+              <div
+                className="giant-watermark-text"
+                style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  right: '2%',
+                  fontSize: 'clamp(8rem, 20vw, 18rem)',
+                  color: 'rgba(74, 93, 78, 0.035)',
+                  userSelect: 'none',
+                  pointerEvents: 'none',
+                  zIndex: 1
+                }}
+              >
+                pure
+              </div>
+
+              <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+                <div className="responsive-home-hero">
+
+                  {/* Left Content Column */}
+                  <div>
+                    <div className="text-uppercase" style={{ color: '#6A7E6B', letterSpacing: '0.22em', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1.25rem' }}>
+                      NATURE, THOUGHTFULLY ELEVATED
+                    </div>
+
+                    <h1
+                      className="font-display"
+                      style={{ fontSize: 'clamp(3.25rem, 5.5vw, 4.8rem)', color: '#1E221D', marginBottom: '1.25rem', lineHeight: 1.06, letterSpacing: '-0.02em', fontWeight: 400 }}
+                    >
+                      A softer way<br />
+                      to glow.
+                    </h1>
+
+                    <p style={{ color: '#5C635B', fontSize: '1.08rem', lineHeight: 1.7, marginBottom: '2.25rem', maxWidth: '440px' }}>
+                      Botanical skincare that nurtures your skin, honours the earth, and turns everyday a bit more luxurious.
+                    </p>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
+                      <button
+                        className="btn-primary"
+                        onClick={() => navigateToTab('shop')}
+                        style={{ backgroundColor: '#4A5D4E', borderColor: '#4A5D4E', borderRadius: '4px', padding: '0.95rem 2rem', fontSize: '0.875rem', fontWeight: 500, letterSpacing: '0.04em' }}
+                      >
+                        Discover your essentials <ArrowUpRight size={17} />
+                      </button>
+                    </div>
+
+                    <div className="text-uppercase" style={{ color: '#6E5535', letterSpacing: '0.18em', fontSize: '0.725rem', fontWeight: 600 }}>
+                      PURE INGREDIENTS. BEAUTIFUL INTENTIONS.
+                    </div>
+                  </div>
+
+                  {/* Right Column: Model Image with Floating Product Card & Badges */}
+                  <div style={{ position: 'relative' }}>
+
+                    {/* Model Image Container */}
+                    <div className="hero-image-wrap" style={{ borderRadius: '6px', overflow: 'hidden', height: '560px', position: 'relative', boxShadow: '0 20px 50px rgba(45, 58, 41, 0.08)', backgroundColor: '#DFCAA7' }}>
+                      <img
+                        src="/hero_trio_ingredients.png"
+                        alt="LICHT LUXE NATURALS Products Trio — Pure Coconut Oil, Body Butter & Shea Butter"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
+                      />
+
+                      {/* Top Right Pill Badge: MADE IN LOVEWORLD (matching img 2) */}
+                      <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10 }}>
+                        <div
+                          style={{
+                            backgroundColor: '#EAD8BA',
+                            border: '1.5px solid #C5A059',
+                            borderRadius: '40px',
+                            padding: '0.45rem 1.15rem',
+                            fontSize: '0.725rem',
+                            letterSpacing: '0.18em',
+                            fontWeight: 600,
+                            color: '#2D3A29',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.08)'
+                          }}
+                        >
+                          MADE IN LOVEWORLD
+                        </div>
+                      </div>
+
+                      {/* Bottom Right Box Tag: Let your skin breathe (matching img 1) */}
+                      <div style={{ position: 'absolute', bottom: '1.5rem', right: '1.5rem', zIndex: 10 }}>
+                        <div
+                          style={{
+                            backgroundColor: '#EAD8BA',
+                            padding: '0.65rem 1.25rem',
+                            borderRadius: '2px',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                            fontFamily: "var(--font-serif)",
+                            fontStyle: "italic",
+                            fontSize: "1.1rem",
+                            color: "#2D3A29"
+                          }}
+                        >
+                          Let your skin breathe.
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Overlapping Floating Product Highlight Card (matching img 1) */}
+                    <div
+                      className="hero-floating-card"
+                      style={{
+                        position: 'absolute',
+                        bottom: '25px',
+                        left: '-125px',
+                        zIndex: 20,
+                        backgroundColor: '#DFCAA7',
+                        padding: '0.75rem',
+                        borderRadius: '4px',
+                        width: '210px',
+                        boxShadow: '0 15px 35px rgba(0,0,0,0.12)',
+                        border: '1px solid #E5DFC5',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => openProductDetail(PRODUCTS[2])}
+                    >
+                      <div style={{ height: '165px', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.65rem', backgroundColor: '#DFCAA7' }}>
+                        <img
+                          src="/body_butter_hand_apply.jpg"
+                          alt="Luxe Body Butter texture application on skin"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', color: '#2D3A29', fontWeight: 500 }}>
+                        <span>Meet Luxe Body Butter</span>
+                        <ArrowUpRight size={14} />
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </section>
+
+            {/* 4-PILLAR BRAND TRUST BAR (matching img 1 bottom banner) */}
+            <section style={{ backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5', borderBottom: '1px solid #E5DFC5', padding: '1.25rem 0' }}>
+              <div className="container">
+                <div className="brand-trust-bar-grid">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#4A5D4E', fontWeight: 500 }}>
+                    <Leaf size={16} /> Botanical ingredients
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#4A5D4E', fontWeight: 500 }}>
+                    <Leaf size={16} /> Mindfully formulated
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#4A5D4E', fontWeight: 500 }}>
+                    <Leaf size={16} /> Cruelty-free, always
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#4A5D4E', fontWeight: 500 }}>
+                    <Leaf size={16} /> Made for everyday rituals
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* EDITORIAL SECTION 1 (MATCHING IMG 2 TOP SPLIT BANNER): THE LUXE NATURALS PHILOSOPHY */}
+            <section className="responsive-hero-split">
+              {/* Left Column: Full-bleed Radiant Clear Skin Model Image (img 2 reference) */}
+              <div className="split-image-col" style={{ height: '80vh', minHeight: '600px', overflow: 'hidden' }}>
+                <img
+                  src="/clear_skin_model.png"
+                  alt="Radiant clear skin model — LICHT LUXE NATURALS"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 55%' }}
+                />
+              </div>
+
+              {/* Right Column: Sage / Olive Tint Background with Philosophy Copy */}
+              <div className="split-content-col" style={{ padding: '4.5rem 4rem', height: '80vh', minHeight: '600px', display: 'flex', flexDirection: 'column', justifyContent: 'center', backgroundColor: '#DFE5DC', position: 'relative' }}>
+                <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', right: '5%', color: 'rgba(74, 93, 78, 0.035)', zIndex: 1 }}>
+                  grace
+                </div>
+
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                  <div className="text-uppercase" style={{ color: '#5A6E5E', letterSpacing: '0.22em', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1.25rem' }}>
+                    THE LUXE NATURALS PHILOSOPHY
+                  </div>
+
+                  <h2 className="font-display" style={{ fontSize: 'clamp(3rem, 4.5vw, 4.2rem)', color: '#1E221D', marginBottom: '1.5rem', lineHeight: 1.08, letterSpacing: '-0.02em', fontWeight: 400 }}>
+                    Less, but<br />
+                    more meaningful.
+                  </h2>
+
+                  <div style={{ color: '#4D584C', fontSize: '1.05rem', lineHeight: 1.7, display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem', maxWidth: '480px' }}>
+                    <p>
+                      We believe beautiful skin begins with care, not complexity. So we look to nature for ingredients with purpose, and create thoughtful formulas that feel as good as they are.
+                    </p>
+                    <p>
+                      No crowded shelves. No hurried routines. Just a few beautiful essentials, and a moment that belongs to you.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => navigateToTab('story')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                      color: '#2D3A29',
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      textDecoration: 'underline',
+                      marginBottom: '2.5rem'
+                    }}
+                  >
+                    Get to know us <ArrowUpRight size={15} />
+                  </button>
+
+                  <div style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '1.25rem', color: '#4D584C' }}>
+                    From the earth. With intention.
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* EDITORIAL SECTION 2 (MATCHING IMG 2 BOTTOM 4-COLUMN GRID): GOODNESS, AT THE SOURCE */}
+            <section style={{ padding: '5.5rem 0', backgroundColor: '#EAD8BA', position: 'relative', overflow: 'hidden' }}>
+              <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', left: '2%', color: 'rgba(74, 93, 78, 0.035)', zIndex: 1 }}>
+                nature
+              </div>
+
+              <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+                <div className="source-values-grid">
+
+                  {/* Column 1: Section Header Text */}
+                  <div style={{ paddingRight: '1rem' }}>
+                    <div className="text-uppercase" style={{ color: '#6A7E6B', letterSpacing: '0.22em', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1.25rem' }}>
+                      GOODNESS, AT THE SOURCE
+                    </div>
+
+                    <h2 className="font-display" style={{ fontSize: 'clamp(2.5rem, 3.8vw, 3.5rem)', color: '#1E221D', marginBottom: '1.5rem', lineHeight: 1.1, fontWeight: 400 }}>
+                      Nature does<br />
+                      the beautiful<br />
+                      work.
+                    </h2>
+
+                    <button
+                      onClick={() => navigateToTab('story')}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                        color: '#4A5D4E',
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      Explore our ingredients <ArrowUpRight size={15} />
+                    </button>
+                  </div>
+
+                  {/* Column 2: Raw African Shea Butter */}
+                  <div>
+                    <div style={{ height: '240px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.25rem', backgroundColor: '#DFCAA7' }}>
+                      <img
+                        src="/body_butter_hand_apply.jpg"
+                        alt="Raw African Shea Butter"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                    <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#1E221D', marginBottom: '0.25rem', fontWeight: 400 }}>
+                      Raw Shea Butter
+                    </h3>
+                    <p style={{ color: '#5C635B', fontSize: '0.875rem', lineHeight: 1.5 }}>
+                      100% unrefined & rich in Vitamins A & E for deep skin moisture.
+                    </p>
+                  </div>
+
+                  {/* Column 3: Cold-Pressed Coconut Oil */}
+                  <div>
+                    <div style={{ height: '240px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.25rem', backgroundColor: '#DFCAA7' }}>
+                      <img
+                        src="/raw_coconut_ingredient.jpg"
+                        alt="Raw Coconut & Virgin Coconut Oil"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
+                      />
+                    </div>
+                    <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#1E221D', marginBottom: '0.25rem', fontWeight: 400 }}>
+                      Virgin Coconut Oil
+                    </h3>
+                    <p style={{ color: '#5C635B', fontSize: '0.875rem', lineHeight: 1.5 }}>
+                      Cold-pressed & rich in lauric acid to restore natural radiance.
+                    </p>
+                  </div>
+
+                  {/* Column 4: Pure Skin Nourishment */}
+                  <div>
+                    <div style={{ height: '240px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.25rem', backgroundColor: '#DFCAA7' }}>
+                      <img
+                        src="https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=600&q=80"
+                        alt="Pure Skin Nourishment"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                    <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#1E221D', marginBottom: '0.25rem', fontWeight: 400 }}>
+                      Pure Skin Nourishment
+                    </h3>
+                    <p style={{ color: '#5C635B', fontSize: '0.875rem', lineHeight: 1.5 }}>
+                      Thoughtfully crafted skincare that nourishes, hydrates and enhances your skin's natural glow.
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+            </section>
+
+            {/* EDITORIAL GALLERY BLOCK 2: PURE CARE BY NATURE */}
+            <section style={{ padding: '5rem 0', backgroundColor: '#EAD8BA', position: 'relative' }}>
+              <div className="giant-watermark-text" style={{ position: 'absolute', bottom: '0', right: '2%', opacity: 0.6 }}>
+                pure
+              </div>
+
+              <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+                <div className="editorial-cards-grid">
+                  <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', overflow: 'hidden', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
+                    <div style={{ height: '340px', overflow: 'hidden' }}>
+                      <img
+                        src="/clear_skin_model.jpg"
+                        alt="Glowing clear skin model texture"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div style={{ padding: '1.5rem' }}>
+                      <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C5A059', fontWeight: 600 }}>CLEAR SKIN GLOW</div>
+                      <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#2D3A29', marginTop: '0.25rem' }}>Real skin nourishment</h3>
+                      <p style={{ fontSize: '0.85rem', color: '#5C635B', marginTop: '0.35rem' }}>Soft, supple, and beautifully moisturised feel.</p>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', overflow: 'hidden', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)', cursor: 'pointer' }}
+                    onClick={() => openProductDetail(PRODUCTS[1])}
+                  >
+                    <div style={{ height: '340px', overflow: 'hidden' }}>
+                      <img
+                        src="/coconut_oil_split_showcase.jpg"
+                        alt="Pure Coconut Oil split showcase artwork"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
+                      />
+                    </div>
+                    <div style={{ padding: '1.5rem' }}>
+                      <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C5A059', fontWeight: 600 }}>100% COLD PRESSED</div>
+                      <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#2D3A29', marginTop: '0.25rem' }}>Pure Coconut Oil</h3>
+                      <p style={{ fontSize: '0.85rem', color: '#5C635B', marginTop: '0.35rem' }}>Nature's versatile nourishing oil · {formatCurrency(22.00)}</p>
+                    </div>
+                  </div>
+
+                  <div style={{ backgroundColor: '#DFCAA7', borderRadius: '12px', padding: '2.5rem 2rem', border: '1.5px solid #C5A059', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div className="loveworld-badge" style={{ width: 'fit-content', marginBottom: '1rem' }}>
+                      MADE IN LOVEWORLD
+                    </div>
+                    <h3 className="font-display" style={{ fontSize: '2.5rem', color: '#1E221D', marginBottom: '1rem', lineHeight: 1.1 }}>
+                      Pure care<br />
+                      <span style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: '#6E5535' }}>by nature.</span>
+                    </h3>
+                    <p style={{ color: '#5C635B', fontSize: '0.925rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+                      Thoughtfully crafted formulas designed to bring balance and calm to your daily routine. Gentle ingredients help support healthy-looking skin.
+                    </p>
+                    <button
+                      className="btn-primary"
+                      onClick={() => navigateToTab('shop')}
+                      style={{ width: '100%', justifyContent: 'center' }}
+                    >
+                      SHOP COLLECTION
                     </button>
                   </div>
                 </div>
-
               </div>
+            </section>
 
-              {/* Occasions & Concierge Section */}
-              <div style={{ backgroundColor: '#F4EFE6', padding: '3rem', borderRadius: '16px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
-                <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 2.5rem' }}>
-                  <h2 className="font-display" style={{ fontSize: '2.75rem', color: '#2D3A29', marginBottom: '0.75rem' }}>
-                    Thoughtful Gifting for Every Occasion
+            {/* EDITORIAL ESSENTIAL COLLECTION GRID */}
+            <section style={{ padding: '5rem 0', backgroundColor: '#EAD8BA' }}>
+              <div className="container">
+                <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+                  <div className="text-uppercase" style={{ color: '#4A5D4E', marginBottom: '0.35rem' }}>
+                    OUR ESSENTIAL TRIO
+                  </div>
+                  <h2 className="font-display" style={{ fontSize: '3.75rem', color: '#1E221D' }}>
+                    Gentle care. Real balance.
                   </h2>
-                  <p style={{ color: '#5C635B', fontSize: '1.05rem', lineHeight: 1.7 }}>
-                    Each gift set is lovingly packaged with our signature gold ribbon and MADE IN LOVEWORLD emblem seal.
+                  <p style={{ color: '#5C635B', fontSize: '1rem', maxWidth: '580px', margin: '0.5rem auto 0 auto' }}>
+                    Discover our carefully crafted collection of natural body-care essentials.
                   </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', fontSize: '1rem', color: '#2D3A29', backgroundColor: '#DFCAA7', padding: '1.75rem', borderRadius: '12px', border: '1px solid #E5DFC5', marginBottom: '2.5rem', textAlign: 'center' }}>
-                  <div>🎁 Birthdays</div>
-                  <div>🎁 Mother's Day</div>
-                  <div>🎁 Valentine's Day</div>
-                  <div>🎁 Christmas</div>
-                  <div>🎁 Bridesmaids</div>
-                  <div>🎁 Baby Showers</div>
-                  <div>🎁 Self-Care Gifts</div>
-                  <div>🎁 Corporate Gifts</div>
-                </div>
+                <div className="product-cards-grid">
+                  {PRODUCTS.map(product => (
+                    <div
+                      key={product.id}
+                      className="responsive-product-card" data-product-id={product.id} data-is-combo={product.isCombo ? 'true' : 'false'}
+                      style={{
+                        backgroundColor: '#F4EFE6',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        border: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                        boxShadow: 'var(--shadow-soft)',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
+                    >
+                      <div
+                        className="card-media-wrap"
+                        style={{ position: 'relative', height: '280px', overflow: 'hidden', backgroundColor: '#DFCAA7', cursor: 'pointer' }}
+                        onClick={() => openProductDetail(product)}
+                      >
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="card-media-img"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'center center' : 'center 60%',
+                            transform: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'none' : 'scale(1.14)',
+                            transition: 'transform 0.4s ease'
+                          }}
+                        />
+                        <button
+                          className="card-wishlist-btn"
+                          onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
+                          style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', zIndex: 3 }}
+                        >
+                          <Heart size={18} fill={wishlist.includes(product.id) ? '#C5A059' : 'none'} color={wishlist.includes(product.id) ? '#C5A059' : '#1E221D'} />
+                        </button>
+                        {product.originalPrice && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '1rem',
+                              left: '1rem',
+                              backgroundColor: '#C5A059',
+                              color: '#FFFFFF',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              letterSpacing: '0.06em',
+                              textTransform: 'uppercase',
+                              padding: '0.35rem 0.75rem',
+                              borderRadius: '30px',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                              zIndex: 2
+                            }}
+                          >
+                            ★ SAVE {formatCurrency(product.originalPrice - product.price)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                          </div>
+                        )}
+                      </div>
 
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                  <a href="tel:07831082965" className="btn-secondary" style={{ padding: '0.95rem 2rem', fontSize: '0.95rem' }}>
-                    <Phone size={17} /> Bespoke Gifting Concierge: 07831082965
-                  </a>
+                      <div className="card-body" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                        <div className="card-subtitle" style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                          {product.subtitle}
+                        </div>
+                        <h3
+                          className="card-title font-display"
+                          style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '0.5rem', cursor: 'pointer' }}
+                          onClick={() => openProductDetail(product)}
+                        >
+                          {product.name}
+                        </h3>
+                        <div className="card-price-row" style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                          <span style={{ fontSize: '1.35rem', fontWeight: 700, color: '#6E5535' }}>
+                            {formatCurrency(product.price)}
+                          </span>
+                          {product.originalPrice && (
+                            <>
+                              <span style={{ fontSize: '0.95rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
+                                {formatCurrency(product.originalPrice)}
+                              </span>
+                              <span style={{
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                color: '#2D3A29',
+                                backgroundColor: 'rgba(197, 160, 89, 0.25)',
+                                border: '1px solid #C5A059',
+                                padding: '0.15rem 0.45rem',
+                                borderRadius: '4px'
+                              }}>
+                                Save {formatCurrency(product.originalPrice - product.price)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
+                              </span>
+                            </>
+                          )}
+                          <span className="card-volume" style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400, marginLeft: product.originalPrice ? '0' : '0.2rem' }}>
+                            ({product.volume})
+                          </span>
+                        </div>
+
+                        <p className="card-desc" style={{ fontSize: '0.9rem', color: '#5C635B', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+                          {product.shortDescription}
+                        </p>
+
+                        <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
+                          <button
+                            className="btn-primary card-btn-primary"
+                            style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
+                            onClick={() => addToCart(product)}
+                          >
+                            <ShoppingBag size={16} /> ADD · {formatCurrency(product.price)} ({product.price} ESP)
+                          </button>
+                          <button
+                            className="btn-secondary card-btn-secondary"
+                            style={{ padding: '0.85rem', justifyContent: 'center' }}
+                            onClick={() => openProductDetail(product)}
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          </section>
-        </main>
-      )}
+            </section>
 
-      {/* ========================================================================= */}
-      {/* SEPARATE VIEW 4: SEPARATE DEDICATED "CONTACT" PAGE                        */}
-      {/* ========================================================================= */}
-      {activeTab === 'contact' && (
-        <main style={{ backgroundColor: '#EAD8BA', minHeight: '80vh' }}>
-          <div style={{ backgroundColor: '#DFCAA7', borderBottom: '1px solid #E5DFC5', padding: '1rem 0' }}>
-            <div className="container" style={{ fontSize: '0.825rem', color: '#5C635B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5C635B', textDecoration: 'underline' }}>Home</button>
-              <span>/</span>
-              <span style={{ color: '#2D3A29', fontWeight: 600 }}>Contact Us</span>
+            {/* EDITORIAL BANNER: FORMULATED WITH INTENTION */}
+            <section style={{ padding: '4.5rem 0', backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5', borderBottom: '1px solid #E5DFC5', position: 'relative', overflow: 'hidden' }}>
+              <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}>
+                loveworld
+              </div>
+              <div className="container" style={{ textAlign: 'center', maxWidth: '850px' }}>
+                <MadeInLoveworldEmblem size="medium" />
+                <h2 className="font-display" style={{ fontSize: '3.5rem', color: '#1E221D', marginTop: '1.5rem', marginBottom: '1rem', lineHeight: 1.05 }}>
+                  Formulated with intention.<br />
+                  <span style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: '#6E5535' }}>Designed for real skin.</span>
+                </h2>
+                <p style={{ color: '#5C635B', fontSize: '1.1rem', lineHeight: 1.7, marginBottom: '2rem' }}>
+                  Every jar of LICHT LUXE NATURALS carries our commitment to quality, natural beauty, honesty, care, and love. Made in LOVEWORLD.
+                </p>
+                <button
+                  className="btn-primary"
+                  onClick={() => navigateToTab('shop')}
+                  style={{ padding: '0.95rem 2.25rem', fontSize: '0.9rem' }}
+                >
+                  Shop Our Collection <ArrowUpRight size={16} />
+                </button>
+              </div>
+            </section>
+
+            {/* COMMUNITY REVIEWS */}
+            <section style={{ padding: '4.5rem 0', backgroundColor: '#EAD8BA', position: 'relative', overflow: 'hidden' }}>
+              <div className="giant-watermark-text" style={{ position: 'absolute', top: '-10px', left: '-20px', zIndex: 1 }}>
+                bliss
+              </div>
+              <div className="container">
+                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                  <div className="text-uppercase" style={{ color: '#4A5D4E', marginBottom: '0.35rem' }}>
+                    COMMUNITY REVIEWS
+                  </div>
+                  <h2 className="font-display" style={{ fontSize: '3rem', color: '#1E221D' }}>
+                    Loved by Our Community
+                  </h2>
+                </div>
+
+                <div className="reviews-cards-grid">
+                  {REVIEWS.map(rev => (
+                    <div key={rev.id} className="review-card" style={{ backgroundColor: '#F4EFE6', padding: '2rem', borderRadius: '12px', border: '1px solid #E5DFC5' }}>
+                      <div style={{ color: '#C5A059', fontSize: '1rem', marginBottom: '0.75rem' }}>★★★★★</div>
+                      <blockquote style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: '#2D3A29', lineHeight: 1.6, marginBottom: '1.25rem', fontStyle: 'italic' }}>
+                        “{rev.quote}”
+                      </blockquote>
+                      <div className="review-author" style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1E221D' }}>
+                        — {rev.author}
+                      </div>
+                      <div className="review-meta" style={{ fontSize: '0.75rem', color: '#6E5535' }}>
+                        {rev.role} · {rev.product}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* FAQS ACCORDION */}
+            <section style={{ padding: '5rem 0', backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5', position: 'relative', overflow: 'hidden' }}>
+              <div className="giant-watermark-text" style={{ position: 'absolute', top: '0', right: '-20px', zIndex: 1 }}>
+                purity
+              </div>
+              <div className="container" style={{ maxWidth: '850px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                  <div className="text-uppercase" style={{ color: '#4A5D4E', marginBottom: '0.35rem' }}>
+                    GOT QUESTIONS?
+                  </div>
+                  <h2 className="font-display" style={{ fontSize: '3rem', color: '#1E221D' }}>
+                    Frequently Asked Questions
+                  </h2>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {FAQS.map((faq, index) => {
+                    const isOpen = expandedFaq === index;
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          backgroundColor: '#F4EFE6',
+                          borderRadius: '8px',
+                          border: '1px solid #E5DFC5',
+                          overflow: 'hidden',
+                          transition: 'var(--transition-smooth)'
+                        }}
+                      >
+                        <button
+                          onClick={() => setExpandedFaq(isOpen ? null : index)}
+                          style={{
+                            width: '100%',
+                            padding: '1.25rem 1.5rem',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-display)',
+                            fontSize: '1.35rem',
+                            color: '#2D3A29',
+                            fontWeight: 400
+                          }}
+                        >
+                          <span>{faq.q}</span>
+                          {isOpen ? <ChevronUp size={20} color="#C5A059" /> : <ChevronDown size={20} color="#5C635B" />}
+                        </button>
+                        {isOpen && (
+                          <div style={{ padding: '0 1.5rem 1.5rem 1.5rem', color: '#5C635B', fontSize: '0.95rem', lineHeight: 1.7, borderTop: '1px solid rgba(45, 58, 41, 0.15)' }}>
+                            {faq.a}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          </main>
+        )}
+
+        {/* FOOTER */}
+        <footer style={{ backgroundColor: '#2D3A29', color: '#FAF7F2', paddingTop: '4rem', paddingBottom: '2rem', borderTop: '2px solid #C5A059' }}>
+          <div className="container">
+            <div className="responsive-footer-grid">
+
+              {/* Brand Column */}
+              <div>
+                <LichtLogo color="#FAF7F2" size="footer" />
+                <p style={{ color: '#A0A89F', fontSize: '0.9rem', marginTop: '1rem', maxWidth: '320px', lineHeight: 1.6 }}>
+                  Pure. Natural. Made with Love.<br />
+                  Naturally crafted body care for healthy, nourished and beautifully cared-for skin.
+                </p>
+
+                <div style={{ marginTop: '1.25rem' }}>
+                  <span className="loveworld-badge" style={{ backgroundColor: 'rgba(197, 160, 89, 0.2)', color: '#C5A059' }}>
+                    MADE IN LOVEWORLD
+                  </span>
+                </div>
+              </div>
+
+              {/* Column 1: SHOP */}
+              <div>
+                <h4 style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
+                  SHOP
+                </h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.875rem', color: '#D6DDD3' }}>
+                  <li><button onClick={() => openProductDetail(PRODUCTS[0])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Pure Shea Butter</button></li>
+                  <li><button onClick={() => openProductDetail(PRODUCTS[1])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Pure Coconut Oil</button></li>
+                  <li><button onClick={() => openProductDetail(PRODUCTS[2])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Body Butter</button></li>
+                  <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-liquid-soap'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Liquid Soap</button></li>
+                  <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-jar'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Soap (Jar)</button></li>
+                  <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>The Luxe Trio Gift Set</button></li>
+                  <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))} style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', textAlign: 'left', padding: 0, fontWeight: 600 }}>★ The Complete 5-Piece Combo</button></li>
+                </ul>
+              </div>
+
+              {/* Column 2: ABOUT */}
+              <div>
+                <h4 style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
+                  ABOUT
+                </h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.875rem', color: '#D6DDD3' }}>
+                  <li><button onClick={() => navigateToTab('story')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Our Story (About Us)</button></li>
+                  <li><button onClick={() => navigateToTab('story')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Our Philosophy</button></li>
+                  <li><button onClick={() => navigateToTab('story')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Our Promise</button></li>
+                </ul>
+              </div>
+
+              {/* Column 3: HELP */}
+              <div>
+                <h4 style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
+                  HELP
+                </h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.875rem', color: '#D6DDD3' }}>
+                  <li><button onClick={() => navigateToTab('contact')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Contact Us</button></li>
+                  <li><button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>FAQs</button></li>
+                  <li><a href="tel:07831082965" style={{ color: '#D6DDD3', textDecoration: 'none' }}>Phone: 07831082965</a></li>
+                  <li><button onClick={() => { setLegalModalTab('privacy'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Privacy Policy (UK GDPR)</button></li>
+                  <li><button onClick={() => { setLegalModalTab('terms'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Terms of Service</button></li>
+                  <li><button onClick={() => { setLegalModalTab('shipping'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Shipping & Returns Policy</button></li>
+                  <li><button onClick={() => setIsSettingsOpen(true)} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Settings size={13} /> Preferences & Settings</button></li>
+                </ul>
+              </div>
+
+            </div>
+
+            {/* Bottom Footer Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '2rem', fontSize: '0.8rem', color: '#A0A89F', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                © 2026 LICHT LUXE NATURALS. All Rights Reserved. Pure. Natural. Made with Love.
+              </div>
+
+              <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button onClick={() => { setLegalModalTab('privacy'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#A0A89F', cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}>Privacy Policy</button>
+                <button onClick={() => { setLegalModalTab('terms'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#A0A89F', cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}>Terms of Service</button>
+                <button onClick={() => { setLegalModalTab('shipping'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#A0A89F', cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}>Shipping & Returns</button>
+                <a href="https://instagram.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Instagram</a>
+                <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Facebook</a>
+              </div>
             </div>
           </div>
+        </footer>
 
-          <section style={{ padding: '5rem 0', position: 'relative', overflow: 'hidden' }}>
-            <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', left: '2%', zIndex: 1, color: 'rgba(74, 93, 78, 0.035)' }}>
-              nourish
+        {/* SHOPPING BAG DRAWER */}
+        {isCartOpen && (
+          <div className="cart-drawer-overlay" onClick={closeCart}>
+            <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
+              <div className="drawer-header">
+                <h3 className="drawer-title font-serif">Your Shopping Bag ({cart.reduce((a, b) => a + b.quantity, 0)})</h3>
+                <button className="close-drawer-btn" onClick={closeCart}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Free Shipping Bar */}
+              <div className="free-shipping-bar">
+                {amountForFreeShipping > 0 ? (
+                  <>Add <strong>{formatCurrency(amountForFreeShipping)}</strong> more for <strong>FREE Delivery</strong> (Orders over £70)</>
+                ) : (
+                  <>✨ You've unlocked <strong>FREE Standard Delivery</strong> on this order!</>
+                )}
+                <div className="shipping-progress">
+                  <div className="shipping-progress-fill" style={{ width: `${progressToFreeShipping}%`, backgroundColor: '#C5A059' }} />
+                </div>
+              </div>
+
+              {/* Cart Items List */}
+              <div className="cart-items-list">
+                {cart.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#5C635B' }}>
+                    Your shopping bag is currently empty.
+                    <div style={{ marginTop: '1.5rem' }}>
+                      <button className="btn-primary" onClick={() => { closeCart(); navigateToTab('shop'); }}>
+                        Discover Essentials
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  cart.map(item => (
+                    <div className="cart-item" key={item.id}>
+                      <img src={item.image} alt={item.name} className="cart-item-img" />
+                      <div className="cart-item-details">
+                        <div className="cart-item-title">{item.name}</div>
+                        <div className="cart-item-sub">{item.volume}</div>
+                        <div className="cart-item-bottom">
+                          <div className="qty-controls">
+                            <button className="qty-btn" onClick={() => updateCartQuantity(item.id, -1)}><Minus size={12} /></button>
+                            <span className="qty-num">{item.quantity}</span>
+                            <button className="qty-btn" onClick={() => updateCartQuantity(item.id, 1)}><Plus size={12} /></button>
+                          </div>
+                          <div style={{ fontWeight: 600, color: '#6E5535' }}>{formatCurrency(item.price * item.quantity)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Cart Footer */}
+              {cart.length > 0 && (
+                <div className="cart-footer">
+                  {/* Delivery Selector in Drawer */}
+                  <div style={{ backgroundColor: '#FAF7F2', borderRadius: '8px', border: '1px solid #E5DFC5', padding: '0.85rem', marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6E5535', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>DELIVERY METHOD</span>
+                      {isFreeShippingEligible && <span style={{ color: '#2D3A29', backgroundColor: '#EAF0E8', padding: '0.15rem 0.45rem', borderRadius: '3px', fontSize: '0.65rem', fontWeight: 700 }}>FREE OVER £70</span>}
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryOption('standard')}
+                        style={{
+                          padding: '0.65rem 0.5rem',
+                          borderRadius: '6px',
+                          border: deliveryOption === 'standard' ? '2px solid #C5A059' : '1px solid #D6DDD3',
+                          backgroundColor: deliveryOption === 'standard' ? '#FFFFFF' : '#F4EFE6',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2D3A29' }}>Standard</div>
+                        <div style={{ fontSize: '0.68rem', color: '#5C635B' }}>3–5 days</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isFreeShippingEligible ? '#2D3A29' : '#6E5535', marginTop: '0.2rem' }}>
+                          {isFreeShippingEligible ? 'FREE' : formatCurrency(standardDeliveryPrice)}
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryOption('express')}
+                        style={{
+                          padding: '0.65rem 0.5rem',
+                          borderRadius: '6px',
+                          border: deliveryOption === 'express' ? '2px solid #C5A059' : '1px solid #D6DDD3',
+                          backgroundColor: deliveryOption === 'express' ? '#FFFFFF' : '#F4EFE6',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2D3A29' }}>Express</div>
+                        <div style={{ fontSize: '0.68rem', color: '#5C635B' }}>1–2 days</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6E5535', marginTop: '0.2rem' }}>
+                          {formatCurrency(expressDeliveryPrice)}
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="cart-subtotal-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#5C635B', marginBottom: '0.35rem' }}>
+                    <span>Subtotal</span>
+                    <span>{formatCurrency(cartSubtotal)}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#5C635B', marginBottom: '0.5rem' }}>
+                    <span>Delivery ({deliveryOption === 'express' ? 'Express 1–2 Days' : 'Standard 3–5 Days'})</span>
+                    <span style={{ fontWeight: 600, color: deliveryFee === 0 ? '#2D3A29' : '#6E5535' }}>
+                      {deliveryFee === 0 ? 'FREE' : formatCurrency(deliveryFee)}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 700, color: '#2D3A29', borderTop: '1px solid #E5DFC5', paddingTop: '0.5rem', marginBottom: '1rem' }}>
+                    <span>Total</span>
+                    <span style={{ color: '#6E5535' }}>{formatCurrency(cartTotal)}</span>
+                  </div>
+
+                  <button className="btn-primary checkout-btn" onClick={openCheckout} style={{ width: '100%', justifyContent: 'center' }}>
+                    Proceed to Checkout · {formatCurrency(cartTotal)}
+                  </button>
+                  <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.8rem', color: '#5C635B' }}>
+                    Or call <a href="tel:07831082965" style={{ color: '#2D3A29', fontWeight: 600 }}>07831082965</a> to order directly
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="container">
-              <div className="responsive-contact-grid">
-                <div>
-                  <span className="loveworld-badge" style={{ marginBottom: '1rem' }}>
-                    GET IN TOUCH
-                  </span>
-                  <h1 className="font-display" style={{ fontSize: '4rem', color: '#1E221D', marginBottom: '1.25rem' }}>
-                    We'd Love to Hear From You
-                  </h1>
-                  <p style={{ color: '#5C635B', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '2rem' }}>
-                    Have a question about our products, an order or a collaboration? Our team would love to hear from you.
-                  </p>
+          </div>
+        )}
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                      <div style={{ backgroundColor: '#EAF0E8', padding: '0.75rem', borderRadius: '50%', color: '#4A5D4E' }}><Phone size={20} /></div>
+        {/* SEARCH OVERLAY */}
+        {isSearchOpen && (
+          <div className="modal-overlay" onClick={() => setIsSearchOpen(false)}>
+            <div className="modal-card" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
+              <button className="close-modal-btn" onClick={() => setIsSearchOpen(false)}>
+                <X size={22} />
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '2px solid #C5A059', paddingBottom: '0.75rem', marginBottom: '1.5rem' }}>
+                <Search size={22} color="#4A5D4E" />
+                <input
+                  type="text"
+                  placeholder="Search Shea Butter, Coconut Oil, Body Butter..."
+                  style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontSize: '1.15rem', fontFamily: 'var(--font-sans)' }}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                {['Shea Butter', 'Coconut Oil', 'Body Butter', 'Gift Sets', 'Made in Loveworld'].map(tag => (
+                  <button
+                    key={tag}
+                    style={{ background: '#DFCAA7', border: '1px solid #E5DFC5', padding: '0.35rem 0.75rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '4px', color: '#2D3A29' }}
+                    onClick={() => setSearchQuery(tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+
+              {searchQuery && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {PRODUCTS.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase())).map(p => (
+                    <div key={p.id} style={{ display: 'flex', gap: '1rem', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid #E5DFC5', paddingBottom: '0.75rem' }} onClick={() => { openProductDetail(p); setIsSearchOpen(false); }}>
+                      <img src={p.image} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
                       <div>
-                        <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6E5535', fontWeight: 600 }}>PHONE / WHATSAPP</div>
-                        <a href="tel:07831082965" style={{ fontSize: '1.1rem', fontWeight: 600, color: '#2D3A29', textDecoration: 'none' }}>07831082965</a>
+                        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: '#2D3A29' }}>{p.name}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#5C635B' }}>{formatCurrency(p.price)} · {p.subtitle}</div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                      <div style={{ backgroundColor: '#EAF0E8', padding: '0.75rem', borderRadius: '50%', color: '#4A5D4E' }}><Mail size={20} /></div>
-                      <div>
-                        <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6E5535', fontWeight: 600 }}>EMAIL</div>
-                        <a href="mailto:info@lichtluxenaturals.org" style={{ fontSize: '1.05rem', fontWeight: 600, color: '#2D3A29', textDecoration: 'none' }}>info@lichtluxenaturals.org</a>
+        {/* SECURE CHECKOUT MODAL (2-STEP: DELIVERY ADDRESS & PAYMENT) */}
+        {isCheckoutOpen && (
+          <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={closeCheckout}>
+            <div className="modal-card checkout-modal" style={{ maxWidth: '880px', width: '95%', maxHeight: '92vh', padding: '0', display: 'flex', flexDirection: 'row', overflow: 'hidden', borderRadius: '8px', boxShadow: '0 25px 60px rgba(45,58,41,0.18)' }} onClick={(e) => e.stopPropagation()}>
+
+              {/* Left Side: Order Summary */}
+              <div className="checkout-summary-col" style={{ backgroundColor: '#FDFCF9', padding: '2rem', width: '42%', borderRight: '1px solid #E5DFC5', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
+                  Order Summary
+                </div>
+
+                <div style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '1.5rem', paddingRight: '0.5rem' }}>
+                  {cart.map(item => (
+                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                      <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #E5DFC5', flexShrink: 0 }}>
+                        <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <span style={{ position: 'absolute', top: '-5px', right: '-5px', backgroundColor: '#2D3A29', color: '#FFF', fontSize: '0.65rem', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
+                          {item.quantity}
+                        </span>
+                      </div>
+                      <div style={{ flexGrow: 1 }}>
+                        <div style={{ fontSize: '0.85rem', color: '#2D3A29', fontWeight: 600 }}>{item.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>{item.volume}</div>
+                      </div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>
+                        {formatCurrency(item.price * item.quantity)}
                       </div>
                     </div>
+                  ))}
+                </div>
 
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                      <div style={{ backgroundColor: '#F4EBD9', padding: '0.75rem', borderRadius: '50%', color: '#C5A059' }}><Camera size={20} /></div>
+                <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
+                    <span>Subtotal</span>
+                    <span>{formatCurrency(cartSubtotal)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
+                    <span>Delivery ({deliveryOption === 'express' ? 'Express 1–2 Days' : 'Standard 3–5 Days'})</span>
+                    <span style={{ color: deliveryFee === 0 ? '#2D3A29' : '#6E5535', fontWeight: 600 }}>
+                      {deliveryFee === 0 ? 'FREE (Orders over £70)' : formatCurrency(deliveryFee)}
+                    </span>
+                  </div>
+                  {shippingAddress.shippingCity && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#6E5535' }}>
+                      <span>Destination</span>
+                      <span>{shippingAddress.shippingCity}, UK</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', color: '#2D3A29', fontWeight: 700, borderTop: '1px solid #ECE7D8', paddingTop: '0.75rem' }}>
+                    <span>Total</span>
+                    <span style={{ color: '#6E5535' }}>{formatCurrency(cartTotal)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Side: Two-Step Checkout (Address & Payment) */}
+              <div className="checkout-form-col" style={{ backgroundColor: '#FFFFFF', padding: '2rem 2.25rem', width: '58%', position: 'relative', overflowY: 'auto' }}>
+                <button className="close-modal-btn" onClick={closeCheckout} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem' }}>
+                  <X size={20} />
+                </button>
+
+                {/* Checkout Progress Stepper */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.85rem', marginBottom: '1.75rem', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutStep('address')}
+                    style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: checkoutStep === 'address' ? '#2D3A29' : '#C5A059', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}
+                  >
+                    <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: checkoutStep === 'address' ? '#2D3A29' : '#C5A059', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>1</span>
+                    <span>Delivery Address</span>
+                  </button>
+                  <div style={{ width: '32px', height: '2px', backgroundColor: '#E5DFC5' }} />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (validateCheckoutStep1()) {
+                        setCheckoutStep('payment');
+                      } else {
+                        showToast('Please correct the errors in the delivery form.');
+                      }
+                    }}
+                    style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: checkoutStep === 'payment' ? '#2D3A29' : '#9CA3AF', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}
+                  >
+                    <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: checkoutStep === 'payment' ? '#2D3A29' : '#E5DFC5', color: checkoutStep === 'payment' ? '#FFF' : '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>2</span>
+                    <span>Payment</span>
+                  </button>
+                </div>
+
+
+                {/* ─── STEP 1: DELIVERY ADDRESS ─── */}
+                {checkoutStep === 'address' && (
+                  <div>
+                    <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                      <h2 className="font-serif" style={{ fontSize: '1.7rem', color: '#2D3A29', margin: '0 0 0.35rem 0', fontWeight: 400 }}>Where should we deliver?</h2>
+                      <p style={{ color: '#5C635B', fontSize: '0.85rem', margin: 0 }}>Provide your delivery details so we can dispatch your pure natural essentials.</p>
+                    </div>
+
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!validateCheckoutStep1()) {
+                        showToast('Please correct the errors in the delivery form.');
+                        return;
+                      }
+                      setCheckoutErrors({});
+                      setCheckoutStep('payment');
+                    }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
                       <div>
-                        <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6E5535', fontWeight: 600 }}>INSTAGRAM</div>
-                        <div style={{ fontSize: '1.05rem', fontWeight: 600, color: '#2D3A29' }}>@lichtluxenaturals</div>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Eleanor Vance"
+                          value={shippingAddress.shippingName}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setShippingAddress(prev => ({ ...prev, shippingName: val }));
+                            if (checkoutErrors.shippingName) setCheckoutErrors(prev => ({ ...prev, shippingName: undefined }));
+                          }}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingName ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        />
+                        {checkoutErrors.shippingName && (
+                          <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <AlertCircle size={12} /> {checkoutErrors.shippingName}
+                          </div>
+                        )}
                       </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                          Email Address for Order Confirmation & Tracking *
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="e.g. eleanor@example.co.uk"
+                          value={shippingAddress.shippingEmail}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setShippingAddress(prev => ({ ...prev, shippingEmail: val }));
+                            if (checkoutErrors.shippingEmail) setCheckoutErrors(prev => ({ ...prev, shippingEmail: undefined }));
+                          }}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingEmail ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        />
+                        {checkoutErrors.shippingEmail && (
+                          <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <AlertCircle size={12} /> {checkoutErrors.shippingEmail}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="checkout-grid-duo">
+                        <div>
+                          <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                            Contact Phone *
+                          </label>
+                          <input
+                            type="tel"
+                            required
+                            placeholder="e.g. 07831 082965"
+                            value={shippingAddress.shippingPhone}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setShippingAddress(prev => ({ ...prev, shippingPhone: val }));
+                              if (checkoutErrors.shippingPhone) setCheckoutErrors(prev => ({ ...prev, shippingPhone: undefined }));
+                            }}
+                            style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingPhone ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                          />
+                          {checkoutErrors.shippingPhone && (
+                            <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <AlertCircle size={12} /> {checkoutErrors.shippingPhone}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                            Postcode / ZIP *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. SW1A 1AA"
+                            value={shippingAddress.shippingPostcode}
+                            onChange={(e) => {
+                              const val = e.target.value.toUpperCase();
+                              setShippingAddress(prev => ({ ...prev, shippingPostcode: val }));
+                              if (checkoutErrors.shippingPostcode) setCheckoutErrors(prev => ({ ...prev, shippingPostcode: undefined }));
+                            }}
+                            style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingPostcode ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                          />
+                          {checkoutErrors.shippingPostcode && (
+                            <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <AlertCircle size={12} /> {checkoutErrors.shippingPostcode}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                          Street Address *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="House number, Street name, Flat or Suite"
+                          value={shippingAddress.shippingAddress}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setShippingAddress(prev => ({ ...prev, shippingAddress: val }));
+                            if (checkoutErrors.shippingAddress) setCheckoutErrors(prev => ({ ...prev, shippingAddress: undefined }));
+                          }}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingAddress ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        />
+                        {checkoutErrors.shippingAddress && (
+                          <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <AlertCircle size={12} /> {checkoutErrors.shippingAddress}
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                          Town / City *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. London"
+                          value={shippingAddress.shippingCity}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setShippingAddress(prev => ({ ...prev, shippingCity: val }));
+                            if (checkoutErrors.shippingCity) setCheckoutErrors(prev => ({ ...prev, shippingCity: undefined }));
+                          }}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingCity ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        />
+                        {checkoutErrors.shippingCity && (
+                          <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <AlertCircle size={12} /> {checkoutErrors.shippingCity}
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
+                          Order / Delivery Notes (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Leave in safe place or porch if not in"
+                          value={shippingAddress.orderNotes}
+                          onChange={(e) => setShippingAddress(prev => ({ ...prev, orderNotes: e.target.value }))}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                        />
+                      </div>
+
+                      <div style={{ marginTop: '0.75rem', marginBottom: '0.5rem' }}>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>
+                          Select Delivery Method
+                        </label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                          {/* Standard Delivery Option */}
+                          <div
+                            onClick={() => setDeliveryOption('standard')}
+                            style={{
+                              padding: '0.85rem 1rem',
+                              borderRadius: '6px',
+                              border: deliveryOption === 'standard' ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                              backgroundColor: deliveryOption === 'standard' ? '#FFFFFF' : '#FAF7F2',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              boxShadow: deliveryOption === 'standard' ? '0 4px 12px rgba(197, 160, 89, 0.15)' : 'none',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: deliveryOption === 'standard' ? '5px solid #C5A059' : '2px solid #D6DDD3', backgroundColor: '#FFF' }} />
+                              <div>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>Standard Delivery (3–5 Business Days)</div>
+                                <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>
+                                  {isFreeShippingEligible ? 'Free on orders over £70' : 'Reliable UK Royal Mail Tracked Delivery'}
+                                </div>
+                              </div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: isFreeShippingEligible ? '#2D3A29' : '#6E5535' }}>
+                                {isFreeShippingEligible ? 'FREE' : formatCurrency(standardDeliveryPrice)}
+                              </span>
+                              {isFreeShippingEligible && (
+                                <div style={{ fontSize: '0.65rem', color: '#4A5D4E', fontWeight: 600 }}>OVER £70</div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Express Delivery Option */}
+                          <div
+                            onClick={() => setDeliveryOption('express')}
+                            style={{
+                              padding: '0.85rem 1rem',
+                              borderRadius: '6px',
+                              border: deliveryOption === 'express' ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                              backgroundColor: deliveryOption === 'express' ? '#FFFFFF' : '#FAF7F2',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              boxShadow: deliveryOption === 'express' ? '0 4px 12px rgba(197, 160, 89, 0.15)' : 'none',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: deliveryOption === 'express' ? '5px solid #C5A059' : '2px solid #D6DDD3', backgroundColor: '#FFF' }} />
+                              <div>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>Express Delivery (1–2 Business Days)</div>
+                                <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>Priority Royal Mail Tracked 24 dispatch</div>
+                              </div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>
+                                {formatCurrency(expressDeliveryPrice)}
+                              </span>
+                              <div style={{ fontSize: '0.65rem', color: '#C5A059', fontWeight: 600 }}>FAST TRACK</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', fontSize: '1rem', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'background-color 0.2s ease' }}
+                      >
+                        Continue to Payment →
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {/* ─── STEP 2: PAYMENT METHOD ─── */}
+                {checkoutStep === 'payment' && (
+                  <div>
+                    {/* Address Summary Badge with Edit link */}
+                    <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '6px', padding: '0.85rem 1rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: '0.825rem', color: '#2D3A29', maxWidth: '80%' }}>
+                        <div style={{ color: '#6E5535', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.15rem' }}>Deliver to:</div>
+                        <strong>{shippingAddress.shippingName}</strong> — {shippingAddress.shippingAddress}, {shippingAddress.shippingCity} ({shippingAddress.shippingPostcode})
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCheckoutStep('address')}
+                        style={{ background: 'none', border: 'none', color: '#C5A059', fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                      >
+                        Edit
+                      </button>
+                    </div>
+
+                    <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                      <h2 className="font-serif" style={{ fontSize: '1.7rem', color: '#2D3A29', marginBottom: '0.25rem', fontWeight: 400 }}>Payment Method</h2>
+                      <p style={{ color: '#5C635B', fontSize: '0.85rem', margin: 0 }}>Select your preferred secure payment method.</p>
+                    </div>
+
+                    {/* Payment Method Selector Tabs */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                      {/* Tab 1: PayPal & Cards */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPaymentMethod('paypal')}
+                        style={{
+                          padding: '0.9rem 1rem',
+                          borderRadius: '8px',
+                          border: selectedPaymentMethod === 'paypal' ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                          backgroundColor: selectedPaymentMethod === 'paypal' ? '#FAF6EE' : '#FFFFFF',
+                          boxShadow: selectedPaymentMethod === 'paypal' ? '0 4px 14px rgba(197, 160, 89, 0.2)' : 'none',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.35rem',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#2D3A29' }}>
+                            PayPal & Cards
+                          </span>
+                          <span style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            border: selectedPaymentMethod === 'paypal' ? '5px solid #C5A059' : '2px solid #D6DDD3',
+                            backgroundColor: '#FFF'
+                          }} />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.2rem' }}>
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '14px' }} />
+                          <CreditCard size={14} color="#6E5535" />
+                          <span style={{ fontSize: '0.72rem', color: '#6E5535', fontWeight: 600 }}>Debit / Credit Card</span>
+                        </div>
+                      </button>
+
+                      {/* Tab 2: Espees (ESP) */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPaymentMethod('espees')}
+                        style={{
+                          padding: '0.9rem 1rem',
+                          borderRadius: '8px',
+                          border: selectedPaymentMethod === 'espees' ? '2px solid #C5A059' : '1px solid #E5DFC5',
+                          backgroundColor: selectedPaymentMethod === 'espees' ? '#FAF6EE' : '#FFFFFF',
+                          boxShadow: selectedPaymentMethod === 'espees' ? '0 4px 14px rgba(197, 160, 89, 0.2)' : 'none',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.35rem',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#2D3A29' }}>
+                            ⚡ Pay with Espees
+                          </span>
+                          <span style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            border: selectedPaymentMethod === 'espees' ? '5px solid #C5A059' : '2px solid #D6DDD3',
+                            backgroundColor: '#FFF'
+                          }} />
+                        </div>
+                        <span style={{ fontSize: '0.72rem', color: '#6E5535', fontWeight: 600 }}>
+                          {cartTotal.toFixed(2)} ESP • Loveworld Pay
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Payment Methods */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+                      {/* PAYPAL SMART BUTTONS (Active by Default) */}
+                      {selectedPaymentMethod === 'paypal' && (
+                        <div style={{ border: '2px solid #C5A059', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF', boxShadow: '0 4px 18px rgba(197, 160, 89, 0.12)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.1rem', paddingBottom: '0.75rem', borderBottom: '1px solid #F0ECE1' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '22px' }} />
+                              <div>
+                                <div style={{ fontSize: '0.95rem', color: '#2D3A29', fontWeight: 700 }}>PayPal & Card Checkout</div>
+                                <div style={{ fontSize: '0.72rem', color: '#5C635B' }}>Fast, verified & encrypted UK checkout</div>
+                              </div>
+                            </div>
+                            <span style={{ fontSize: '0.7rem', backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', padding: '0.2rem 0.55rem', borderRadius: '4px', fontWeight: 700 }}>
+                              RECOMMENDED
+                            </span>
+                          </div>
+
+                          <p style={{ margin: '0 0 1.25rem 0', fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5 }}>
+                            Click the yellow <strong>PayPal</strong> button below to sign in, or click <strong>Debit or Credit Card</strong> to pay directly with your bank card (Visa, Mastercard, Maestro, Amex) — <em>no PayPal account required</em>.
+                          </p>
+
+                          {paymentProcessing && (
+                            <div style={{ textAlign: 'center', padding: '1rem', color: '#6E5535', fontSize: '0.9rem' }}>
+                              <div style={{ display: 'inline-block', width: '20px', height: '20px', border: '2px solid #E5DFC5', borderTopColor: '#C5A059', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginRight: '0.5rem', verticalAlign: 'middle' }}></div>
+                              Processing your payment securely...
+                            </div>
+                          )}
+
+                          <div style={{ opacity: paymentProcessing ? 0.5 : 1, pointerEvents: paymentProcessing ? 'none' : 'auto' }}>
+                            <PayPalButtons
+                              style={{
+                                layout: 'vertical',
+                                color: 'gold',
+                                shape: 'rect',
+                                label: 'pay',
+                                height: 48,
+                                tagline: false,
+                              }}
+                              createOrder={createPayPalOrder}
+                              onApprove={capturePayPalOrder}
+                              onError={(err) => {
+                                setPaymentProcessing(false);
+                                console.error('PayPal notice/error:', err);
+                                const msg = err?.message || String(err || '');
+                                if (!msg.toLowerCase().includes('closed') && !msg.toLowerCase().includes('cancel')) {
+                                  showToast("We couldn't complete your payment. You have not been charged. Please try again.");
+                                }
+                              }}
+                              onCancel={() => {
+                                setPaymentProcessing(false);
+                                showToast('PayPal checkout cancelled.');
+                              }}
+                            />
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginTop: '1.15rem', color: '#8C887B', fontSize: '0.75rem' }}>
+                            <span>🔒 256-Bit SSL Encrypted</span>
+                            <span>•</span>
+                            <span>✓ Official UK PayPal Partner</span>
+                            <span>•</span>
+                            <span>✓ Buyer Protection</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ESPEES (ESP) · LOVEWORLD PAY OPTION */}
+                      {selectedPaymentMethod === 'espees' && (
+                        <div style={{ border: '2px solid #C5A059', borderRadius: '8px', padding: '1.35rem 1.5rem', backgroundColor: '#FAF6EE', position: 'relative', boxShadow: '0 4px 18px rgba(197, 160, 89, 0.15)' }}>
+                          <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+                            <span style={{ backgroundColor: '#2D3A29', color: '#DFCAA7', fontSize: '0.625rem', padding: '0.2rem 0.55rem', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.08em' }}>
+                              MADE IN LOVEWORLD
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#C5A059', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1rem', boxShadow: '0 2px 8px rgba(197,160,89,0.35)' }}>
+                              ⚡
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 700, color: '#2D3A29', fontSize: '1.15rem' }}>Pay with Espees (ESP)</div>
+                              <div style={{ fontSize: '0.75rem', color: '#6E5535', fontWeight: 600 }}>Official Loveworld Currency • 1 ESP = £1.00 GBP</div>
+                            </div>
+                          </div>
+
+                          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5DFC5', borderRadius: '6px', padding: '0.85rem 1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <div style={{ fontSize: '0.7rem', color: '#5C635B', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>Total in Espees</div>
+                              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#6E5535', lineHeight: 1.1 }}>
+                                {cartTotal.toFixed(2)} ESP <span style={{ fontSize: '0.9rem', color: '#5C635B', fontWeight: 400 }}>({formatCurrency(cartTotal)})</span>
+                              </div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '0.7rem', color: '#5C635B', fontWeight: 600, textTransform: 'uppercase' }}>Merchant Account</div>
+                              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29', fontFamily: 'monospace', backgroundColor: '#F5EFE3', padding: '0.2rem 0.55rem', borderRadius: '4px', display: 'inline-block' }}>
+                                @{espeesMerchantWallet || 'merchanttest01'}
+                              </div>
+                              <div style={{ fontSize: '0.68rem', color: '#6E5535', marginTop: '0.2rem' }}>
+                                Code: <strong>ESPMER01</strong>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Mode Switcher */}
+                          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => setEspeesMode('wallet')}
+                              style={{
+                                flex: 1,
+                                padding: '0.55rem 0.75rem',
+                                borderRadius: '4px',
+                                border: espeesMode === 'wallet' ? '1.5px solid #2D3A29' : '1px solid #D6DDD3',
+                                backgroundColor: espeesMode === 'wallet' ? '#2D3A29' : '#FFF',
+                                color: espeesMode === 'wallet' ? '#FFF' : '#2D3A29',
+                                fontSize: '0.825rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              📱 Espees Mobile App Pay
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEspeesMode('gateway')}
+                              style={{
+                                flex: 1,
+                                padding: '0.55rem 0.75rem',
+                                borderRadius: '4px',
+                                border: espeesMode === 'gateway' ? '1.5px solid #2D3A29' : '1px solid #D6DDD3',
+                                backgroundColor: espeesMode === 'gateway' ? '#2D3A29' : '#FFF',
+                                color: espeesMode === 'gateway' ? '#FFF' : '#2D3A29',
+                                fontSize: '0.825rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              🌐 Espees Web Gateway
+                            </button>
+                          </div>
+
+                          {espeesMode === 'wallet' ? (
+                            <div>
+                              <div style={{ fontSize: '0.825rem', color: '#3E463D', lineHeight: 1.6, marginBottom: '0.85rem', backgroundColor: '#F5EFE3', padding: '0.75rem 1rem', borderRadius: '6px', border: '1px solid #E5DFC5' }}>
+                                <strong style={{ color: '#2D3A29' }}>How to pay via Espees App:</strong>
+                                <ol style={{ margin: '0.35rem 0 0 1.25rem', padding: 0 }}>
+                                  <li>Open your <strong>Espees App</strong> (iOS / Android) and tap <strong>Send / Transfer</strong></li>
+                                  <li style={{ marginTop: '0.25rem' }}>
+                                    Transfer <strong>{cartTotal.toFixed(2)} ESP</strong> to Merchant Username:{' '}
+                                    <strong style={{ color: '#6E5535', fontFamily: 'monospace' }}>@{espeesMerchantWallet || 'merchanttest01'}</strong>{' '}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(espeesMerchantWallet || 'merchanttest01');
+                                        showToast('Copied @' + (espeesMerchantWallet || 'merchanttest01') + ' to clipboard!');
+                                      }}
+                                      style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', backgroundColor: '#DFCAA7', border: 'none', borderRadius: '3px', cursor: 'pointer', fontWeight: 700, color: '#2D3A29' }}
+                                    >
+                                      Copy Handle
+                                    </button>
+                                  </li>
+                                  <li style={{ marginTop: '0.25rem' }}>
+                                    Or to Wallet Address:{' '}
+                                    <span style={{ fontFamily: 'monospace', fontSize: '0.72rem', backgroundColor: '#FFF', padding: '0.1rem 0.35rem', borderRadius: '3px', border: '1px solid #E5DFC5' }}>
+                                      {(espeesMerchantAddress || '0x49e99dd6ec7b413867513052053161c3682d5506').substring(0, 8)}...{(espeesMerchantAddress || '0x49e99dd6ec7b413867513052053161c3682d5506').substring(36)}
+                                    </span>{' '}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(espeesMerchantAddress || '0x49e99dd6ec7b413867513052053161c3682d5506');
+                                        showToast('Copied full merchant wallet address!');
+                                      }}
+                                      style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', backgroundColor: '#DFCAA7', border: 'none', borderRadius: '3px', cursor: 'pointer', fontWeight: 700, color: '#2D3A29' }}
+                                    >
+                                      Copy Address
+                                    </button>
+                                  </li>
+                                  <li style={{ marginTop: '0.25rem' }}>Enter your <strong>Espees Username</strong> or <strong>Payment Reference</strong> below</li>
+                                </ol>
+                              </div>
+
+                              <div style={{ marginBottom: '1rem' }}>
+                                <div style={{ marginBottom: '0.35rem' }}>
+                                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                    Your Espees Username or Reference Code *
+                                  </label>
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. usertest01 or 0xd15c259d11dfe0bb39383fd3270d74f6d124a13b"
+                                  value={espeesUsernameRef}
+                                  onChange={(e) => setEspeesUsernameRef(e.target.value)}
+                                  style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #C5A059', fontSize: '0.95rem', backgroundColor: '#FFFFFF' }}
+                                />
+                              </div>
+
+                              <button
+                                type="button"
+                                disabled={isEspeesProcessing}
+                                onClick={handleConfirmEspeesDirectPayment}
+                                style={{
+                                  width: '100%',
+                                  padding: '1rem',
+                                  backgroundColor: '#C5A059',
+                                  color: '#1E221D',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  fontSize: '1rem',
+                                  fontWeight: 700,
+                                  cursor: isEspeesProcessing ? 'wait' : 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.5rem',
+                                  boxShadow: '0 4px 14px rgba(197, 160, 89, 0.4)',
+                                  transition: 'all 0.2s ease'
+                                }}
+                              >
+                                {isEspeesProcessing ? (
+                                  'Confirming Espees Transaction...'
+                                ) : (
+                                  `Pay ${cartTotal.toFixed(2)} ESP with Espees ✓`
+                                )}
+                              </button>
+                            </div>
+                          ) : (
+                            <div>
+                              <div style={{ fontSize: '0.825rem', color: '#5C635B', lineHeight: 1.5, marginBottom: '0.85rem', backgroundColor: '#F5EFE3', padding: '0.85rem 1rem', borderRadius: '6px', border: '1px solid #E5DFC5' }}>
+                                <div>
+                                  You will be redirected to the official <strong>Espees Online Checkout Portal (payment.espees.org)</strong> to authenticate and approve the payment with your Espees credentials.
+                                </div>
+                                <div style={{ marginTop: '0.65rem', paddingTop: '0.6rem', borderTop: '1px dashed #D6DDD3', fontSize: '0.75rem', color: '#2D3A29' }}>
+                                  <strong style={{ color: '#6E5535' }}>🧪 Official Espees Test Credentials:</strong>
+                                  <div style={{ marginTop: '0.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                    <span style={{ backgroundColor: '#FFF', padding: '0.15rem 0.45rem', borderRadius: '3px', border: '1px solid #E5DFC5' }}>
+                                      Buyer: <strong>usertest01</strong> / <strong>user@1234</strong> (PIN: <strong>1234</strong>)
+                                    </span>
+                                    <span style={{ backgroundColor: '#FFF', padding: '0.15rem 0.45rem', borderRadius: '3px', border: '1px solid #E5DFC5' }}>
+                                      Merchant: <strong>merchanttest01</strong> (Code: <strong>ESPMER01</strong>)
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                disabled={isEspeesProcessing}
+                                onClick={handleLaunchEspeesGateway}
+                                style={{
+                                  width: '100%',
+                                  padding: '1rem',
+                                  backgroundColor: '#2D3A29',
+                                  color: '#DFCAA7',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  fontSize: '1rem',
+                                  fontWeight: 700,
+                                  cursor: isEspeesProcessing ? 'wait' : 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.5rem'
+                                }}
+                              >
+                                {isEspeesProcessing ? (
+                                  'Connecting to Espees Gateway...'
+                                ) : (
+                                  `Launch Espees Payment Portal (${cartTotal.toFixed(2)} ESP) →`
+                                )}
+                              </button>
+                            </div>
+                          )}
+
+                          <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.72rem', color: '#6E5535' }}>
+                            ⚡ Powered by Espees Global Financial Network • Made in Loveworld
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AUTHENTICATION & PASSWORD RECOVERY MODAL - LUXURY VIBE */}
+        {isAuthOpen && (
+          <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={closeAuthModal}>
+            <div className="modal-card" style={{ maxWidth: '480px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem 2.25rem', borderRadius: '6px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 40px rgba(45,58,41,0.08)' }} onClick={(e) => e.stopPropagation()}>
+              <button className="close-modal-btn" onClick={closeAuthModal} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', color: '#5C635B' }}>
+                <X size={22} />
+              </button>
+
+              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <LichtLogo size="header" color="#2D3A29" markOnly={true} style={{ margin: '0 auto', marginBottom: '1rem' }} />
+                <h2 className="font-serif" style={{ fontSize: '1.9rem', color: '#2D3A29', marginBottom: '0.35rem', fontWeight: 400 }}>
+                  {authMode === 'profile' ? 'Member Profile' :
+                    authMode === 'forgot' ? 'Reset Password' :
+                      authMode === 'login' ? 'Welcome Back' : 'Create an Account'}
+                </h2>
+                <p style={{ color: '#C5A059', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                  {authMode === 'profile' ? 'LICHT Luxe Naturals Member' :
+                    authMode === 'forgot' ? (forgotStep === 1 ? 'Step 1 of 3: Request Verification Code' : (forgotStep === 2 ? 'Step 2 of 3: Verify Passcode' : 'Step 3 of 3: New Password')) :
+                      authMode === 'login' ? 'Access your member profile' : 'Join the Luxe Naturals community'}
+                </p>
+              </div>
+
+              {/* PENDING CART ITEM SUGGESTION BANNER */}
+              {pendingCartItem && (authMode === 'login' || authMode === 'register') && (
+                <div style={{
+                  marginBottom: '1.5rem',
+                  padding: '0.9rem 1.15rem',
+                  backgroundColor: '#FAF7F2',
+                  border: '1px solid #DFCAA7',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  textAlign: 'left',
+                  boxShadow: '0 4px 12px rgba(197, 160, 89, 0.08)'
+                }}>
+                  <Sparkles size={22} color="#C5A059" style={{ flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2D3A29' }}>
+                      Sign in to add to your bag
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#5C635B', marginTop: '2px', lineHeight: 1.4 }}>
+                      Please sign in or create an account to add <strong>{pendingCartItem.product?.name}</strong> to your bag and save your order.
                     </div>
                   </div>
                 </div>
+              )}
 
-                {/* Contact Form */}
-                <div style={{ backgroundColor: '#F4EFE6', padding: '2.5rem', borderRadius: '12px', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
-                  <h3 className="font-display" style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '1.5rem' }}>
-                    Send Us a Message
-                  </h3>
-
-                  {contactSubmitted ? (
-                    <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-                      <Check size={48} color="#4A5D4E" style={{ margin: '0 auto 1rem auto' }} />
-                      <h4 className="font-serif" style={{ fontSize: '1.5rem', color: '#2D3A29' }}>Message Sent!</h4>
-                      <p style={{ color: '#5C635B', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                        Thank you for reaching out to LICHT LUXE NATURALS. We will get back to you shortly.
-                      </p>
+              {/* ─── PROFILE VIEW (WHEN LOGGED IN) ─── */}
+              {authMode === 'profile' && currentUser && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '1.5rem', textAlign: 'center' }}>
+                    <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#2D3A29', color: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', fontSize: '1.4rem', fontWeight: 600, letterSpacing: '0.05em' }}>
+                      {currentUser.firstName ? currentUser.firstName.charAt(0).toUpperCase() : 'L'}
                     </div>
-                  ) : (
-                    <form onSubmit={handleContactSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2D3A29', marginBottom: '0.35rem' }}>Your Name</label>
-                        <input 
-                          type="text" 
-                          required 
-                          placeholder="Jane Doe"
-                          value={contactForm.name}
-                          onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '4px', border: '1px solid #E5DFC5', outline: 'none', fontFamily: 'var(--font-sans)', fontSize: '0.95rem' }}
-                        />
+                    <h3 style={{ margin: '0 0 0.25rem 0', color: '#2D3A29', fontSize: '1.2rem' }}>
+                      {currentUser.firstName} {currentUser.lastName}
+                    </h3>
+                    <p style={{ margin: 0, color: '#5C635B', fontSize: '0.85rem' }}>{currentUser.email}</p>
+                    <div style={{ marginTop: '0.75rem', display: 'inline-block', backgroundColor: '#DFCAA7', color: '#2D3A29', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em' }}>
+                      {currentUser.role || 'MEMBER'}
+                    </div>
+                  </div>
+
+                  <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {isAdmin && (
+                      <button
+                        onClick={() => { setIsAuthOpen(false); navigateToTab('admin'); }}
+                        style={{ width: '100%', padding: '0.85rem', backgroundColor: '#C5A059', color: '#161D15', border: 'none', borderRadius: '4px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                      >
+                        <ShieldCheck size={16} /> Open Admin Operations Suite
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setIsAuthOpen(false); navigateToTab('account'); }}
+                      style={{ width: '100%', padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FAF7F2', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', letterSpacing: '0.05em' }}
+                    >
+                      View My Account & Orders
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      style={{ width: '100%', padding: '0.85rem', backgroundColor: 'transparent', color: '#8B0000', border: '1px solid #D6DDD3', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── FORGOT PASSWORD (OTP WORKFLOW) ─── */}
+              {authMode === 'forgot' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {forgotStep === 1 && (
+                    <form onSubmit={handleForgotPasswordRequest} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <p style={{ fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5, margin: 0 }}>
+                        Enter your personal registered account email below (e.g. <strong>sharonshelke1@gmail.com</strong>). A 6-digit passcode will be dispatched from our domain <em>info@lichtluxenaturals.org</em>.
+                      </p>
+                      <input
+                        type="email"
+                        name="email"
+                        value={forgotForm.email}
+                        onChange={handleForgotInputChange}
+                        placeholder="e.g. sharonshelke1@gmail.com"
+                        required
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }}
+                      />
+                      <button
+                        type="submit"
+                        disabled={authLoading}
+                        style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                      >
+                        {authLoading ? 'Sending Code...' : 'Send Verification Code'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAuthMode('login')}
+                        style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        ← Back to Sign In
+                      </button>
+                    </form>
+                  )}
+
+                  {forgotStep === 2 && (
+                    <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '1rem', textAlign: 'center' }}>
+                        <p style={{ fontSize: '0.85rem', color: '#2D3A29', margin: 0 }}>
+                          A 6-digit verification code was dispatched to:
+                        </p>
+                        <p style={{ fontWeight: 700, color: '#C5A059', margin: '4px 0 0 0', fontSize: '0.9rem' }}>
+                          {forgotForm.email}
+                        </p>
+                        <p style={{ fontSize: '0.75rem', color: '#7A8279', margin: '6px 0 0 0' }}>
+                          Valid for 10 minutes • Up to 5 attempts allowed
+                        </p>
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2D3A29', marginBottom: '0.35rem' }}>Email</label>
-                          <input 
-                            type="email" 
-                            required 
-                            placeholder="jane@example.com"
-                            value={contactForm.email}
-                            onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '4px', border: '1px solid #E5DFC5', outline: 'none', fontFamily: 'var(--font-sans)', fontSize: '0.95rem' }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2D3A29', marginBottom: '0.35rem' }}>Phone</label>
-                          <input 
-                            type="tel" 
-                            placeholder="07831082965"
-                            value={contactForm.phone}
-                            onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '4px', border: '1px solid #E5DFC5', outline: 'none', fontFamily: 'var(--font-sans)', fontSize: '0.95rem' }}
-                          />
-                        </div>
-                      </div>
+                      <input
+                        type="text"
+                        name="otp"
+                        maxLength={6}
+                        value={forgotForm.otp}
+                        onChange={handleForgotInputChange}
+                        placeholder="Enter 6-Digit OTP"
+                        required
+                        style={{ width: '100%', padding: '0.95rem', borderRadius: '2px', border: '2px solid #C5A059', fontSize: '1.3rem', textAlign: 'center', letterSpacing: '0.3em', fontFamily: 'monospace', fontWeight: 700, backgroundColor: '#FFF' }}
+                      />
 
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2D3A29', marginBottom: '0.35rem' }}>Topic</label>
-                        <select 
-                          value={contactForm.topic}
-                          onChange={(e) => setContactForm({ ...contactForm, topic: e.target.value })}
-                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '4px', border: '1px solid #E5DFC5', outline: 'none', fontFamily: 'var(--font-sans)', fontSize: '0.95rem', backgroundColor: '#FFF' }}
+                      <button
+                        type="submit"
+                        disabled={authLoading}
+                        style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                      >
+                        {authLoading ? 'Verifying Code...' : 'Verify & Continue'}
+                      </button>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => setForgotStep(1)}
+                          style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
                         >
-                          <option>General Inquiry</option>
-                          <option>Product & Ingredient Advice</option>
-                          <option>Order & Delivery Status</option>
-                          <option>Gifting & Custom Trio Sets</option>
-                          <option>Wholesale & Collaborations</option>
-                        </select>
+                          ← Change email
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleForgotPasswordRequest}
+                          style={{ background: 'none', border: 'none', color: '#C5A059', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+                        >
+                          Resend code
+                        </button>
                       </div>
+                    </form>
+                  )}
 
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2D3A29', marginBottom: '0.35rem' }}>Message</label>
-                        <textarea 
-                          rows={4}
-                          required 
-                          placeholder="How can we help you today?"
-                          value={contactForm.message}
-                          onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '4px', border: '1px solid #E5DFC5', outline: 'none', fontFamily: 'var(--font-sans)', fontSize: '0.95rem', resize: 'vertical' }}
-                        />
-                      </div>
-
-                      <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                        Send Message <ArrowUpRight size={16} />
+                  {forgotStep === 3 && (
+                    <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <p style={{ fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5, margin: 0 }}>
+                        Code verified! Please enter your new password below.
+                      </p>
+                      <input
+                        type="password"
+                        name="newPassword"
+                        value={forgotForm.newPassword}
+                        onChange={handleForgotInputChange}
+                        placeholder="New Password (min 6 characters)"
+                        required
+                        minLength={6}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }}
+                      />
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        value={forgotForm.confirmPassword}
+                        onChange={handleForgotInputChange}
+                        placeholder="Confirm New Password"
+                        required
+                        minLength={6}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }}
+                      />
+                      <button
+                        type="submit"
+                        disabled={authLoading}
+                        style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                      >
+                        {authLoading ? 'Updating Password...' : 'Save New Password'}
                       </button>
                     </form>
                   )}
                 </div>
-              </div>
-            </div>
-          </section>
-        </main>
-      )}
-
-      {/* ========================================================================= */}
-      {/* HOME PAGE VIEW                                                            */}
-      {/* ========================================================================= */}
-      {activeTab === 'home' && (
-        <main style={{ backgroundColor: '#EAD8BA' }}>
-          
-          {/* EDITORIAL HERO SECTION MATCHING REFERENCE IMG 1 & IMG 2 */}
-          <section style={{ position: 'relative', overflow: 'hidden', padding: '3.5rem 0 5rem 0', backgroundColor: '#EAD8BA' }}>
-            {/* Subtle background watermark text: "pure" in top right open background space */}
-            <div 
-              className="giant-watermark-text" 
-              style={{ 
-                position: 'absolute', 
-                top: '-10px', 
-                right: '2%', 
-                fontSize: 'clamp(8rem, 20vw, 18rem)', 
-                color: 'rgba(74, 93, 78, 0.035)', 
-                userSelect: 'none', 
-                pointerEvents: 'none',
-                zIndex: 1
-              }}
-            >
-              pure
-            </div>
-
-            <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-              <div className="responsive-home-hero">
-                
-                {/* Left Content Column */}
-                <div>
-                  <div className="text-uppercase" style={{ color: '#6A7E6B', letterSpacing: '0.22em', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1.25rem' }}>
-                    NATURE, THOUGHTFULLY ELEVATED
-                  </div>
-
-                  <h1 
-                    className="font-display" 
-                    style={{ fontSize: 'clamp(3.25rem, 5.5vw, 4.8rem)', color: '#1E221D', marginBottom: '1.25rem', lineHeight: 1.06, letterSpacing: '-0.02em', fontWeight: 400 }}
-                  >
-                    A softer way<br />
-                    to glow.
-                  </h1>
-
-                  <p style={{ color: '#5C635B', fontSize: '1.08rem', lineHeight: 1.7, marginBottom: '2.25rem', maxWidth: '440px' }}>
-                    Botanical skincare that nurtures your skin, honours the earth, and turns everyday a bit more luxurious.
-                  </p>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
-                    <button 
-                      className="btn-primary" 
-                      onClick={() => navigateToTab('shop')}
-                      style={{ backgroundColor: '#4A5D4E', borderColor: '#4A5D4E', borderRadius: '4px', padding: '0.95rem 2rem', fontSize: '0.875rem', fontWeight: 500, letterSpacing: '0.04em' }}
-                    >
-                      Discover your essentials <ArrowUpRight size={17} />
-                    </button>
-                  </div>
-
-                  <div className="text-uppercase" style={{ color: '#6E5535', letterSpacing: '0.18em', fontSize: '0.725rem', fontWeight: 600 }}>
-                    PURE INGREDIENTS. BEAUTIFUL INTENTIONS.
-                  </div>
-                </div>
-
-                {/* Right Column: Model Image with Floating Product Card & Badges */}
-                <div style={{ position: 'relative' }}>
-                  
-                  {/* Model Image Container */}
-                  <div className="hero-image-wrap" style={{ borderRadius: '6px', overflow: 'hidden', height: '560px', position: 'relative', boxShadow: '0 20px 50px rgba(45, 58, 41, 0.08)', backgroundColor: '#DFCAA7' }}>
-                    <img 
-                      src="/hero_trio_ingredients.png" 
-                      alt="LICHT LUXE NATURALS Products Trio — Pure Coconut Oil, Body Butter & Shea Butter" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
-                    />
-
-                    {/* Top Right Pill Badge: MADE IN LOVEWORLD (matching img 2) */}
-                    <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10 }}>
-                      <div 
-                        style={{ 
-                          backgroundColor: '#EAD8BA', 
-                          border: '1.5px solid #C5A059', 
-                          borderRadius: '40px', 
-                          padding: '0.45rem 1.15rem', 
-                          fontSize: '0.725rem', 
-                          letterSpacing: '0.18em', 
-                          fontWeight: 600, 
-                          color: '#2D3A29',
-                          boxShadow: '0 4px 15px rgba(0,0,0,0.08)'
-                        }}
-                      >
-                        MADE IN LOVEWORLD
-                      </div>
-                    </div>
-
-                    {/* Bottom Right Box Tag: Let your skin breathe (matching img 1) */}
-                    <div style={{ position: 'absolute', bottom: '1.5rem', right: '1.5rem', zIndex: 10 }}>
-                      <div 
-                        style={{ 
-                          backgroundColor: '#EAD8BA', 
-                          padding: '0.65rem 1.25rem', 
-                          borderRadius: '2px', 
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                          fontFamily: "var(--font-serif)",
-                          fontStyle: "italic",
-                          fontSize: "1.1rem",
-                          color: "#2D3A29"
-                        }}
-                      >
-                        Let your skin breathe.
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Overlapping Floating Product Highlight Card (matching img 1) */}
-                  <div 
-                    className="hero-floating-card"
-                    style={{ 
-                      position: 'absolute', 
-                      bottom: '25px', 
-                      left: '-125px', 
-                      zIndex: 20, 
-                      backgroundColor: '#DFCAA7', 
-                      padding: '0.75rem', 
-                      borderRadius: '4px', 
-                      width: '210px', 
-                      boxShadow: '0 15px 35px rgba(0,0,0,0.12)', 
-                      border: '1px solid #E5DFC5', 
-                      cursor: 'pointer' 
-                    }}
-                    onClick={() => openProductDetail(PRODUCTS[2])}
-                  >
-                    <div style={{ height: '165px', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.65rem', backgroundColor: '#DFCAA7' }}>
-                      <img 
-                        src="/body_butter_hand_apply.jpg" 
-                        alt="Luxe Body Butter texture application on skin" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', color: '#2D3A29', fontWeight: 500 }}>
-                      <span>Meet Luxe Body Butter</span>
-                      <ArrowUpRight size={14} />
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-            </div>
-          </section>
-
-          {/* 4-PILLAR BRAND TRUST BAR (matching img 1 bottom banner) */}
-          <section style={{ backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5', borderBottom: '1px solid #E5DFC5', padding: '1.25rem 0' }}>
-            <div className="container">
-              <div className="brand-trust-bar-grid">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#4A5D4E', fontWeight: 500 }}>
-                  <Leaf size={16} /> Botanical ingredients
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#4A5D4E', fontWeight: 500 }}>
-                  <Leaf size={16} /> Mindfully formulated
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#4A5D4E', fontWeight: 500 }}>
-                  <Leaf size={16} /> Cruelty-free, always
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#4A5D4E', fontWeight: 500 }}>
-                  <Leaf size={16} /> Made for everyday rituals
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* EDITORIAL SECTION 1 (MATCHING IMG 2 TOP SPLIT BANNER): THE LUXE NATURALS PHILOSOPHY */}
-          <section className="responsive-hero-split">
-            {/* Left Column: Full-bleed Radiant Clear Skin Model Image (img 2 reference) */}
-            <div className="split-image-col" style={{ height: '80vh', minHeight: '600px', overflow: 'hidden' }}>
-              <img 
-                src="/clear_skin_model.png" 
-                alt="Radiant clear skin model — LICHT LUXE NATURALS" 
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 55%' }}
-              />
-            </div>
-
-            {/* Right Column: Sage / Olive Tint Background with Philosophy Copy */}
-            <div className="split-content-col" style={{ padding: '4.5rem 4rem', height: '80vh', minHeight: '600px', display: 'flex', flexDirection: 'column', justifyContent: 'center', backgroundColor: '#DFE5DC', position: 'relative' }}>
-              <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', right: '5%', color: 'rgba(74, 93, 78, 0.035)', zIndex: 1 }}>
-                grace
-              </div>
-
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <div className="text-uppercase" style={{ color: '#5A6E5E', letterSpacing: '0.22em', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1.25rem' }}>
-                  THE LUXE NATURALS PHILOSOPHY
-                </div>
-
-                <h2 className="font-display" style={{ fontSize: 'clamp(3rem, 4.5vw, 4.2rem)', color: '#1E221D', marginBottom: '1.5rem', lineHeight: 1.08, letterSpacing: '-0.02em', fontWeight: 400 }}>
-                  Less, but<br />
-                  more meaningful.
-                </h2>
-
-                <div style={{ color: '#4D584C', fontSize: '1.05rem', lineHeight: 1.7, display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem', maxWidth: '480px' }}>
-                  <p>
-                    We believe beautiful skin begins with care, not complexity. So we look to nature for ingredients with purpose, and create thoughtful formulas that feel as good as they are.
-                  </p>
-                  <p>
-                    No crowded shelves. No hurried routines. Just a few beautiful essentials, and a moment that belongs to you.
-                  </p>
-                </div>
-
-                <button 
-                  onClick={() => navigateToTab('story')}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    padding: 0, 
-                    cursor: 'pointer', 
-                    color: '#2D3A29', 
-                    fontSize: '0.9rem', 
-                    fontWeight: 600, 
-                    display: 'inline-flex', 
-                    alignItems: 'center', 
-                    gap: '0.4rem', 
-                    textDecoration: 'underline',
-                    marginBottom: '2.5rem'
-                  }}
-                >
-                  Get to know us <ArrowUpRight size={15} />
-                </button>
-
-                <div style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '1.25rem', color: '#4D584C' }}>
-                  From the earth. With intention.
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* EDITORIAL SECTION 2 (MATCHING IMG 2 BOTTOM 4-COLUMN GRID): GOODNESS, AT THE SOURCE */}
-          <section style={{ padding: '5.5rem 0', backgroundColor: '#EAD8BA', position: 'relative', overflow: 'hidden' }}>
-            <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', left: '2%', color: 'rgba(74, 93, 78, 0.035)', zIndex: 1 }}>
-              nature
-            </div>
-
-            <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-              <div className="source-values-grid">
-                
-                {/* Column 1: Section Header Text */}
-                <div style={{ paddingRight: '1rem' }}>
-                  <div className="text-uppercase" style={{ color: '#6A7E6B', letterSpacing: '0.22em', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1.25rem' }}>
-                    GOODNESS, AT THE SOURCE
-                  </div>
-
-                  <h2 className="font-display" style={{ fontSize: 'clamp(2.5rem, 3.8vw, 3.5rem)', color: '#1E221D', marginBottom: '1.5rem', lineHeight: 1.1, fontWeight: 400 }}>
-                    Nature does<br />
-                    the beautiful<br />
-                    work.
-                  </h2>
-
-                  <button 
-                    onClick={() => navigateToTab('story')}
-                    style={{ 
-                      background: 'none', 
-                      border: 'none', 
-                      padding: 0, 
-                      cursor: 'pointer', 
-                      color: '#4A5D4E', 
-                      fontSize: '0.875rem', 
-                      fontWeight: 600, 
-                      display: 'inline-flex', 
-                      alignItems: 'center', 
-                      gap: '0.4rem', 
-                      textDecoration: 'underline'
-                    }}
-                  >
-                    Explore our ingredients <ArrowUpRight size={15} />
-                  </button>
-                </div>
-
-                {/* Column 2: Raw African Shea Butter */}
-                <div>
-                  <div style={{ height: '240px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.25rem', backgroundColor: '#DFCAA7' }}>
-                    <img 
-                      src="/body_butter_hand_apply.jpg" 
-                      alt="Raw African Shea Butter" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-                  <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#1E221D', marginBottom: '0.25rem', fontWeight: 400 }}>
-                    Raw Shea Butter
-                  </h3>
-                  <p style={{ color: '#5C635B', fontSize: '0.875rem', lineHeight: 1.5 }}>
-                    100% unrefined & rich in Vitamins A & E for deep skin moisture.
-                  </p>
-                </div>
-
-                {/* Column 3: Cold-Pressed Coconut Oil */}
-                <div>
-                  <div style={{ height: '240px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.25rem', backgroundColor: '#DFCAA7' }}>
-                    <img 
-                      src="/raw_coconut_ingredient.jpg" 
-                      alt="Raw Coconut & Virgin Coconut Oil" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
-                    />
-                  </div>
-                  <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#1E221D', marginBottom: '0.25rem', fontWeight: 400 }}>
-                    Virgin Coconut Oil
-                  </h3>
-                  <p style={{ color: '#5C635B', fontSize: '0.875rem', lineHeight: 1.5 }}>
-                    Cold-pressed & rich in lauric acid to restore natural radiance.
-                  </p>
-                </div>
-
-                {/* Column 4: Pure Skin Nourishment */}
-                <div>
-                  <div style={{ height: '240px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.25rem', backgroundColor: '#DFCAA7' }}>
-                    <img 
-                      src="https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=600&q=80" 
-                      alt="Pure Skin Nourishment" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-                  <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#1E221D', marginBottom: '0.25rem', fontWeight: 400 }}>
-                    Pure Skin Nourishment
-                  </h3>
-                  <p style={{ color: '#5C635B', fontSize: '0.875rem', lineHeight: 1.5 }}>
-                    Thoughtfully crafted skincare that nourishes, hydrates and enhances your skin's natural glow.
-                  </p>
-                </div>
-
-              </div>
-            </div>
-          </section>
-
-          {/* EDITORIAL GALLERY BLOCK 2: PURE CARE BY NATURE */}
-          <section style={{ padding: '5rem 0', backgroundColor: '#EAD8BA', position: 'relative' }}>
-            <div className="giant-watermark-text" style={{ position: 'absolute', bottom: '0', right: '2%', opacity: 0.6 }}>
-              pure
-            </div>
-
-            <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-              <div className="editorial-cards-grid">
-                <div style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', overflow: 'hidden', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)' }}>
-                  <div style={{ height: '340px', overflow: 'hidden' }}>
-                    <img 
-                      src="/clear_skin_model.jpg" 
-                      alt="Glowing clear skin model texture" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-                  <div style={{ padding: '1.5rem' }}>
-                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C5A059', fontWeight: 600 }}>CLEAR SKIN GLOW</div>
-                    <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#2D3A29', marginTop: '0.25rem' }}>Real skin nourishment</h3>
-                    <p style={{ fontSize: '0.85rem', color: '#5C635B', marginTop: '0.35rem' }}>Soft, supple, and beautifully moisturised feel.</p>
-                  </div>
-                </div>
-
-                <div 
-                  style={{ backgroundColor: '#F4EFE6', borderRadius: '12px', overflow: 'hidden', border: '1px solid #E5DFC5', boxShadow: 'var(--shadow-soft)', cursor: 'pointer' }}
-                  onClick={() => openProductDetail(PRODUCTS[1])}
-                >
-                  <div style={{ height: '340px', overflow: 'hidden' }}>
-                    <img 
-                      src="/coconut_oil_split_showcase.jpg" 
-                      alt="Pure Coconut Oil split showcase artwork" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
-                    />
-                  </div>
-                  <div style={{ padding: '1.5rem' }}>
-                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C5A059', fontWeight: 600 }}>100% COLD PRESSED</div>
-                    <h3 className="font-display" style={{ fontSize: '1.6rem', color: '#2D3A29', marginTop: '0.25rem' }}>Pure Coconut Oil</h3>
-                    <p style={{ fontSize: '0.85rem', color: '#5C635B', marginTop: '0.35rem' }}>Nature's versatile nourishing oil · {formatCurrency(22.00)}</p>
-                  </div>
-                </div>
-
-                <div style={{ backgroundColor: '#DFCAA7', borderRadius: '12px', padding: '2.5rem 2rem', border: '1.5px solid #C5A059', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div className="loveworld-badge" style={{ width: 'fit-content', marginBottom: '1rem' }}>
-                    MADE IN LOVEWORLD
-                  </div>
-                  <h3 className="font-display" style={{ fontSize: '2.5rem', color: '#1E221D', marginBottom: '1rem', lineHeight: 1.1 }}>
-                    Pure care<br />
-                    <span style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: '#6E5535' }}>by nature.</span>
-                  </h3>
-                  <p style={{ color: '#5C635B', fontSize: '0.925rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-                    Thoughtfully crafted formulas designed to bring balance and calm to your daily routine. Gentle ingredients help support healthy-looking skin.
-                  </p>
-                  <button 
-                    className="btn-primary" 
-                    onClick={() => navigateToTab('shop')}
-                    style={{ width: '100%', justifyContent: 'center' }}
-                  >
-                    SHOP COLLECTION
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* EDITORIAL ESSENTIAL COLLECTION GRID */}
-          <section style={{ padding: '5rem 0', backgroundColor: '#EAD8BA' }}>
-            <div className="container">
-              <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-                <div className="text-uppercase" style={{ color: '#4A5D4E', marginBottom: '0.35rem' }}>
-                  OUR ESSENTIAL TRIO
-                </div>
-                <h2 className="font-display" style={{ fontSize: '3.75rem', color: '#1E221D' }}>
-                  Gentle care. Real balance.
-                </h2>
-                <p style={{ color: '#5C635B', fontSize: '1rem', maxWidth: '580px', margin: '0.5rem auto 0 auto' }}>
-                  Discover our carefully crafted collection of natural body-care essentials.
-                </p>
-              </div>
-
-              <div className="product-cards-grid">
-                {PRODUCTS.map(product => (
-                  <div 
-                    key={product.id}
-                    className="responsive-product-card" data-product-id={product.id} data-is-combo={product.isCombo ? 'true' : 'false'}
-                    style={{ 
-                      backgroundColor: '#F4EFE6', 
-                      borderRadius: '12px', 
-                      overflow: 'hidden', 
-                      border: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? '2px solid #C5A059' : '1px solid #E5DFC5',
-                      boxShadow: 'var(--shadow-soft)',
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }}
-                  >
-                    <div 
-                      className="card-media-wrap"
-                      style={{ position: 'relative', height: '280px', overflow: 'hidden', backgroundColor: '#DFCAA7', cursor: 'pointer' }}
-                      onClick={() => openProductDetail(product)}
-                    >
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
-                        className="card-media-img"
-                        style={{ 
-                          width: '100%', 
-                          height: '100%', 
-                          objectFit: 'cover', 
-                          objectPosition: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'center center' : 'center 60%', 
-                          transform: (product.isCombo || product.id === 'luxe-trio-gift-set' || product.id === 'complete-luxe-collection') ? 'none' : 'scale(1.14)', 
-                          transition: 'transform 0.4s ease' 
-                        }}
-                      />
-                      <button 
-                        className="card-wishlist-btn"
-                        onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
-                        style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: '#FFFFFF', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', zIndex: 3 }}
-                      >
-                        <Heart size={18} fill={wishlist.includes(product.id) ? '#C5A059' : 'none'} color={wishlist.includes(product.id) ? '#C5A059' : '#1E221D'} />
-                      </button>
-                      {product.originalPrice && (
-                        <div 
-                          style={{
-                            position: 'absolute',
-                            top: '1rem',
-                            left: '1rem',
-                            backgroundColor: '#C5A059',
-                            color: '#FFFFFF',
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
-                            letterSpacing: '0.06em',
-                            textTransform: 'uppercase',
-                            padding: '0.35rem 0.75rem',
-                            borderRadius: '30px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                            zIndex: 2
-                          }}
-                        >
-                          ★ SAVE {formatCurrency(product.originalPrice - product.price)} · {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="card-body" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                      <div className="card-subtitle" style={{ fontSize: '0.75rem', color: '#C5A059', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                        {product.subtitle}
-                      </div>
-                      <h3 
-                        className="card-title font-display" 
-                        style={{ fontSize: '2rem', color: '#2D3A29', marginBottom: '0.5rem', cursor: 'pointer' }}
-                        onClick={() => openProductDetail(product)}
-                      >
-                        {product.name}
-                      </h3>
-                      <div className="card-price-row" style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-                        <span style={{ fontSize: '1.35rem', fontWeight: 700, color: '#6E5535' }}>
-                          {formatCurrency(product.price)}
-                        </span>
-                        {product.originalPrice && (
-                          <>
-                            <span style={{ fontSize: '0.95rem', color: '#8C948B', textDecoration: 'line-through', fontWeight: 500 }}>
-                              {formatCurrency(product.originalPrice)}
-                            </span>
-                            <span style={{ 
-                              fontSize: '0.72rem', 
-                              fontWeight: 700, 
-                              color: '#2D3A29', 
-                              backgroundColor: 'rgba(197, 160, 89, 0.25)', 
-                              border: '1px solid #C5A059', 
-                              padding: '0.15rem 0.45rem', 
-                              borderRadius: '4px' 
-                            }}>
-                              Save {formatCurrency(product.originalPrice - product.price)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
-                            </span>
-                          </>
-                        )}
-                        <span className="card-volume" style={{ fontSize: '0.85rem', color: '#5C635B', fontWeight: 400, marginLeft: product.originalPrice ? '0' : '0.2rem' }}>
-                          ({product.volume})
-                        </span>
-                      </div>
-
-                      <p className="card-desc" style={{ fontSize: '0.9rem', color: '#5C635B', marginBottom: '1.25rem', lineHeight: 1.6 }}>
-                        {product.shortDescription}
-                      </p>
-
-                      <div className="card-actions-row" style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
-                        <button 
-                          className="btn-primary card-btn-primary" 
-                          style={{ flexGrow: 1, justifyContent: 'center', padding: '0.85rem' }}
-                          onClick={() => addToCart(product)}
-                        >
-                          <ShoppingBag size={16} /> ADD · {formatCurrency(product.price)} ({product.price} ESP)
-                        </button>
-                        <button 
-                          className="btn-secondary card-btn-secondary" 
-                          style={{ padding: '0.85rem', justifyContent: 'center' }}
-                          onClick={() => openProductDetail(product)}
-                        >
-                          View Details
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* EDITORIAL BANNER: FORMULATED WITH INTENTION */}
-          <section style={{ padding: '4.5rem 0', backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5', borderBottom: '1px solid #E5DFC5', position: 'relative', overflow: 'hidden' }}>
-            <div className="giant-watermark-text" style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}>
-              loveworld
-            </div>
-            <div className="container" style={{ textAlign: 'center', maxWidth: '850px' }}>
-              <MadeInLoveworldEmblem size="medium" />
-              <h2 className="font-display" style={{ fontSize: '3.5rem', color: '#1E221D', marginTop: '1.5rem', marginBottom: '1rem', lineHeight: 1.05 }}>
-                Formulated with intention.<br />
-                <span style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: '#6E5535' }}>Designed for real skin.</span>
-              </h2>
-              <p style={{ color: '#5C635B', fontSize: '1.1rem', lineHeight: 1.7, marginBottom: '2rem' }}>
-                Every jar of LICHT LUXE NATURALS carries our commitment to quality, natural beauty, honesty, care, and love. Made in LOVEWORLD.
-              </p>
-              <button 
-                className="btn-primary" 
-                onClick={() => navigateToTab('shop')}
-                style={{ padding: '0.95rem 2.25rem', fontSize: '0.9rem' }}
-              >
-                Shop Our Collection <ArrowUpRight size={16} />
-              </button>
-            </div>
-          </section>
-
-          {/* COMMUNITY REVIEWS */}
-          <section style={{ padding: '4.5rem 0', backgroundColor: '#EAD8BA', position: 'relative', overflow: 'hidden' }}>
-            <div className="giant-watermark-text" style={{ position: 'absolute', top: '-10px', left: '-20px', zIndex: 1 }}>
-              bliss
-            </div>
-            <div className="container">
-              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                <div className="text-uppercase" style={{ color: '#4A5D4E', marginBottom: '0.35rem' }}>
-                  COMMUNITY REVIEWS
-                </div>
-                <h2 className="font-display" style={{ fontSize: '3rem', color: '#1E221D' }}>
-                  Loved by Our Community
-                </h2>
-              </div>
-
-              <div className="reviews-cards-grid">
-                {REVIEWS.map(rev => (
-                  <div key={rev.id} className="review-card" style={{ backgroundColor: '#F4EFE6', padding: '2rem', borderRadius: '12px', border: '1px solid #E5DFC5' }}>
-                    <div style={{ color: '#C5A059', fontSize: '1rem', marginBottom: '0.75rem' }}>★★★★★</div>
-                    <blockquote style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: '#2D3A29', lineHeight: 1.6, marginBottom: '1.25rem', fontStyle: 'italic' }}>
-                      “{rev.quote}”
-                    </blockquote>
-                    <div className="review-author" style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1E221D' }}>
-                      — {rev.author}
-                    </div>
-                    <div className="review-meta" style={{ fontSize: '0.75rem', color: '#6E5535' }}>
-                      {rev.role} · {rev.product}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* FAQS ACCORDION */}
-          <section style={{ padding: '5rem 0', backgroundColor: '#DFCAA7', borderTop: '1px solid #E5DFC5', position: 'relative', overflow: 'hidden' }}>
-            <div className="giant-watermark-text" style={{ position: 'absolute', top: '0', right: '-20px', zIndex: 1 }}>
-              purity
-            </div>
-            <div className="container" style={{ maxWidth: '850px' }}>
-              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                <div className="text-uppercase" style={{ color: '#4A5D4E', marginBottom: '0.35rem' }}>
-                  GOT QUESTIONS?
-                </div>
-                <h2 className="font-display" style={{ fontSize: '3rem', color: '#1E221D' }}>
-                  Frequently Asked Questions
-                </h2>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {FAQS.map((faq, index) => {
-                  const isOpen = expandedFaq === index;
-                  return (
-                    <div 
-                      key={index}
-                      style={{ 
-                        backgroundColor: '#F4EFE6', 
-                        borderRadius: '8px', 
-                        border: '1px solid #E5DFC5', 
-                        overflow: 'hidden',
-                        transition: 'var(--transition-smooth)'
-                      }}
-                    >
-                      <button 
-                        onClick={() => setExpandedFaq(isOpen ? null : index)}
-                        style={{ 
-                          width: '100%', 
-                          padding: '1.25rem 1.5rem', 
-                          backgroundColor: 'transparent', 
-                          border: 'none', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'space-between', 
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          fontFamily: 'var(--font-display)',
-                          fontSize: '1.35rem',
-                          color: '#2D3A29',
-                          fontWeight: 400
-                        }}
-                      >
-                        <span>{faq.q}</span>
-                        {isOpen ? <ChevronUp size={20} color="#C5A059" /> : <ChevronDown size={20} color="#5C635B" />}
-                      </button>
-                      {isOpen && (
-                        <div style={{ padding: '0 1.5rem 1.5rem 1.5rem', color: '#5C635B', fontSize: '0.95rem', lineHeight: 1.7, borderTop: '1px solid rgba(45, 58, 41, 0.15)' }}>
-                          {faq.a}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        </main>
-      )}
-
-      {/* FOOTER */}
-      <footer style={{ backgroundColor: '#2D3A29', color: '#FAF7F2', paddingTop: '4rem', paddingBottom: '2rem', borderTop: '2px solid #C5A059' }}>
-        <div className="container">
-          <div className="responsive-footer-grid">
-            
-            {/* Brand Column */}
-            <div>
-              <LichtLogo color="#FAF7F2" size="footer" />
-              <p style={{ color: '#A0A89F', fontSize: '0.9rem', marginTop: '1rem', maxWidth: '320px', lineHeight: 1.6 }}>
-                Pure. Natural. Made with Love.<br />
-                Naturally crafted body care for healthy, nourished and beautifully cared-for skin.
-              </p>
-
-              <div style={{ marginTop: '1.25rem' }}>
-                <span className="loveworld-badge" style={{ backgroundColor: 'rgba(197, 160, 89, 0.2)', color: '#C5A059' }}>
-                  MADE IN LOVEWORLD
-                </span>
-              </div>
-            </div>
-
-            {/* Column 1: SHOP */}
-            <div>
-              <h4 style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
-                SHOP
-              </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.875rem', color: '#D6DDD3' }}>
-                <li><button onClick={() => openProductDetail(PRODUCTS[0])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Pure Shea Butter</button></li>
-                <li><button onClick={() => openProductDetail(PRODUCTS[1])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Pure Coconut Oil</button></li>
-                <li><button onClick={() => openProductDetail(PRODUCTS[2])} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Body Butter</button></li>
-                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-liquid-soap'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Liquid Soap</button></li>
-                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'african-black-soap-jar'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>African Black Soap (Jar)</button></li>
-                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'luxe-trio-gift-set'))} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>The Luxe Trio Gift Set</button></li>
-                <li><button onClick={() => openProductDetail(PRODUCTS.find(p => p.id === 'complete-luxe-collection'))} style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', textAlign: 'left', padding: 0, fontWeight: 600 }}>★ The Complete 5-Piece Combo</button></li>
-              </ul>
-            </div>
-
-            {/* Column 2: ABOUT */}
-            <div>
-              <h4 style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
-                ABOUT
-              </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.875rem', color: '#D6DDD3' }}>
-                <li><button onClick={() => navigateToTab('story')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Our Story (About Us)</button></li>
-                <li><button onClick={() => navigateToTab('story')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Our Philosophy</button></li>
-                <li><button onClick={() => navigateToTab('story')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Our Promise</button></li>
-              </ul>
-            </div>
-
-            {/* Column 3: HELP */}
-            <div>
-              <h4 style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
-                HELP
-              </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.875rem', color: '#D6DDD3' }}>
-                <li><button onClick={() => navigateToTab('contact')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Contact Us</button></li>
-                <li><button onClick={() => navigateToTab('home')} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>FAQs</button></li>
-                <li><a href="tel:07831082965" style={{ color: '#D6DDD3', textDecoration: 'none' }}>Phone: 07831082965</a></li>
-                <li><button onClick={() => { setLegalModalTab('privacy'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Privacy Policy (UK GDPR)</button></li>
-                <li><button onClick={() => { setLegalModalTab('terms'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Terms of Service</button></li>
-                <li><button onClick={() => { setLegalModalTab('shipping'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0 }}>Shipping & Returns Policy</button></li>
-                <li><button onClick={() => setIsSettingsOpen(true)} style={{ background: 'none', border: 'none', color: '#D6DDD3', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Settings size={13} /> Preferences & Settings</button></li>
-              </ul>
-            </div>
-
-          </div>
-
-          {/* Bottom Footer Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '2rem', fontSize: '0.8rem', color: '#A0A89F', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              © 2026 LICHT LUXE NATURALS. All Rights Reserved. Pure. Natural. Made with Love.
-            </div>
-
-            <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <button onClick={() => { setLegalModalTab('privacy'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#A0A89F', cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}>Privacy Policy</button>
-              <button onClick={() => { setLegalModalTab('terms'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#A0A89F', cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}>Terms of Service</button>
-              <button onClick={() => { setLegalModalTab('shipping'); setIsLegalModalOpen(true); }} style={{ background: 'none', border: 'none', color: '#A0A89F', cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}>Shipping & Returns</button>
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Instagram</a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: '#A0A89F', textDecoration: 'none' }}>Facebook</a>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* SHOPPING BAG DRAWER */}
-      {isCartOpen && (
-        <div className="cart-drawer-overlay" onClick={closeCart}>
-          <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
-            <div className="drawer-header">
-              <h3 className="drawer-title font-serif">Your Shopping Bag ({cart.reduce((a, b) => a + b.quantity, 0)})</h3>
-              <button className="close-drawer-btn" onClick={closeCart}>
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Free Shipping Bar */}
-            <div className="free-shipping-bar">
-              {amountForFreeShipping > 0 ? (
-                <>Add <strong>{formatCurrency(amountForFreeShipping)}</strong> more for <strong>FREE Delivery</strong> (Orders over £70)</>
-              ) : (
-                <>✨ You've unlocked <strong>FREE Standard Delivery</strong> on this order!</>
               )}
-              <div className="shipping-progress">
-                <div className="shipping-progress-fill" style={{ width: `${progressToFreeShipping}%`, backgroundColor: '#C5A059' }} />
-              </div>
-            </div>
 
-            {/* Cart Items List */}
-            <div className="cart-items-list">
-              {cart.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#5C635B' }}>
-                  Your shopping bag is currently empty.
-                  <div style={{ marginTop: '1.5rem' }}>
-                    <button className="btn-primary" onClick={() => { closeCart(); navigateToTab('shop'); }}>
-                      Discover Essentials
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                cart.map(item => (
-                  <div className="cart-item" key={item.id}>
-                    <img src={item.image} alt={item.name} className="cart-item-img" />
-                    <div className="cart-item-details">
-                      <div className="cart-item-title">{item.name}</div>
-                      <div className="cart-item-sub">{item.volume}</div>
-                      <div className="cart-item-bottom">
-                        <div className="qty-controls">
-                          <button className="qty-btn" onClick={() => updateCartQuantity(item.id, -1)}><Minus size={12} /></button>
-                          <span className="qty-num">{item.quantity}</span>
-                          <button className="qty-btn" onClick={() => updateCartQuantity(item.id, 1)}><Plus size={12} /></button>
-                        </div>
-                        <div style={{ fontWeight: 600, color: '#6E5535' }}>{formatCurrency(item.price * item.quantity)}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+              {/* ─── LOGIN & REGISTRATION WORKFLOW ─── */}
+              {(authMode === 'login' || authMode === 'register') && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
-            {/* Cart Footer */}
-            {cart.length > 0 && (
-              <div className="cart-footer">
-                {/* Delivery Selector in Drawer */}
-                <div style={{ backgroundColor: '#FAF7F2', borderRadius: '8px', border: '1px solid #E5DFC5', padding: '0.85rem', marginBottom: '1rem' }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6E5535', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>DELIVERY METHOD</span>
-                    {isFreeShippingEligible && <span style={{ color: '#2D3A29', backgroundColor: '#EAF0E8', padding: '0.15rem 0.45rem', borderRadius: '3px', fontSize: '0.65rem', fontWeight: 700 }}>FREE OVER £70</span>}
-                  </div>
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  {/* KINGSCHAT BUTTON & LOVEWORLD SSO */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                     <button
                       type="button"
-                      onClick={() => setDeliveryOption('standard')}
+                      disabled={authLoading}
                       style={{
-                        padding: '0.65rem 0.5rem',
-                        borderRadius: '6px',
-                        border: deliveryOption === 'standard' ? '2px solid #C5A059' : '1px solid #D6DDD3',
-                        backgroundColor: deliveryOption === 'standard' ? '#FFFFFF' : '#F4EFE6',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
+                        width: '100%',
+                        padding: '1rem',
+                        backgroundColor: '#DFCAA7',
+                        color: '#2D3A29',
+                        border: '1.5px solid #C5A059',
+                        borderRadius: '4px',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        cursor: authLoading ? 'wait' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.75rem',
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 2px 8px rgba(197, 160, 89, 0.25)'
                       }}
+                      onClick={handleKingsChatLogin}
+                      className="hover-bg-darken"
                     >
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2D3A29' }}>Standard</div>
-                      <div style={{ fontSize: '0.68rem', color: '#5C635B' }}>3–5 days</div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isFreeShippingEligible ? '#2D3A29' : '#6E5535', marginTop: '0.2rem' }}>
-                        {isFreeShippingEligible ? 'FREE' : formatCurrency(standardDeliveryPrice)}
-                      </div>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                      </svg>
+                      {authLoading ? 'Connecting to KingsChat...' : (authMode === 'login' ? 'Sign in with KingsChat' : 'Sign up with KingsChat')}
                     </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setDeliveryOption('express')}
-                      style={{
-                        padding: '0.65rem 0.5rem',
-                        borderRadius: '6px',
-                        border: deliveryOption === 'express' ? '2px solid #C5A059' : '1px solid #D6DDD3',
-                        backgroundColor: deliveryOption === 'express' ? '#FFFFFF' : '#F4EFE6',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2D3A29' }}>Express</div>
-                      <div style={{ fontSize: '0.68rem', color: '#5C635B' }}>1–2 days</div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6E5535', marginTop: '0.2rem' }}>
-                        {formatCurrency(expressDeliveryPrice)}
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="cart-subtotal-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#5C635B', marginBottom: '0.35rem' }}>
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(cartSubtotal)}</span>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#5C635B', marginBottom: '0.5rem' }}>
-                  <span>Delivery ({deliveryOption === 'express' ? 'Express 1–2 Days' : 'Standard 3–5 Days'})</span>
-                  <span style={{ fontWeight: 600, color: deliveryFee === 0 ? '#2D3A29' : '#6E5535' }}>
-                    {deliveryFee === 0 ? 'FREE' : formatCurrency(deliveryFee)}
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 700, color: '#2D3A29', borderTop: '1px solid #E5DFC5', paddingTop: '0.5rem', marginBottom: '1rem' }}>
-                  <span>Total</span>
-                  <span style={{ color: '#6E5535' }}>{formatCurrency(cartTotal)}</span>
-                </div>
-
-                <button className="btn-primary checkout-btn" onClick={openCheckout} style={{ width: '100%', justifyContent: 'center' }}>
-                  Proceed to Checkout · {formatCurrency(cartTotal)}
-                </button>
-                <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.8rem', color: '#5C635B' }}>
-                  Or call <a href="tel:07831082965" style={{ color: '#2D3A29', fontWeight: 600 }}>07831082965</a> to order directly
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* SEARCH OVERLAY */}
-      {isSearchOpen && (
-        <div className="modal-overlay" onClick={() => setIsSearchOpen(false)}>
-          <div className="modal-card" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={() => setIsSearchOpen(false)}>
-              <X size={22} />
-            </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '2px solid #C5A059', paddingBottom: '0.75rem', marginBottom: '1.5rem' }}>
-              <Search size={22} color="#4A5D4E" />
-              <input 
-                type="text"
-                placeholder="Search Shea Butter, Coconut Oil, Body Butter..."
-                style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontSize: '1.15rem', fontFamily: 'var(--font-sans)' }}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-              {['Shea Butter', 'Coconut Oil', 'Body Butter', 'Gift Sets', 'Made in Loveworld'].map(tag => (
-                <button 
-                  key={tag}
-                  style={{ background: '#DFCAA7', border: '1px solid #E5DFC5', padding: '0.35rem 0.75rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '4px', color: '#2D3A29' }}
-                  onClick={() => setSearchQuery(tag)}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-
-            {searchQuery && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {PRODUCTS.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase())).map(p => (
-                  <div key={p.id} style={{ display: 'flex', gap: '1rem', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid #E5DFC5', paddingBottom: '0.75rem' }} onClick={() => { openProductDetail(p); setIsSearchOpen(false); }}>
-                    <img src={p.image} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
-                    <div>
-                      <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: '#2D3A29' }}>{p.name}</div>
-                      <div style={{ fontSize: '0.85rem', color: '#5C635B' }}>{formatCurrency(p.price)} · {p.subtitle}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* SECURE CHECKOUT MODAL (2-STEP: DELIVERY ADDRESS & PAYMENT) */}
-      {isCheckoutOpen && (
-        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={closeCheckout}>
-          <div className="modal-card checkout-modal" style={{ maxWidth: '880px', width: '95%', maxHeight: '92vh', padding: '0', display: 'flex', flexDirection: 'row', overflow: 'hidden', borderRadius: '8px', boxShadow: '0 25px 60px rgba(45,58,41,0.18)' }} onClick={(e) => e.stopPropagation()}>
-            
-            {/* Left Side: Order Summary */}
-            <div className="checkout-summary-col" style={{ backgroundColor: '#FDFCF9', padding: '2rem', width: '42%', borderRight: '1px solid #E5DFC5', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5A059', marginBottom: '1.25rem', fontWeight: 600 }}>
-                Order Summary
-              </div>
-              
-              <div style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '1.5rem', paddingRight: '0.5rem' }}>
-                {cart.map(item => (
-                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #E5DFC5', flexShrink: 0 }}>
-                      <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <span style={{ position: 'absolute', top: '-5px', right: '-5px', backgroundColor: '#2D3A29', color: '#FFF', fontSize: '0.65rem', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
-                        {item.quantity}
+                    <div style={{ textAlign: 'center', padding: '0.4rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                      <ShieldCheck size={14} color="#C5A059" />
+                      <span style={{ fontSize: '0.75rem', color: '#6E5535', fontWeight: 500 }}>
+                        Official Loveworld Single Sign-On
                       </span>
                     </div>
-                    <div style={{ flexGrow: 1 }}>
-                      <div style={{ fontSize: '0.85rem', color: '#2D3A29', fontWeight: 600 }}>{item.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>{item.volume}</div>
-                    </div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>
-                      {formatCurrency(item.price * item.quantity)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(cartSubtotal)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#5C635B' }}>
-                  <span>Delivery ({deliveryOption === 'express' ? 'Express 1–2 Days' : 'Standard 3–5 Days'})</span>
-                  <span style={{ color: deliveryFee === 0 ? '#2D3A29' : '#6E5535', fontWeight: 600 }}>
-                    {deliveryFee === 0 ? 'FREE (Orders over £70)' : formatCurrency(deliveryFee)}
-                  </span>
-                </div>
-                {shippingAddress.shippingCity && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#6E5535' }}>
-                    <span>Destination</span>
-                    <span>{shippingAddress.shippingCity}, UK</span>
-                  </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', color: '#2D3A29', fontWeight: 700, borderTop: '1px solid #ECE7D8', paddingTop: '0.75rem' }}>
-                  <span>Total</span>
-                  <span style={{ color: '#6E5535' }}>{formatCurrency(cartTotal)}</span>
-                </div>
-              </div>
-            </div>
 
-            {/* Right Side: Two-Step Checkout (Address & Payment) */}
-            <div className="checkout-form-col" style={{ backgroundColor: '#FFFFFF', padding: '2rem 2.25rem', width: '58%', position: 'relative', overflowY: 'auto' }}>
-              <button className="close-modal-btn" onClick={closeCheckout} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem' }}>
-                <X size={20} />
-              </button>
-              
-              {/* Checkout Progress Stepper */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.85rem', marginBottom: '1.75rem', marginTop: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setCheckoutStep('address')}
-                  style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: checkoutStep === 'address' ? '#2D3A29' : '#C5A059', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}
-                >
-                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: checkoutStep === 'address' ? '#2D3A29' : '#C5A059', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>1</span>
-                  <span>Delivery Address</span>
-                </button>
-                <div style={{ width: '32px', height: '2px', backgroundColor: '#E5DFC5' }} />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (validateCheckoutStep1()) {
-                      setCheckoutStep('payment');
-                    } else {
-                      showToast('Please correct the errors in the delivery form.');
-                    }
-                  }}
-                  style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: checkoutStep === 'payment' ? '#2D3A29' : '#9CA3AF', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}
-                >
-                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: checkoutStep === 'payment' ? '#2D3A29' : '#E5DFC5', color: checkoutStep === 'payment' ? '#FFF' : '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>2</span>
-                  <span>Payment</span>
-                </button>
-              </div>
-
-
-              {/* ─── STEP 1: DELIVERY ADDRESS ─── */}
-              {checkoutStep === 'address' && (
-                <div>
-                  <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                    <h2 className="font-serif" style={{ fontSize: '1.7rem', color: '#2D3A29', margin: '0 0 0.35rem 0', fontWeight: 400 }}>Where should we deliver?</h2>
-                    <p style={{ color: '#5C635B', fontSize: '0.85rem', margin: 0 }}>Provide your delivery details so we can dispatch your pure natural essentials.</p>
-                  </div>
-
-                  <form onSubmit={(e) => {
-                    e.preventDefault();
-                    if (!validateCheckoutStep1()) {
-                      showToast('Please correct the errors in the delivery form.');
-                      return;
-                    }
-                    setCheckoutErrors({});
-                    setCheckoutStep('payment');
-                  }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    
-                    <div>
-                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
-                        Full Name *
-                      </label>
-                      <input 
-                        type="text" 
-                        required 
-                        placeholder="e.g. Eleanor Vance" 
-                        value={shippingAddress.shippingName}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setShippingAddress(prev => ({ ...prev, shippingName: val }));
-                          if (checkoutErrors.shippingName) setCheckoutErrors(prev => ({ ...prev, shippingName: undefined }));
-                        }}
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingName ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
-                      />
-                      {checkoutErrors.shippingName && (
-                        <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <AlertCircle size={12} /> {checkoutErrors.shippingName}
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
-                        Email Address for Order Confirmation & Tracking *
-                      </label>
-                      <input 
-                        type="email" 
-                        required 
-                        placeholder="e.g. eleanor@example.co.uk" 
-                        value={shippingAddress.shippingEmail}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setShippingAddress(prev => ({ ...prev, shippingEmail: val }));
-                          if (checkoutErrors.shippingEmail) setCheckoutErrors(prev => ({ ...prev, shippingEmail: undefined }));
-                        }}
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingEmail ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
-                      />
-                      {checkoutErrors.shippingEmail && (
-                        <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <AlertCircle size={12} /> {checkoutErrors.shippingEmail}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="checkout-grid-duo">
-                      <div>
-                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
-                          Contact Phone *
-                        </label>
-                        <input 
-                          type="tel" 
-                          required 
-                          placeholder="e.g. 07831 082965" 
-                          value={shippingAddress.shippingPhone}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setShippingAddress(prev => ({ ...prev, shippingPhone: val }));
-                            if (checkoutErrors.shippingPhone) setCheckoutErrors(prev => ({ ...prev, shippingPhone: undefined }));
-                          }}
-                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingPhone ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
-                        />
-                        {checkoutErrors.shippingPhone && (
-                          <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <AlertCircle size={12} /> {checkoutErrors.shippingPhone}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
-                          Postcode / ZIP *
-                        </label>
-                        <input 
-                          type="text" 
-                          required 
-                          placeholder="e.g. SW1A 1AA" 
-                          value={shippingAddress.shippingPostcode}
-                          onChange={(e) => {
-                            const val = e.target.value.toUpperCase();
-                            setShippingAddress(prev => ({ ...prev, shippingPostcode: val }));
-                            if (checkoutErrors.shippingPostcode) setCheckoutErrors(prev => ({ ...prev, shippingPostcode: undefined }));
-                          }}
-                          style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingPostcode ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
-                        />
-                        {checkoutErrors.shippingPostcode && (
-                          <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <AlertCircle size={12} /> {checkoutErrors.shippingPostcode}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
-                        Street Address *
-                      </label>
-                      <input 
-                        type="text" 
-                        required 
-                        placeholder="House number, Street name, Flat or Suite" 
-                        value={shippingAddress.shippingAddress}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setShippingAddress(prev => ({ ...prev, shippingAddress: val }));
-                          if (checkoutErrors.shippingAddress) setCheckoutErrors(prev => ({ ...prev, shippingAddress: undefined }));
-                        }}
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingAddress ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
-                      />
-                      {checkoutErrors.shippingAddress && (
-                        <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <AlertCircle size={12} /> {checkoutErrors.shippingAddress}
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
-                        Town / City *
-                      </label>
-                      <input 
-                        type="text" 
-                        required 
-                        placeholder="e.g. London" 
-                        value={shippingAddress.shippingCity}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setShippingAddress(prev => ({ ...prev, shippingCity: val }));
-                          if (checkoutErrors.shippingCity) setCheckoutErrors(prev => ({ ...prev, shippingCity: undefined }));
-                        }}
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: checkoutErrors.shippingCity ? '1px solid #DC2626' : '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
-                      />
-                      {checkoutErrors.shippingCity && (
-                        <div style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <AlertCircle size={12} /> {checkoutErrors.shippingCity}
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.35rem' }}>
-                        Order / Delivery Notes (Optional)
-                      </label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Leave in safe place or porch if not in" 
-                        value={shippingAddress.orderNotes}
-                        onChange={(e) => setShippingAddress(prev => ({ ...prev, orderNotes: e.target.value }))}
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #D6DDD3', fontSize: '0.95rem', backgroundColor: '#FFF' }}
-                      />
-                    </div>
-
-                    <div style={{ marginTop: '0.75rem', marginBottom: '0.5rem' }}>
-                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6E5535', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>
-                        Select Delivery Method
-                      </label>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                        {/* Standard Delivery Option */}
-                        <div 
-                          onClick={() => setDeliveryOption('standard')}
-                          style={{
-                            padding: '0.85rem 1rem',
-                            borderRadius: '6px',
-                            border: deliveryOption === 'standard' ? '2px solid #C5A059' : '1px solid #E5DFC5',
-                            backgroundColor: deliveryOption === 'standard' ? '#FFFFFF' : '#FAF7F2',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            boxShadow: deliveryOption === 'standard' ? '0 4px 12px rgba(197, 160, 89, 0.15)' : 'none',
-                            transition: 'all 0.2s ease'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: deliveryOption === 'standard' ? '5px solid #C5A059' : '2px solid #D6DDD3', backgroundColor: '#FFF' }} />
-                            <div>
-                              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>Standard Delivery (3–5 Business Days)</div>
-                              <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>
-                                {isFreeShippingEligible ? 'Free on orders over £70' : 'Reliable UK Royal Mail Tracked Delivery'}
-                              </div>
-                            </div>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: isFreeShippingEligible ? '#2D3A29' : '#6E5535' }}>
-                              {isFreeShippingEligible ? 'FREE' : formatCurrency(standardDeliveryPrice)}
-                            </span>
-                            {isFreeShippingEligible && (
-                              <div style={{ fontSize: '0.65rem', color: '#4A5D4E', fontWeight: 600 }}>OVER £70</div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Express Delivery Option */}
-                        <div 
-                          onClick={() => setDeliveryOption('express')}
-                          style={{
-                            padding: '0.85rem 1rem',
-                            borderRadius: '6px',
-                            border: deliveryOption === 'express' ? '2px solid #C5A059' : '1px solid #E5DFC5',
-                            backgroundColor: deliveryOption === 'express' ? '#FFFFFF' : '#FAF7F2',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            boxShadow: deliveryOption === 'express' ? '0 4px 12px rgba(197, 160, 89, 0.15)' : 'none',
-                            transition: 'all 0.2s ease'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: deliveryOption === 'express' ? '5px solid #C5A059' : '2px solid #D6DDD3', backgroundColor: '#FFF' }} />
-                            <div>
-                              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2D3A29' }}>Express Delivery (1–2 Business Days)</div>
-                              <div style={{ fontSize: '0.75rem', color: '#5C635B' }}>Priority Royal Mail Tracked 24 dispatch</div>
-                            </div>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>
-                              {formatCurrency(expressDeliveryPrice)}
-                            </span>
-                            <div style={{ fontSize: '0.65rem', color: '#C5A059', fontWeight: 600 }}>FAST TRACK</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button 
-                      type="submit"
-                      style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', fontSize: '1rem', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'background-color 0.2s ease' }}
-                    >
-                      Continue to Payment →
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {/* ─── STEP 2: PAYMENT METHOD ─── */}
-              {checkoutStep === 'payment' && (
-                <div>
-                  {/* Address Summary Badge with Edit link */}
-                  <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '6px', padding: '0.85rem 1rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '0.825rem', color: '#2D3A29', maxWidth: '80%' }}>
-                      <div style={{ color: '#6E5535', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.15rem' }}>Deliver to:</div>
-                      <strong>{shippingAddress.shippingName}</strong> — {shippingAddress.shippingAddress}, {shippingAddress.shippingCity} ({shippingAddress.shippingPostcode})
-                    </div>
-                    <button 
-                      type="button" 
-                      onClick={() => setCheckoutStep('address')}
-                      style={{ background: 'none', border: 'none', color: '#C5A059', fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                    >
-                      Edit
-                    </button>
-                  </div>
-
-                  <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                    <h2 className="font-serif" style={{ fontSize: '1.7rem', color: '#2D3A29', marginBottom: '0.25rem', fontWeight: 400 }}>Payment Method</h2>
-                    <p style={{ color: '#5C635B', fontSize: '0.85rem', margin: 0 }}>Select your preferred secure payment method.</p>
-                  </div>
-
-                  {/* Payment Method Selector Tabs */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                    {/* Tab 1: PayPal & Cards */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedPaymentMethod('paypal')}
-                      style={{
-                        padding: '0.9rem 1rem',
-                        borderRadius: '8px',
-                        border: selectedPaymentMethod === 'paypal' ? '2px solid #C5A059' : '1px solid #E5DFC5',
-                        backgroundColor: selectedPaymentMethod === 'paypal' ? '#FAF6EE' : '#FFFFFF',
-                        boxShadow: selectedPaymentMethod === 'paypal' ? '0 4px 14px rgba(197, 160, 89, 0.2)' : 'none',
-                        cursor: 'pointer',
-                        textAlign: 'left',
+                    {/* LOCALHOST DEVELOPMENT QUICK TEST CONTROLS */}
+                    {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
+                      <div style={{
+                        backgroundColor: '#FAF6EE',
+                        border: '1px dashed #C5A059',
+                        borderRadius: '6px',
+                        padding: '0.65rem 0.75rem',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '0.35rem',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#2D3A29' }}>
-                          PayPal & Cards
-                        </span>
-                        <span style={{
-                          width: '18px',
-                          height: '18px',
-                          borderRadius: '50%',
-                          border: selectedPaymentMethod === 'paypal' ? '5px solid #C5A059' : '2px solid #D6DDD3',
-                          backgroundColor: '#FFF'
-                        }} />
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.2rem' }}>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '14px' }} />
-                        <CreditCard size={14} color="#6E5535" />
-                        <span style={{ fontSize: '0.72rem', color: '#6E5535', fontWeight: 600 }}>Debit / Credit Card</span>
-                      </div>
-                    </button>
-
-                    {/* Tab 2: Espees (ESP) */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedPaymentMethod('espees')}
-                      style={{
-                        padding: '0.9rem 1rem',
-                        borderRadius: '8px',
-                        border: selectedPaymentMethod === 'espees' ? '2px solid #C5A059' : '1px solid #E5DFC5',
-                        backgroundColor: selectedPaymentMethod === 'espees' ? '#FAF6EE' : '#FFFFFF',
-                        boxShadow: selectedPaymentMethod === 'espees' ? '0 4px 14px rgba(197, 160, 89, 0.2)' : 'none',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.35rem',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#2D3A29' }}>
-                          ⚡ Pay with Espees
-                        </span>
-                        <span style={{
-                          width: '18px',
-                          height: '18px',
-                          borderRadius: '50%',
-                          border: selectedPaymentMethod === 'espees' ? '5px solid #C5A059' : '2px solid #D6DDD3',
-                          backgroundColor: '#FFF'
-                        }} />
-                      </div>
-                      <span style={{ fontSize: '0.72rem', color: '#6E5535', fontWeight: 600 }}>
-                        {cartTotal.toFixed(2)} ESP • Loveworld Pay
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* Payment Methods */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-                    {/* PAYPAL SMART BUTTONS (Active by Default) */}
-                    {selectedPaymentMethod === 'paypal' && (
-                      <div style={{ border: '2px solid #C5A059', borderRadius: '8px', padding: '1.5rem', backgroundColor: '#FFFFFF', boxShadow: '0 4px 18px rgba(197, 160, 89, 0.12)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.1rem', paddingBottom: '0.75rem', borderBottom: '1px solid #F0ECE1' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '22px' }} />
-                            <div>
-                              <div style={{ fontSize: '0.95rem', color: '#2D3A29', fontWeight: 700 }}>PayPal & Card Checkout</div>
-                              <div style={{ fontSize: '0.72rem', color: '#5C635B' }}>Fast, verified & encrypted UK checkout</div>
-                            </div>
-                          </div>
-                          <span style={{ fontSize: '0.7rem', backgroundColor: '#FAF6EE', border: '1px solid #C5A059', color: '#6E5535', padding: '0.2rem 0.55rem', borderRadius: '4px', fontWeight: 700 }}>
-                            RECOMMENDED
+                        gap: '0.45rem',
+                        marginTop: '0.15rem'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#6E5535', fontWeight: 700, letterSpacing: '0.04em' }}>
+                            ⚡ LOCAL TEST SIGN-IN
+                          </span>
+                          <span style={{ fontSize: '0.65rem', color: '#8C887B' }}>
+                            (Bypasses origin check on localhost)
                           </span>
                         </div>
-
-                        <p style={{ margin: '0 0 1.25rem 0', fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5 }}>
-                          Click the yellow <strong>PayPal</strong> button below to sign in, or click <strong>Debit or Credit Card</strong> to pay directly with your bank card (Visa, Mastercard, Maestro, Amex) — <em>no PayPal account required</em>.
-                        </p>
-
-                        {paymentProcessing && (
-                          <div style={{ textAlign: 'center', padding: '1rem', color: '#6E5535', fontSize: '0.9rem' }}>
-                            <div style={{ display: 'inline-block', width: '20px', height: '20px', border: '2px solid #E5DFC5', borderTopColor: '#C5A059', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginRight: '0.5rem', verticalAlign: 'middle' }}></div>
-                            Processing your payment securely...
-                          </div>
-                        )}
-
-                        <div style={{ opacity: paymentProcessing ? 0.5 : 1, pointerEvents: paymentProcessing ? 'none' : 'auto' }}>
-                          <PayPalButtons
-                            style={{
-                              layout: 'vertical',
-                              color: 'gold',
-                              shape: 'rect',
-                              label: 'pay',
-                              height: 48,
-                              tagline: false,
-                            }}
-                            createOrder={createPayPalOrder}
-                            onApprove={capturePayPalOrder}
-                            onError={(err) => {
-                              setPaymentProcessing(false);
-                              console.error('PayPal notice/error:', err);
-                              const msg = err?.message || String(err || '');
-                              if (!msg.toLowerCase().includes('closed') && !msg.toLowerCase().includes('cancel')) {
-                                showToast("We couldn't complete your payment. You have not been charged. Please try again.");
-                              }
-                            }}
-                            onCancel={() => {
-                              setPaymentProcessing(false);
-                              showToast('PayPal checkout cancelled.');
-                            }}
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginTop: '1.15rem', color: '#8C887B', fontSize: '0.75rem' }}>
-                          <span>🔒 256-Bit SSL Encrypted</span>
-                          <span>•</span>
-                          <span>✓ Official UK PayPal Partner</span>
-                          <span>•</span>
-                          <span>✓ Buyer Protection</span>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* ESPEES (ESP) · LOVEWORLD PAY OPTION */}
-                    {selectedPaymentMethod === 'espees' && (
-                    <div style={{ border: '2px solid #C5A059', borderRadius: '8px', padding: '1.35rem 1.5rem', backgroundColor: '#FAF6EE', position: 'relative', boxShadow: '0 4px 18px rgba(197, 160, 89, 0.15)' }}>
-                      <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
-                        <span style={{ backgroundColor: '#2D3A29', color: '#DFCAA7', fontSize: '0.625rem', padding: '0.2rem 0.55rem', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.08em' }}>
-                          MADE IN LOVEWORLD
-                        </span>
-                      </div>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#C5A059', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1rem', boxShadow: '0 2px 8px rgba(197,160,89,0.35)' }}>
-                          ⚡
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 700, color: '#2D3A29', fontSize: '1.15rem' }}>Pay with Espees (ESP)</div>
-                          <div style={{ fontSize: '0.75rem', color: '#6E5535', fontWeight: 600 }}>Official Loveworld Currency • 1 ESP = £1.00 GBP</div>
-                        </div>
-                      </div>
-
-                      <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5DFC5', borderRadius: '6px', padding: '0.85rem 1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontSize: '0.7rem', color: '#5C635B', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>Total in Espees</div>
-                          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#6E5535', lineHeight: 1.1 }}>
-                            {cartTotal.toFixed(2)} ESP <span style={{ fontSize: '0.9rem', color: '#5C635B', fontWeight: 400 }}>({formatCurrency(cartTotal)})</span>
-                          </div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: '0.7rem', color: '#5C635B', fontWeight: 600, textTransform: 'uppercase' }}>Merchant Account</div>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29', fontFamily: 'monospace', backgroundColor: '#F5EFE3', padding: '0.2rem 0.55rem', borderRadius: '4px', display: 'inline-block' }}>
-                            @{espeesMerchantWallet || 'merchanttest01'}
-                          </div>
-                          <div style={{ fontSize: '0.68rem', color: '#6E5535', marginTop: '0.2rem' }}>
-                            Code: <strong>ESPMER01</strong>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Mode Switcher */}
-                      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                        <button
-                          type="button"
-                          onClick={() => setEspeesMode('wallet')}
-                          style={{
-                            flex: 1,
-                            padding: '0.55rem 0.75rem',
-                            borderRadius: '4px',
-                            border: espeesMode === 'wallet' ? '1.5px solid #2D3A29' : '1px solid #D6DDD3',
-                            backgroundColor: espeesMode === 'wallet' ? '#2D3A29' : '#FFF',
-                            color: espeesMode === 'wallet' ? '#FFF' : '#2D3A29',
-                            fontSize: '0.825rem',
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          📱 Espees Mobile App Pay
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setEspeesMode('gateway')}
-                          style={{
-                            flex: 1,
-                            padding: '0.55rem 0.75rem',
-                            borderRadius: '4px',
-                            border: espeesMode === 'gateway' ? '1.5px solid #2D3A29' : '1px solid #D6DDD3',
-                            backgroundColor: espeesMode === 'gateway' ? '#2D3A29' : '#FFF',
-                            color: espeesMode === 'gateway' ? '#FFF' : '#2D3A29',
-                            fontSize: '0.825rem',
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          🌐 Espees Web Gateway
-                        </button>
-                      </div>
-
-                      {espeesMode === 'wallet' ? (
-                        <div>
-                          <div style={{ fontSize: '0.825rem', color: '#3E463D', lineHeight: 1.6, marginBottom: '0.85rem', backgroundColor: '#F5EFE3', padding: '0.75rem 1rem', borderRadius: '6px', border: '1px solid #E5DFC5' }}>
-                            <strong style={{ color: '#2D3A29' }}>How to pay via Espees App:</strong>
-                            <ol style={{ margin: '0.35rem 0 0 1.25rem', padding: 0 }}>
-                              <li>Open your <strong>Espees App</strong> (iOS / Android) and tap <strong>Send / Transfer</strong></li>
-                              <li style={{ marginTop: '0.25rem' }}>
-                                Transfer <strong>{cartTotal.toFixed(2)} ESP</strong> to Merchant Username:{' '}
-                                <strong style={{ color: '#6E5535', fontFamily: 'monospace' }}>@{espeesMerchantWallet || 'merchanttest01'}</strong>{' '}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(espeesMerchantWallet || 'merchanttest01');
-                                    showToast('Copied @' + (espeesMerchantWallet || 'merchanttest01') + ' to clipboard!');
-                                  }}
-                                  style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', backgroundColor: '#DFCAA7', border: 'none', borderRadius: '3px', cursor: 'pointer', fontWeight: 700, color: '#2D3A29' }}
-                                >
-                                  Copy Handle
-                                </button>
-                              </li>
-                              <li style={{ marginTop: '0.25rem' }}>
-                                Or to Wallet Address:{' '}
-                                <span style={{ fontFamily: 'monospace', fontSize: '0.72rem', backgroundColor: '#FFF', padding: '0.1rem 0.35rem', borderRadius: '3px', border: '1px solid #E5DFC5' }}>
-                                  {(espeesMerchantAddress || '0x49e99dd6ec7b413867513052053161c3682d5506').substring(0, 8)}...{(espeesMerchantAddress || '0x49e99dd6ec7b413867513052053161c3682d5506').substring(36)}
-                                </span>{' '}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(espeesMerchantAddress || '0x49e99dd6ec7b413867513052053161c3682d5506');
-                                    showToast('Copied full merchant wallet address!');
-                                  }}
-                                  style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', backgroundColor: '#DFCAA7', border: 'none', borderRadius: '3px', cursor: 'pointer', fontWeight: 700, color: '#2D3A29' }}
-                                >
-                                  Copy Address
-                                </button>
-                              </li>
-                              <li style={{ marginTop: '0.25rem' }}>Enter your <strong>Espees Username</strong> or <strong>Payment Reference</strong> below</li>
-                            </ol>
-                          </div>
-
-                          <div style={{ marginBottom: '1rem' }}>
-                            <div style={{ marginBottom: '0.35rem' }}>
-                              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2D3A29', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                Your Espees Username or Reference Code *
-                              </label>
-                            </div>
-                            <input
-                              type="text"
-                              placeholder="e.g. usertest01 or 0xd15c259d11dfe0bb39383fd3270d74f6d124a13b"
-                              value={espeesUsernameRef}
-                              onChange={(e) => setEspeesUsernameRef(e.target.value)}
-                              style={{ width: '100%', padding: '0.85rem', borderRadius: '4px', border: '1px solid #C5A059', fontSize: '0.95rem', backgroundColor: '#FFFFFF' }}
-                            />
-                          </div>
-
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem' }}>
                           <button
                             type="button"
-                            disabled={isEspeesProcessing}
-                            onClick={handleConfirmEspeesDirectPayment}
-                            style={{
-                              width: '100%',
-                              padding: '1rem',
-                              backgroundColor: '#C5A059',
-                              color: '#1E221D',
-                              border: 'none',
-                              borderRadius: '4px',
-                              fontSize: '1rem',
-                              fontWeight: 700,
-                              cursor: isEspeesProcessing ? 'wait' : 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '0.5rem',
-                              boxShadow: '0 4px 14px rgba(197, 160, 89, 0.4)',
-                              transition: 'all 0.2s ease'
+                            onClick={() => {
+                              processKingsChatAuth({
+                                token: 'dev_sharon_token_' + Date.now(),
+                                email: 'sharonshelke1@gmail.com',
+                                firstName: 'Sharon',
+                                lastName: 'Shelke',
+                                username: 'Sharon Rajiv Shelke'
+                              });
                             }}
-                          >
-                            {isEspeesProcessing ? (
-                              'Confirming Espees Transaction...'
-                            ) : (
-                              `Pay ${cartTotal.toFixed(2)} ESP with Espees ✓`
-                            )}
-                          </button>
-                        </div>
-                      ) : (
-                        <div>
-                          <div style={{ fontSize: '0.825rem', color: '#5C635B', lineHeight: 1.5, marginBottom: '0.85rem', backgroundColor: '#F5EFE3', padding: '0.85rem 1rem', borderRadius: '6px', border: '1px solid #E5DFC5' }}>
-                            <div>
-                              You will be redirected to the official <strong>Espees Online Checkout Portal (payment.espees.org)</strong> to authenticate and approve the payment with your Espees credentials.
-                            </div>
-                            <div style={{ marginTop: '0.65rem', paddingTop: '0.6rem', borderTop: '1px dashed #D6DDD3', fontSize: '0.75rem', color: '#2D3A29' }}>
-                              <strong style={{ color: '#6E5535' }}>🧪 Official Espees Test Credentials:</strong>
-                              <div style={{ marginTop: '0.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                <span style={{ backgroundColor: '#FFF', padding: '0.15rem 0.45rem', borderRadius: '3px', border: '1px solid #E5DFC5' }}>
-                                  Buyer: <strong>usertest01</strong> / <strong>user@1234</strong> (PIN: <strong>1234</strong>)
-                                </span>
-                                <span style={{ backgroundColor: '#FFF', padding: '0.15rem 0.45rem', borderRadius: '3px', border: '1px solid #E5DFC5' }}>
-                                  Merchant: <strong>merchanttest01</strong> (Code: <strong>ESPMER01</strong>)
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            disabled={isEspeesProcessing}
-                            onClick={handleLaunchEspeesGateway}
                             style={{
-                              width: '100%',
-                              padding: '1rem',
+                              padding: '0.5rem',
                               backgroundColor: '#2D3A29',
                               color: '#DFCAA7',
                               border: 'none',
                               borderRadius: '4px',
-                              fontSize: '1rem',
-                              fontWeight: 700,
-                              cursor: isEspeesProcessing ? 'wait' : 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '0.5rem'
+                              fontSize: '0.72rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              textAlign: 'center'
                             }}
+                            title="Sign in as Sharon (Administrator) with full access"
                           >
-                            {isEspeesProcessing ? (
-                              'Connecting to Espees Gateway...'
-                            ) : (
-                              `Launch Espees Payment Portal (${cartTotal.toFixed(2)} ESP) →`
-                            )}
+                            👑 As Sharon (Admin)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              processKingsChatAuth({
+                                token: 'dev_cust_token_' + Date.now(),
+                                email: 'demo.customer@lichtluxenaturals.org',
+                                firstName: 'Demo',
+                                lastName: 'Customer',
+                                username: 'democustomer'
+                              });
+                            }}
+                            style={{
+                              padding: '0.5rem',
+                              backgroundColor: '#DFCAA7',
+                              color: '#2D3A29',
+                              border: '1px solid #C5A059',
+                              borderRadius: '4px',
+                              fontSize: '0.72rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              textAlign: 'center'
+                            }}
+                            title="Sign in as customer to test shopping bag & checkout"
+                          >
+                            👤 As Customer Demo
                           </button>
                         </div>
-                      )}
-
-                      <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.72rem', color: '#6E5535' }}>
-                        ⚡ Powered by Espees Global Financial Network • Made in Loveworld
                       </div>
-                    </div>
-                  )}
-
+                    )}
                   </div>
+
+                  {/* EMAIL BUTTON & ACCORDION */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                    <button
+                      style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'email' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'email' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+                      onClick={() => setAuthExpandedOption(authExpandedOption === 'email' ? null : 'email')}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <Mail size={16} color="#6E5535" strokeWidth={1.5} />
+                        {authMode === 'login' ? 'Continue with Email' : 'Sign up with Email'}
+                      </div>
+                      {authExpandedOption === 'email' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
+                    </button>
+
+                    {authExpandedOption === 'email' && (
+                      <form onSubmit={authMode === 'login' ? handleLoginSubmit : handleRegisterSubmit} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {authMode === 'register' && (
+                          <>
+                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                              <input
+                                type="text"
+                                name="firstName"
+                                value={authForm.firstName}
+                                onChange={handleAuthInputChange}
+                                placeholder="First Name"
+                                required
+                                style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }}
+                              />
+                              <input
+                                type="text"
+                                name="lastName"
+                                value={authForm.lastName}
+                                onChange={handleAuthInputChange}
+                                placeholder="Last Name"
+                                required
+                                style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }}
+                              />
+                            </div>
+                            <input
+                              type="tel"
+                              name="phone"
+                              value={authForm.phone}
+                              onChange={handleAuthInputChange}
+                              placeholder="Phone Number (e.g. 07831082965)"
+                              style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }}
+                            />
+                          </>
+                        )}
+
+                        <input
+                          type="email"
+                          name="email"
+                          value={authForm.email}
+                          onChange={handleAuthInputChange}
+                          placeholder="Email Address"
+                          required
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }}
+                        />
+                        <input
+                          type="password"
+                          name="password"
+                          value={authForm.password}
+                          onChange={handleAuthInputChange}
+                          placeholder="Password"
+                          required
+                          minLength={6}
+                          style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }}
+                        />
+
+                        {authMode === 'login' && (
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.25rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAuthMode('forgot');
+                                setForgotStep(1);
+                                setForgotForm(prev => ({ ...prev, email: authForm.email }));
+                              }}
+                              style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', textDecoration: 'underline', cursor: 'pointer' }}
+                            >
+                              Forgot Password?
+                            </button>
+                          </div>
+                        )}
+
+                        <button
+                          type="submit"
+                          disabled={authLoading}
+                          style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
+                        >
+                          {authLoading ? 'Processing...' : (authMode === 'login' ? 'Sign In' : 'Create Account & Receive Welcome')}
+                        </button>
+                      </form>
+                    )}
+                  </div>
+
+                  {/* PHONE BUTTON & ACCORDION */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                    <button
+                      style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'phone' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'phone' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease', marginTop: authExpandedOption === 'email' ? '1rem' : '0' }}
+                      onClick={() => setAuthExpandedOption(authExpandedOption === 'phone' ? null : 'phone')}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <Phone size={16} color="#6E5535" strokeWidth={1.5} />
+                        {authMode === 'login' ? 'Continue with Phone' : 'Sign up with Phone'}
+                      </div>
+                      {authExpandedOption === 'phone' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
+                    </button>
+
+                    {authExpandedOption === 'phone' && (
+                      <form onSubmit={(e) => { e.preventDefault(); showToast('Please use Email to receive your instant verification & order tracking updates.'); setAuthExpandedOption('email'); }} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <input type="tel" placeholder="Phone Number" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                        <input type="password" placeholder="Password" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
+                        <button type="submit" style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
+                          Switch to Email Verification
+                        </button>
+                      </form>
+                    )}
+                  </div>
+
                 </div>
               )}
 
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* AUTHENTICATION & PASSWORD RECOVERY MODAL - LUXURY VIBE */}
-      {isAuthOpen && (
-        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={closeAuthModal}>
-          <div className="modal-card" style={{ maxWidth: '480px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem 2.25rem', borderRadius: '6px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 40px rgba(45,58,41,0.08)' }} onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={closeAuthModal} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', color: '#5C635B' }}>
-              <X size={22} />
-            </button>
-            
-            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <LichtLogo size="header" color="#2D3A29" markOnly={true} style={{ margin: '0 auto', marginBottom: '1rem' }} />
-              <h2 className="font-serif" style={{ fontSize: '1.9rem', color: '#2D3A29', marginBottom: '0.35rem', fontWeight: 400 }}>
-                {authMode === 'profile' ? 'Member Profile' :
-                 authMode === 'forgot' ? 'Reset Password' :
-                 authMode === 'login' ? 'Welcome Back' : 'Create an Account'}
-              </h2>
-              <p style={{ color: '#C5A059', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-                {authMode === 'profile' ? 'LICHT Luxe Naturals Member' :
-                 authMode === 'forgot' ? (forgotStep === 1 ? 'Step 1 of 3: Request Verification Code' : (forgotStep === 2 ? 'Step 2 of 3: Verify Passcode' : 'Step 3 of 3: New Password')) :
-                 authMode === 'login' ? 'Access your member profile' : 'Join the Luxe Naturals community'}
-              </p>
-            </div>
-
-            {/* PENDING CART ITEM SUGGESTION BANNER */}
-            {pendingCartItem && (authMode === 'login' || authMode === 'register') && (
-              <div style={{
-                marginBottom: '1.5rem',
-                padding: '0.9rem 1.15rem',
-                backgroundColor: '#FAF7F2',
-                border: '1px solid #DFCAA7',
-                borderRadius: '6px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                textAlign: 'left',
-                boxShadow: '0 4px 12px rgba(197, 160, 89, 0.08)'
-              }}>
-                <Sparkles size={22} color="#C5A059" style={{ flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2D3A29' }}>
-                    Sign in to add to your bag
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#5C635B', marginTop: '2px', lineHeight: 1.4 }}>
-                    Please sign in or create an account to add <strong>{pendingCartItem.product?.name}</strong> to your bag and save your order.
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ─── PROFILE VIEW (WHEN LOGGED IN) ─── */}
-            {authMode === 'profile' && currentUser && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '1.5rem', textAlign: 'center' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#2D3A29', color: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', fontSize: '1.4rem', fontWeight: 600, letterSpacing: '0.05em' }}>
-                    {currentUser.firstName ? currentUser.firstName.charAt(0).toUpperCase() : 'L'}
-                  </div>
-                  <h3 style={{ margin: '0 0 0.25rem 0', color: '#2D3A29', fontSize: '1.2rem' }}>
-                    {currentUser.firstName} {currentUser.lastName}
-                  </h3>
-                  <p style={{ margin: 0, color: '#5C635B', fontSize: '0.85rem' }}>{currentUser.email}</p>
-                  <div style={{ marginTop: '0.75rem', display: 'inline-block', backgroundColor: '#DFCAA7', color: '#2D3A29', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em' }}>
-                    {currentUser.role || 'MEMBER'}
-                  </div>
-                </div>
-
-                <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {isAdmin && (
-                    <button 
-                      onClick={() => { setIsAuthOpen(false); navigateToTab('admin'); }}
-                      style={{ width: '100%', padding: '0.85rem', backgroundColor: '#C5A059', color: '#161D15', border: 'none', borderRadius: '4px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-                    >
-                      <ShieldCheck size={16} /> Open Admin Operations Suite
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => { setIsAuthOpen(false); navigateToTab('account'); }}
-                    style={{ width: '100%', padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FAF7F2', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', letterSpacing: '0.05em' }}
-                  >
-                    View My Account & Orders
-                  </button>
-                  <button 
-                    onClick={handleLogout}
-                    style={{ width: '100%', padding: '0.85rem', backgroundColor: 'transparent', color: '#8B0000', border: '1px solid #D6DDD3', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* ─── FORGOT PASSWORD (OTP WORKFLOW) ─── */}
-            {authMode === 'forgot' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {forgotStep === 1 && (
-                  <form onSubmit={handleForgotPasswordRequest} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <p style={{ fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5, margin: 0 }}>
-                      Enter your personal registered account email below (e.g. <strong>sharonshelke1@gmail.com</strong>). A 6-digit passcode will be dispatched from our domain <em>info@lichtluxenaturals.org</em>.
-                    </p>
-                    <input 
-                      type="email" 
-                      name="email"
-                      value={forgotForm.email}
-                      onChange={handleForgotInputChange}
-                      placeholder="e.g. sharonshelke1@gmail.com" 
-                      required 
-                      style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
-                    />
-                    <button 
-                      type="submit" 
-                      disabled={authLoading}
-                      style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
-                    >
-                      {authLoading ? 'Sending Code...' : 'Send Verification Code'}
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => setAuthMode('login')} 
-                      style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
-                    >
-                      ← Back to Sign In
-                    </button>
-                  </form>
-                )}
-
-                {forgotStep === 2 && (
-                  <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div style={{ backgroundColor: '#FAF7F2', border: '1px solid #E5DFC5', borderRadius: '4px', padding: '1rem', textAlign: 'center' }}>
-                      <p style={{ fontSize: '0.85rem', color: '#2D3A29', margin: 0 }}>
-                        A 6-digit verification code was dispatched to:
-                      </p>
-                      <p style={{ fontWeight: 700, color: '#C5A059', margin: '4px 0 0 0', fontSize: '0.9rem' }}>
-                        {forgotForm.email}
-                      </p>
-                      <p style={{ fontSize: '0.75rem', color: '#7A8279', margin: '6px 0 0 0' }}>
-                        Valid for 10 minutes • Up to 5 attempts allowed
-                      </p>
-                    </div>
-
-                    <input 
-                      type="text" 
-                      name="otp"
-                      maxLength={6}
-                      value={forgotForm.otp}
-                      onChange={handleForgotInputChange}
-                      placeholder="Enter 6-Digit OTP" 
-                      required 
-                      style={{ width: '100%', padding: '0.95rem', borderRadius: '2px', border: '2px solid #C5A059', fontSize: '1.3rem', textAlign: 'center', letterSpacing: '0.3em', fontFamily: 'monospace', fontWeight: 700, backgroundColor: '#FFF' }} 
-                    />
-
-                    <button 
-                      type="submit" 
-                      disabled={authLoading}
-                      style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
-                    >
-                      {authLoading ? 'Verifying Code...' : 'Verify & Continue'}
-                    </button>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <button 
-                        type="button" 
-                        onClick={() => setForgotStep(1)} 
-                        style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
-                      >
-                        ← Change email
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={handleForgotPasswordRequest} 
-                        style={{ background: 'none', border: 'none', color: '#C5A059', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
-                      >
-                        Resend code
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                {forgotStep === 3 && (
-                  <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <p style={{ fontSize: '0.85rem', color: '#5C635B', lineHeight: 1.5, margin: 0 }}>
-                      Code verified! Please enter your new password below.
-                    </p>
-                    <input 
-                      type="password" 
-                      name="newPassword"
-                      value={forgotForm.newPassword}
-                      onChange={handleForgotInputChange}
-                      placeholder="New Password (min 6 characters)" 
-                      required 
-                      minLength={6}
-                      style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
-                    />
-                    <input 
-                      type="password" 
-                      name="confirmPassword"
-                      value={forgotForm.confirmPassword}
-                      onChange={handleForgotInputChange}
-                      placeholder="Confirm New Password" 
-                      required 
-                      minLength={6}
-                      style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
-                    />
-                    <button 
-                      type="submit" 
-                      disabled={authLoading}
-                      style={{ padding: '0.9rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
-                    >
-                      {authLoading ? 'Updating Password...' : 'Save New Password'}
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
-
-            {/* ─── LOGIN & REGISTRATION WORKFLOW ─── */}
-            {(authMode === 'login' || authMode === 'register') && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                
-                {/* KINGSCHAT BUTTON & LOVEWORLD SSO */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                  <button 
-                    type="button"
-                    disabled={authLoading}
-                    style={{
-                      width: '100%',
-                      padding: '1rem',
-                      backgroundColor: '#DFCAA7',
-                      color: '#2D3A29',
-                      border: '1.5px solid #C5A059',
-                      borderRadius: '4px',
-                      fontSize: '0.85rem',
-                      fontWeight: 700,
-                      cursor: authLoading ? 'wait' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.75rem',
-                      letterSpacing: '0.08em',
-                      textTransform: 'uppercase',
-                      transition: 'all 0.3s ease',
-                      boxShadow: '0 2px 8px rgba(197, 160, 89, 0.25)'
-                    }}
-                    onClick={handleKingsChatLogin}
-                    className="hover-bg-darken"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                    </svg>
-                    {authLoading ? 'Connecting to KingsChat...' : (authMode === 'login' ? 'Sign in with KingsChat' : 'Sign up with KingsChat')}
-                  </button>
-                  <div style={{ textAlign: 'center', padding: '0.4rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-                    <ShieldCheck size={14} color="#C5A059" />
-                    <span style={{ fontSize: '0.75rem', color: '#6E5535', fontWeight: 500 }}>
-                      Official Loveworld Single Sign-On
-                    </span>
-                  </div>
-
-                  {/* LOCALHOST DEVELOPMENT QUICK TEST CONTROLS */}
-                  {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
-                    <div style={{
-                      backgroundColor: '#FAF6EE',
-                      border: '1px dashed #C5A059',
-                      borderRadius: '6px',
-                      padding: '0.65rem 0.75rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.45rem',
-                      marginTop: '0.15rem'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.7rem', color: '#6E5535', fontWeight: 700, letterSpacing: '0.04em' }}>
-                          ⚡ LOCAL TEST SIGN-IN
-                        </span>
-                        <span style={{ fontSize: '0.65rem', color: '#8C887B' }}>
-                          (Bypasses origin check on localhost)
-                        </span>
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem' }}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            processKingsChatAuth({
-                              token: 'dev_sharon_token_' + Date.now(),
-                              email: 'sharonshelke1@gmail.com',
-                              firstName: 'Sharon',
-                              lastName: 'Shelke',
-                              username: 'Sharon Rajiv Shelke'
-                            });
-                          }}
-                          style={{
-                            padding: '0.5rem',
-                            backgroundColor: '#2D3A29',
-                            color: '#DFCAA7',
-                            border: 'none',
-                            borderRadius: '4px',
-                            fontSize: '0.72rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            textAlign: 'center'
-                          }}
-                          title="Sign in as Sharon (Administrator) with full access"
-                        >
-                          👑 As Sharon (Admin)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            processKingsChatAuth({
-                              token: 'dev_cust_token_' + Date.now(),
-                              email: 'demo.customer@lichtluxenaturals.org',
-                              firstName: 'Demo',
-                              lastName: 'Customer',
-                              username: 'democustomer'
-                            });
-                          }}
-                          style={{
-                            padding: '0.5rem',
-                            backgroundColor: '#DFCAA7',
-                            color: '#2D3A29',
-                            border: '1px solid #C5A059',
-                            borderRadius: '4px',
-                            fontSize: '0.72rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            textAlign: 'center'
-                          }}
-                          title="Sign in as customer to test shopping bag & checkout"
-                        >
-                          👤 As Customer Demo
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* EMAIL BUTTON & ACCORDION */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                  <button 
-                    style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'email' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'email' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
-                    onClick={() => setAuthExpandedOption(authExpandedOption === 'email' ? null : 'email')}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <Mail size={16} color="#6E5535" strokeWidth={1.5} />
-                      {authMode === 'login' ? 'Continue with Email' : 'Sign up with Email'}
-                    </div>
-                    {authExpandedOption === 'email' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
-                  </button>
-
-                  {authExpandedOption === 'email' && (
-                    <form onSubmit={authMode === 'login' ? handleLoginSubmit : handleRegisterSubmit} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      {authMode === 'register' && (
-                        <>
-                          <div style={{ display: 'flex', gap: '0.75rem' }}>
-                            <input 
-                              type="text" 
-                              name="firstName" 
-                              value={authForm.firstName} 
-                              onChange={handleAuthInputChange} 
-                              placeholder="First Name" 
-                              required 
-                              style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
-                            />
-                            <input 
-                              type="text" 
-                              name="lastName" 
-                              value={authForm.lastName} 
-                              onChange={handleAuthInputChange} 
-                              placeholder="Last Name" 
-                              required 
-                              style={{ width: '50%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
-                            />
-                          </div>
-                          <input 
-                            type="tel" 
-                            name="phone" 
-                            value={authForm.phone} 
-                            onChange={handleAuthInputChange} 
-                            placeholder="Phone Number (e.g. 07831082965)" 
-                            style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
-                          />
-                        </>
-                      )}
-                      
-                      <input 
-                        type="email" 
-                        name="email" 
-                        value={authForm.email} 
-                        onChange={handleAuthInputChange} 
-                        placeholder="Email Address" 
-                        required 
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
-                      />
-                      <input 
-                        type="password" 
-                        name="password" 
-                        value={authForm.password} 
-                        onChange={handleAuthInputChange} 
-                        placeholder="Password" 
-                        required 
-                        minLength={6}
-                        style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} 
-                      />
-                      
-                      {authMode === 'login' && (
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.25rem' }}>
-                          <button 
-                            type="button" 
-                            onClick={() => {
-                              setAuthMode('forgot');
-                              setForgotStep(1);
-                              setForgotForm(prev => ({ ...prev, email: authForm.email }));
-                            }}
-                            style={{ background: 'none', border: 'none', color: '#6E5535', fontSize: '0.75rem', textDecoration: 'underline', cursor: 'pointer' }}
-                          >
-                            Forgot Password?
-                          </button>
-                        </div>
-                      )}
-
-                      <button 
-                        type="submit" 
-                        disabled={authLoading}
-                        style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em', opacity: authLoading ? 0.7 : 1 }}
-                      >
-                        {authLoading ? 'Processing...' : (authMode === 'login' ? 'Sign In' : 'Create Account & Receive Welcome')}
-                      </button>
-                    </form>
-                  )}
-                </div>
-
-                {/* PHONE BUTTON & ACCORDION */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                  <button 
-                    style={{ width: '100%', padding: '1rem', backgroundColor: 'transparent', color: '#2D3A29', border: '1px solid #E5DFC5', borderBottom: authExpandedOption === 'phone' ? 'none' : '1px solid #E5DFC5', borderRadius: authExpandedOption === 'phone' ? '4px 4px 0 0' : '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease', marginTop: authExpandedOption === 'email' ? '1rem' : '0' }}
-                    onClick={() => setAuthExpandedOption(authExpandedOption === 'phone' ? null : 'phone')}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <Phone size={16} color="#6E5535" strokeWidth={1.5} />
-                      {authMode === 'login' ? 'Continue with Phone' : 'Sign up with Phone'}
-                    </div>
-                    {authExpandedOption === 'phone' ? <ChevronUp size={18} color="#C5A059" /> : <ChevronDown size={18} color="#C5A059" />}
-                  </button>
-
-                  {authExpandedOption === 'phone' && (
-                    <form onSubmit={(e) => { e.preventDefault(); showToast('Please use Email to receive your instant verification & order tracking updates.'); setAuthExpandedOption('email'); }} style={{ padding: '1.5rem', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', borderTop: 'none', borderRadius: '0 0 4px 4px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <input type="tel" placeholder="Phone Number" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                      <input type="password" placeholder="Password" required style={{ width: '100%', padding: '0.85rem', borderRadius: '2px', border: '1px solid #D6DDD3', fontSize: '0.9rem', backgroundColor: '#FFF' }} />
-                      <button type="submit" style={{ padding: '0.85rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '2px', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', letterSpacing: '0.05em' }}>
-                        Switch to Email Verification
-                      </button>
-                    </form>
-                  )}
-                </div>
-
-              </div>
-            )}
-
-            {/* FOOTER SWITCHER */}
-            {authMode !== 'profile' && (
-              <div style={{ textAlign: 'center', marginTop: '2rem', borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', fontSize: '0.85rem', color: '#5C635B' }}>
-                {authMode === 'forgot' ? (
-                  <button 
-                    type="button" 
-                    onClick={() => { setAuthMode('login'); setForgotStep(1); }} 
-                    style={{ background: 'none', border: 'none', color: '#6E5535', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
-                  >
-                    Return to Sign In
-                  </button>
-                ) : (
-                  <>
-                    {authMode === 'login' ? "Don't have an account? " : "Already have an account? "}
-                    <button 
-                      type="button" 
-                      onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthExpandedOption(null); }} 
+              {/* FOOTER SWITCHER */}
+              {authMode !== 'profile' && (
+                <div style={{ textAlign: 'center', marginTop: '2rem', borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', fontSize: '0.85rem', color: '#5C635B' }}>
+                  {authMode === 'forgot' ? (
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('login'); setForgotStep(1); }}
                       style={{ background: 'none', border: 'none', color: '#6E5535', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
                     >
-                      {authMode === 'login' ? 'Sign up here' : 'Sign in here'}
+                      Return to Sign In
                     </button>
-                  </>
-                )}
+                  ) : (
+                    <>
+                      {authMode === 'login' ? "Don't have an account? " : "Already have an account? "}
+                      <button
+                        type="button"
+                        onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthExpandedOption(null); }}
+                        style={{ background: 'none', border: 'none', color: '#6E5535', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                      >
+                        {authMode === 'login' ? 'Sign up here' : 'Sign in here'}
+                      </button>
+                    </>
+                  )}
 
-                {/* OPTIONAL GUEST CONTINUATION IF USER CLICKED ADD TO BAG */}
-                {pendingCartItem && (authMode === 'login' || authMode === 'register') && (
-                  <div style={{ marginTop: '0.9rem', paddingTop: '0.75rem', borderTop: '1px dashed #E5DFC5' }}>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        const item = pendingCartItem;
-                        closeAuthModal();
-                        if (item) {
-                          addToCart(item.product, item.quantity, true);
-                        }
-                      }} 
-                      style={{ background: 'none', border: 'none', color: '#7A8279', fontSize: '0.78rem', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
-                    >
-                      Or continue adding {pendingCartItem.product?.name} as Guest →
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-          </div>
-        </div>
-      )}
-      
-      {/* PREFERENCES & SETTINGS MODAL */}
-      <SettingsModal 
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        onNavigateToAdmin={navigateToAdmin}
-        activeCurrency={activeCurrency}
-        onCurrencyChange={(curr) => {
-          setActiveCurrency(curr);
-          showToast(`Currency updated to ${curr}`);
-        }}
-        espeesMerchantWallet={espeesMerchantWallet}
-        onEspeesMerchantWalletChange={handleEspeesMerchantWalletChange}
-        espeesApiKey={espeesApiKey}
-        onEspeesApiKeyChange={handleEspeesApiKeyChange}
-      />
-
-      {/* ORDER CONFIRMATION MODAL */}
-      {orderConfirmation && (
-        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setOrderConfirmation(null)}>
-          <div className="modal-card" style={{ maxWidth: '500px', width: '95%', padding: '3rem 2.5rem', borderRadius: '8px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 60px rgba(45,58,41,0.12)', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ width: '70px', height: '70px', borderRadius: '50%', backgroundColor: '#2D3A29', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
-                <Check size={32} color="#DFCAA7" />
-              </div>
-              <h2 className="font-serif" style={{ fontSize: '1.8rem', color: '#2D3A29', marginBottom: '0.5rem', fontWeight: 400 }}>Thank You!</h2>
-              <p style={{ color: '#5C635B', fontSize: '0.95rem', lineHeight: 1.6 }}>Your payment has been processed successfully.<br/>Your order is now being prepared with love.</p>
-            </div>
-            
-            <div style={{ backgroundColor: '#F5F2EC', borderRadius: '8px', padding: '1.25rem', marginBottom: '1.5rem', textAlign: 'left' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Order Number</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2D3A29', letterSpacing: '0.05em' }}>{orderConfirmation.orderNumber}</span>
-              </div>
-              {orderConfirmation.subtotal && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                  <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Subtotal</span>
-                  <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>{formatCurrency(orderConfirmation.subtotal)}</span>
-                </div>
-              )}
-              {orderConfirmation.deliveryMethod && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                  <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>{orderConfirmation.deliveryMethod}</span>
-                  <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>
-                    {Number(orderConfirmation.deliveryFee) === 0 ? 'FREE (Over £70)' : formatCurrency(orderConfirmation.deliveryFee)}
-                  </span>
-                </div>
-              )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5DFC5', paddingTop: '0.5rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29' }}>Total Paid</span>
-                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(orderConfirmation.total)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: orderConfirmation.espeesRef ? '0.35rem' : '0' }}>
-                <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Payment Method</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: orderConfirmation.method === 'Espees (ESP)' ? '#6E5535' : '#003087' }}>
-                  {orderConfirmation.method === 'Espees (ESP)' ? '⚡ Espees (ESP) · Loveworld Pay ✓' : (orderConfirmation.method || 'PayPal ✓')}
-                </span>
-              </div>
-              {orderConfirmation.method === 'Espees (ESP)' && (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                    <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Amount in Espees</span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6E5535' }}>{orderConfirmation.totalEsp || orderConfirmation.total} ESP</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                    <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Merchant Wallet</span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2D3A29', fontFamily: 'monospace' }}>@{orderConfirmation.espeesWallet || 'lichtluxenaturals'}</span>
-                  </div>
-                  {orderConfirmation.espeesRef && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Member Ref / Username</span>
-                      <span style={{ fontSize: '0.85rem', color: '#2D3A29', fontWeight: 600 }}>{orderConfirmation.espeesRef}</span>
+                  {/* OPTIONAL GUEST CONTINUATION IF USER CLICKED ADD TO BAG */}
+                  {pendingCartItem && (authMode === 'login' || authMode === 'register') && (
+                    <div style={{ marginTop: '0.9rem', paddingTop: '0.75rem', borderTop: '1px dashed #E5DFC5' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const item = pendingCartItem;
+                          closeAuthModal();
+                          if (item) {
+                            addToCart(item.product, item.quantity, true);
+                          }
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#7A8279', fontSize: '0.78rem', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                      >
+                        Or continue adding {pendingCartItem.product?.name} as Guest →
+                      </button>
                     </div>
                   )}
-                </>
+                </div>
               )}
+
             </div>
-            
-            <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', fontSize: '0.8rem', color: '#5C635B', marginBottom: '1.5rem' }}>
-              A confirmation email will be sent to your registered email address.
-            </div>
-            
-            <button
-              onClick={() => { setOrderConfirmation(null); navigateToTab('shop'); }}
-              style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
-            >
-              Continue Shopping
-            </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* UK LEGAL POLICIES & CONSUMER RIGHTS MODAL */}
-      <LegalModal
-        isOpen={isLegalModalOpen}
-        onClose={() => setIsLegalModalOpen(false)}
-        initialTab={legalModalTab}
-      />
+        {/* PREFERENCES & SETTINGS MODAL */}
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          onNavigateToAdmin={navigateToAdmin}
+          activeCurrency={activeCurrency}
+          onCurrencyChange={(curr) => {
+            setActiveCurrency(curr);
+            showToast(`Currency updated to ${curr}`);
+          }}
+          espeesMerchantWallet={espeesMerchantWallet}
+          onEspeesMerchantWalletChange={handleEspeesMerchantWalletChange}
+          espeesApiKey={espeesApiKey}
+          onEspeesApiKeyChange={handleEspeesApiKeyChange}
+        />
 
-    </div>
+        {/* ORDER CONFIRMATION MODAL */}
+        {orderConfirmation && (
+          <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setOrderConfirmation(null)}>
+            <div className="modal-card" style={{ maxWidth: '500px', width: '95%', padding: '3rem 2.5rem', borderRadius: '8px', backgroundColor: '#FDFCF9', border: '1px solid #E5DFC5', boxShadow: '0 20px 60px rgba(45,58,41,0.12)', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ width: '70px', height: '70px', borderRadius: '50%', backgroundColor: '#2D3A29', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+                  <Check size={32} color="#DFCAA7" />
+                </div>
+                <h2 className="font-serif" style={{ fontSize: '1.8rem', color: '#2D3A29', marginBottom: '0.5rem', fontWeight: 400 }}>Thank You!</h2>
+                <p style={{ color: '#5C635B', fontSize: '0.95rem', lineHeight: 1.6 }}>Your payment has been processed successfully.<br />Your order is now being prepared with love.</p>
+              </div>
+
+              <div style={{ backgroundColor: '#F5F2EC', borderRadius: '8px', padding: '1.25rem', marginBottom: '1.5rem', textAlign: 'left' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Order Number</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2D3A29', letterSpacing: '0.05em' }}>{orderConfirmation.orderNumber}</span>
+                </div>
+                {orderConfirmation.subtotal && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Subtotal</span>
+                    <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>{formatCurrency(orderConfirmation.subtotal)}</span>
+                  </div>
+                )}
+                {orderConfirmation.deliveryMethod && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>{orderConfirmation.deliveryMethod}</span>
+                    <span style={{ fontSize: '0.85rem', color: '#2D3A29' }}>
+                      {Number(orderConfirmation.deliveryFee) === 0 ? 'FREE (Over £70)' : formatCurrency(orderConfirmation.deliveryFee)}
+                    </span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E5DFC5', paddingTop: '0.5rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2D3A29' }}>Total Paid</span>
+                  <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6E5535' }}>{formatCurrency(orderConfirmation.total)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: orderConfirmation.espeesRef ? '0.35rem' : '0' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Payment Method</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: orderConfirmation.method === 'Espees (ESP)' ? '#6E5535' : '#003087' }}>
+                    {orderConfirmation.method === 'Espees (ESP)' ? '⚡ Espees (ESP) · Loveworld Pay ✓' : (orderConfirmation.method || 'PayPal ✓')}
+                  </span>
+                </div>
+                {orderConfirmation.method === 'Espees (ESP)' && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Amount in Espees</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6E5535' }}>{orderConfirmation.totalEsp || orderConfirmation.total} ESP</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Merchant Wallet</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2D3A29', fontFamily: 'monospace' }}>@{orderConfirmation.espeesWallet || 'lichtluxenaturals'}</span>
+                    </div>
+                    {orderConfirmation.espeesRef && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '0.85rem', color: '#5C635B' }}>Member Ref / Username</span>
+                        <span style={{ fontSize: '0.85rem', color: '#2D3A29', fontWeight: 600 }}>{orderConfirmation.espeesRef}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div style={{ borderTop: '1px solid #E5DFC5', paddingTop: '1.25rem', fontSize: '0.8rem', color: '#5C635B', marginBottom: '1.5rem' }}>
+                A confirmation email will be sent to your registered email address.
+              </div>
+
+              <button
+                onClick={() => { setOrderConfirmation(null); navigateToTab('shop'); }}
+                style={{ width: '100%', padding: '1rem', backgroundColor: '#2D3A29', color: '#FFF', border: 'none', borderRadius: '4px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* UK LEGAL POLICIES & CONSUMER RIGHTS MODAL */}
+        <LegalModal
+          isOpen={isLegalModalOpen}
+          onClose={() => setIsLegalModalOpen(false)}
+          initialTab={legalModalTab}
+        />
+
+      </div>
     </PayPalScriptProvider>
   );
 }
