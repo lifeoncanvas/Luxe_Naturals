@@ -489,13 +489,10 @@ const KINGSCHAT_API_KEY = process.env.REACT_APP_KINGSCHAT_API_KEY || 'bGMvMYE5ha
 // ─── PayPal Configuration ──────────────────────────────────────────
 const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || 'BAAggiaHHgL_NHO41jg8QQZRnWHNGY4Z3tMWTvmr83wZqlkPAk3Vi8ZmrwX90FRANuEhIh_58WathfXjrg';
 const API_BASE = (() => {
-  if (typeof window === 'undefined') return process.env.REACT_APP_API_BASE || 'http://localhost:8080/api';
+  if (typeof window === 'undefined') return process.env.REACT_APP_API_BASE || 'https://lichtluxenaturals.org/api';
   const host = window.location.hostname;
   if (host === 'localhost' || host === '127.0.0.1') {
-    return process.env.REACT_APP_API_BASE || 'http://localhost:8080/api';
-  }
-  if (host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.')) {
-    return `http://${host}:8080/api`;
+    return process.env.REACT_APP_API_BASE || 'https://lichtluxenaturals.org/api';
   }
   return '/api';
 })();
@@ -1720,8 +1717,7 @@ function App() {
       try {
         const profileRes = await fetch('https://connect.kingsch.at/api/profile', {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'x-api-key': KINGSCHAT_API_KEY
+            'Authorization': `Bearer ${accessToken}`
           }
         });
         if (profileRes.ok) {
